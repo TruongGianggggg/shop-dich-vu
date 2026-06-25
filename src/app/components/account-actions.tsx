@@ -5,23 +5,6 @@ import { useState } from "react";
 import { getRoleDestination } from "@/lib/shop-api";
 import { clearAuthSession, useAuthSession } from "./use-auth-session";
 
-type AccountMenuItem = {
-  href: string;
-  label: string;
-};
-
-const historyItems: AccountMenuItem[] = [
-  { href: "/history/deposits", label: "Lịch sử nạp tiền" },
-  { href: "/history/orders", label: "Lịch sử mua vật phẩm" },
-  { href: "/cart", label: "Giỏ hàng đã thêm" },
-  { href: "/accounts/buy", label: "Mua tài khoản (nick)" },
-  { href: "/minigames/history", label: "Minigame đã chơi" },
-];
-
-const serviceItems: AccountMenuItem[] = [
-  { href: "/orders/boosting", label: "Đơn cày thuê" },
-];
-
 export function AccountActions() {
   const session = useAuthSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -69,32 +52,8 @@ export function AccountActions() {
               prominent
             />
           ) : null}
-          {session.role === "ADMIN" || session.role === "COLLABORATOR" ? (
-            <AccountMenuLink
-              href={getRoleDestination("COLLABORATOR")}
-              label="CTV Panel"
-              onClick={() => setIsOpen(false)}
-              prominent
-            />
-          ) : null}
-
-          <AccountMenuLink
-            href="/account"
-            label="Quản lý tài khoản"
-            onClick={() => setIsOpen(false)}
-            prominent
-          />
-
-          <AccountMenuSection items={historyItems} title="Lịch sử" />
-          <AccountMenuSection items={serviceItems} title="Dịch vụ" />
-
           <div className="account-section">
             <p>Khác</p>
-            <AccountMenuLink
-              href="/inventory/withdraw"
-              label="Rút vật phẩm"
-              onClick={() => setIsOpen(false)}
-            />
             <button className="account-menu-button" onClick={logout}>
               <span>›</span>
               Đăng xuất
@@ -106,29 +65,14 @@ export function AccountActions() {
   );
 }
 
-function AccountMenuSection({
-  items,
-  title,
-}: {
-  items: AccountMenuItem[];
-  title: string;
-}) {
-  return (
-    <div className="account-section">
-      <p>{title}</p>
-      {items.map((item) => (
-        <AccountMenuLink href={item.href} key={item.href} label={item.label} />
-      ))}
-    </div>
-  );
-}
-
 function AccountMenuLink({
   href,
   label,
   onClick,
   prominent = false,
-}: AccountMenuItem & {
+}: {
+  href: string;
+  label: string;
   onClick?: () => void;
   prominent?: boolean;
 }) {

@@ -1,16 +1,11 @@
 import Link from "next/link";
+import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 
 type DashboardMetric = {
   label: string;
   value: string;
   trend: string;
   tone: "green" | "blue" | "amber" | "rose";
-};
-
-type DashboardNavItem = {
-  label: string;
-  href: string;
-  active?: boolean;
 };
 
 type DashboardTableRow = {
@@ -25,7 +20,6 @@ type DashboardProps = {
   roleLabel: string;
   title: string;
   subtitle: string;
-  navItems: DashboardNavItem[];
   metrics: DashboardMetric[];
   bars: number[];
   tableTitle: string;
@@ -38,7 +32,6 @@ export function RoleDashboard({
   roleLabel,
   title,
   subtitle,
-  navItems,
   metrics,
   bars,
   tableTitle,
@@ -48,34 +41,7 @@ export function RoleDashboard({
 }: DashboardProps) {
   return (
     <main className="role-dashboard">
-      <aside className="role-sidebar">
-        <Link className="role-brand" href="/">
-          <span>SG</span>
-          <strong>Shop Game</strong>
-        </Link>
-
-        <div className="role-nav-block">
-          <p>Menu</p>
-          <nav className="role-nav">
-            {navItems.map((item) => (
-              <Link
-                className={item.active ? "role-nav-link active" : "role-nav-link"}
-                href={item.href}
-                key={item.label}
-              >
-                <span>{item.label.slice(0, 1)}</span>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <div className="role-sidebar-widget">
-          <p>Vai trò hiện tại</p>
-          <strong>{roleLabel}</strong>
-          <span>Quyền được kiểm tra theo JWT từ backend shop-game.</span>
-        </div>
-      </aside>
+      <AdminSidebar active="dashboard" />
 
       <section className="role-main">
         <header className="role-topbar">
@@ -192,16 +158,7 @@ export const adminDashboardData = {
   subtitle:
     "Quản trị danh mục, gói dịch vụ, nạp tiền, ngân hàng, phân quyền và cộng tác viên theo API shop-game.",
   primaryActionLabel: "Tạo danh mục",
-  primaryActionHref: "/admin",
-  navItems: [
-    { label: "Dashboard", href: "/admin", active: true },
-    { label: "Người dùng", href: "/account" },
-    { label: "Danh mục dịch vụ", href: "#services" },
-    { label: "Gói dịch vụ", href: "#packages" },
-    { label: "Nạp tiền", href: "/history/deposits" },
-    { label: "Ngân hàng", href: "#banks" },
-    { label: "CTV Discounts", href: "/collaborator" },
-  ],
+  primaryActionHref: "/admin/services",
   metrics: [
     { label: "Doanh thu hôm nay", value: "12.8M", trend: "+18% so với hôm qua", tone: "green" },
     { label: "Đơn đang xử lý", value: "42", trend: "8 đơn cần nhận", tone: "blue" },
@@ -214,34 +171,5 @@ export const adminDashboardData = {
     { code: "OD-1024", title: "Nạp PUBG Mobile 660 UC", owner: "System", status: "Chờ thanh toán", amount: "245.000 ₫" },
     { code: "OD-1025", title: "Cày rank Liên Quân", owner: "CTV Minh", status: "Đang xử lý", amount: "320.000 ₫" },
     { code: "BK-082", title: "Đồng bộ ngân hàng MB", owner: "Admin", status: "Cần duyệt", amount: "8.500.000 ₫" },
-  ],
-} satisfies DashboardProps;
-
-export const collaboratorDashboardData = {
-  roleLabel: "CTV Panel",
-  title: "Khu cộng tác viên",
-  subtitle:
-    "Nhận đơn dịch vụ, theo dõi đơn đã nhận và cập nhật trạng thái xử lý cho khách hàng.",
-  primaryActionLabel: "Nhận đơn mới",
-  primaryActionHref: "/orders/boosting",
-  navItems: [
-    { label: "Dashboard", href: "/collaborator", active: true },
-    { label: "Đơn có thể nhận", href: "/orders/boosting" },
-    { label: "Đơn đã nhận", href: "/history/orders" },
-    { label: "Cập nhật trạng thái", href: "/orders/boosting" },
-    { label: "Lịch sử xử lý", href: "/history/orders" },
-  ],
-  metrics: [
-    { label: "Đơn có thể nhận", value: "18", trend: "5 đơn ưu tiên", tone: "green" },
-    { label: "Đơn của tôi", value: "9", trend: "3 đơn sắp hạn", tone: "blue" },
-    { label: "Thu nhập tạm tính", value: "2.4M", trend: "+420K tuần này", tone: "amber" },
-    { label: "Cần cập nhật", value: "4", trend: "Bổ sung tiến độ", tone: "rose" },
-  ],
-  bars: [36, 44, 52, 61, 57, 70, 84],
-  tableTitle: "Đơn cộng tác viên",
-  rows: [
-    { code: "CTV-301", title: "Cày rank Free Fire", owner: "Bạn", status: "Đang làm", amount: "180.000 ₫" },
-    { code: "CTV-302", title: "Nhiệm vụ tuần PUBG", owner: "Bạn", status: "Chờ cập nhật", amount: "95.000 ₫" },
-    { code: "CTV-303", title: "Leo rank Liên Quân", owner: "Chưa nhận", status: "Có thể nhận", amount: "260.000 ₫" },
   ],
 } satisfies DashboardProps;

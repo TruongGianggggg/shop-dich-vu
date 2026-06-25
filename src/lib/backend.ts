@@ -27,15 +27,93 @@ export async function fetchBackendJson<T>(path: string, init?: RequestInit) {
   return (await response.json()) as T;
 }
 
-export async function proxyBackendJson(path: string, request: Request) {
-  const body = await request.text();
-  const response = await fetchBackendJson<unknown>(path, {
-    method: request.method,
-    body,
-    headers: {
-      "Content-Type": request.headers.get("Content-Type") ?? "application/json",
-    },
-  });
+export async function proxyBackendResponse(
+  path: string,
+  request: Request,
+  options?: { body?: string },
+) {
+  const headers = new Headers();
+  const contentType = request.headers.get("Content-Type");
+  const authorization = request.headers.get("Authorization");
 
-  return Response.json(response);
+  headers.set("Accept", "application/json");
+
+  if (contentType) {
+    headers.set("Content-Type", contentType);
+  }
+
+  if (authorization) {
+    headers.set("Authorization", authorization);
+  }
+
+  const method = request.method.toUpperCase();
+  const requestBody =
+    method === "GET" || method === "HEAD"
+      ? undefined
+      : options?.body ?? (await request.text());
+  const response = await fetch(getBackendUrl(path), {
+    method,
+    body: requestBody,
+    headers,
+    cache: "no-store",
+  });
+  const responseBody = await response.text();
+  const responseHeaders = new Headers();
+  const responseContentType = response.headers.get("Content-Type");
+
+  if (responseContentType) {
+    responseHeaders.set("Content-Type", responseContentType);
+  }
+
+  return new Response(responseBody, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+  });
+}
+
+export async function proxyBackendJson(path: string, request: Request) {
+  return proxyBackendResponse(path, request);
+}
+
+export function requireAdminRequest(request: Request) {
+  if (getJwtRole(request) === "ADMIN") {
+    return null;
+  }
+
+  return Response.json(
+    { message: "Admin permission is required." },
+    { status: 403 },
+  );
+}
+
+function getJwtRole(request: Request) {
+  const authorization = request.headers.get("Authorization");
+  const token = authorization?.replace(/^Bearer\s+/i, "");
+
+  if (!token) {
+    return null;
+  }
+
+  const [, payload] = token.split(".");
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const decoded = decodeBase64Url(payload);
+    const data = JSON.parse(decoded) as { role?: unknown };
+
+    return typeof data.role === "string" ? data.role : null;
+  } catch {
+    return null;
+  }
+}
+
+function decodeBase64Url(value: string) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+
+  return Buffer.from(padded, "base64").toString("utf8");
 }

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import {
   AuthResponse,
+  getApiErrorMessage,
   getRoleDestination,
 } from "@/lib/shop-api";
-import { sampleAccounts } from "@/lib/sample-accounts";
 import { saveAuthSession } from "./use-auth-session";
 
 type AuthMode = "login" | "register";
@@ -45,17 +45,22 @@ export function AuthForm({ mode }: AuthFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = (await response.json()) as AuthResponse | { message: string };
+      const data = (await response.json()) as AuthResponse | unknown;
 
-      if (!response.ok || !("token" in data)) {
-        setMessage(
-          "message" in data ? data.message : "Khong the xu ly yeu cau.",
-        );
+      if (
+        !response.ok ||
+        !data ||
+        typeof data !== "object" ||
+        !("token" in data)
+      ) {
+        setMessage(getApiErrorMessage(data, "Khong the xu ly yeu cau."));
         return;
       }
 
-      saveAuthSession(data);
-      router.push(getRoleDestination(data.role));
+      const authData = data as AuthResponse;
+
+      saveAuthSession(authData);
+      router.push(getRoleDestination(authData.role));
       router.refresh();
     } catch {
       setMessage("Khong ket noi duoc backend. Hay kiem tra server Spring Boot.");
@@ -97,6 +102,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               Username
               <input
                 className="text-field"
+                maxLength={32}
                 minLength={3}
                 name="username"
                 placeholder="ten_dang_nhap"
@@ -120,6 +126,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           Mat khau
           <input
             className="text-field"
+            maxLength={72}
             minLength={6}
             name="password"
             placeholder="Nhap mat khau"
@@ -128,38 +135,6 @@ export function AuthForm({ mode }: AuthFormProps) {
           />
         </label>
       </div>
-
-      {isLogin ? (
-        <div className="sample-login-panel">
-          <p>Tài khoản mẫu</p>
-          <div>
-            {sampleAccounts.map((account) => (
-              <button
-                key={account.username}
-                onClick={(event) => {
-                  const form = event.currentTarget.form;
-                  const loginInput = form?.elements.namedItem("login");
-                  const passwordInput = form?.elements.namedItem("password");
-
-                  if (loginInput instanceof HTMLInputElement) {
-                    loginInput.value = account.username;
-                  }
-
-                  if (passwordInput instanceof HTMLInputElement) {
-                    passwordInput.value = account.password;
-                  }
-                }}
-                type="button"
-              >
-                <strong>{account.label}</strong>
-                <span>
-                  {account.username} / {account.password}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       {message ? (
         <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
