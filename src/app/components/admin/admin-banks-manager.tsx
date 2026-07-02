@@ -17,10 +17,19 @@ import {
   AuthResponse,
   BankAccount,
   BankAccountPayload,
+  BankDepositSettings,
   BankQr,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
+
+const defaultSettings: BankDepositSettings = {
+  enabled: true,
+  prefix: "NAP",
+  minAmount: 10000,
+  maxAmount: 100000000,
+  cronLink: "",
+};
 
 const emptyForm = {
   shortName: "",
@@ -44,8 +53,13 @@ export function AdminBanksManager() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [settings, setSettings] =
+    useState<BankDepositSettings>(defaultSettings);
+  const [settingsForm, setSettingsForm] =
+    useState<BankDepositSettings>(defaultSettings);
+  const [isSettingsSaving, setIsSettingsSaving] = useState(false);
   const [qrBank, setQrBank] = useState<BankAccount | null>(null);
-  const [qrAmount, setQrAmount] = useState("50000");
+  const [qrAmount, setQrAmount] = useState(String(defaultSettings.minAmount));
   const [qrUserId, setQrUserId] = useState("");
   const [qrResult, setQrResult] = useState<BankQr | null>(null);
   const [isQrLoading, setIsQrLoading] = useState(false);
@@ -63,13 +77,24 @@ export function AdminBanksManager() {
       setError("");
 
       try {
-        const response = await fetch("/api/admin/banks", {
-          headers: authHeaders(activeSession),
-        });
+        const headers = authHeaders(activeSession);
+        const [response, settingsResponse] = await Promise.all([
+          fetch("/api/admin/banks", { headers }),
+          fetch("/api/admin/banks/settings", { headers }),
+        ]);
         const data = (await readResponseJson(response)) as BankAccount[] | unknown;
+        const settingsData = (await readResponseJson(settingsResponse)) as
+          | BankDepositSettings
+          | unknown;
 
         if (!response.ok) {
           throw new Error(getApiErrorMessage(data, "Khong tai duoc ngan hang."));
+        }
+
+        if (!settingsResponse.ok) {
+          throw new Error(
+            getApiErrorMessage(settingsData, "Khong tai duoc cau hinh nap bank."),
+          );
         }
 
         if (!ignore) {
@@ -78,10 +103,15 @@ export function AdminBanksManager() {
               a.shortName.localeCompare(b.shortName),
             ),
           );
+          const loadedSettings = normalizeBankDepositSettings(settingsData);
+          setSettings(loadedSettings);
+          setSettingsForm(loadedSettings);
         }
       } catch (exception) {
         if (!ignore) {
           setBanks([]);
+          setSettings(defaultSettings);
+          setSettingsForm(defaultSettings);
           setError(
             exception instanceof Error
               ? exception.message
@@ -109,8 +139,11 @@ export function AdminBanksManager() {
       activeCount,
       inactiveCount: banks.length - activeCount,
       total: banks.length,
+      amountRange: `${formatVnd(settings.minAmount)} - ${formatVnd(
+        settings.maxAmount,
+      )}`,
     };
-  }, [banks]);
+  }, [banks, settings]);
 
   function openCreateForm() {
     setEditingId("");
@@ -227,9 +260,63 @@ export function AdminBanksManager() {
     }
   }
 
+  async function submitSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!session) {
+      return;
+    }
+
+    const payload: BankDepositSettings = {
+      enabled: settingsForm.enabled,
+      prefix: settingsForm.prefix.trim().toUpperCase(),
+      minAmount: Number(settingsForm.minAmount),
+      maxAmount: Number(settingsForm.maxAmount),
+      cronLink: (settingsForm.cronLink ?? "").trim(),
+    };
+
+    setIsSettingsSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/banks/settings", {
+        method: "PUT",
+        headers: {
+          ...authHeaders(session),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = (await readResponseJson(response)) as
+        | BankDepositSettings
+        | unknown;
+
+      if (!response.ok) {
+        throw new Error(
+          getApiErrorMessage(data, "Khong luu duoc cau hinh nap bank."),
+        );
+      }
+
+      const savedSettings = normalizeBankDepositSettings(data);
+      setSettings(savedSettings);
+      setSettingsForm(savedSettings);
+      setQrAmount(String(savedSettings.minAmount));
+      setMessage("Da luu cau hinh nap bank.");
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Khong luu duoc cau hinh nap bank.",
+      );
+    } finally {
+      setIsSettingsSaving(false);
+    }
+  }
+
   function openQr(bank: BankAccount) {
     setQrBank(bank);
-    setQrAmount("50000");
+    setQrAmount(String(settings.minAmount));
     setQrUserId(session?.userId ?? "");
     setQrResult(null);
     setError("");
@@ -239,7 +326,7 @@ export function AdminBanksManager() {
   function closeQr() {
     setQrBank(null);
     setQrResult(null);
-    setQrAmount("50000");
+    setQrAmount(String(settings.minAmount));
     setQrUserId("");
   }
 
@@ -327,10 +414,125 @@ export function AdminBanksManager() {
             <span>Không dùng nhận nạp</span>
           </article>
           <article className="role-metric-card tone-rose">
-            <p>QR nạp</p>
-            <strong>VietQR</strong>
-            <span>Tạo mã theo ngân hàng</span>
+            <p>Khoảng nạp</p>
+            <strong>{settings.prefix}</strong>
+            <span>{summary.amountRange}</span>
           </article>
+        </section>
+
+        <section className="role-panel admin-bank-settings-panel">
+          <div className="role-panel-head">
+            <div>
+              <p className="section-kicker">Cấu hình nạp bank</p>
+              <h2>Quy tắc tạo QR chuyển khoản</h2>
+            </div>
+            <span>{settings.enabled ? "Đang bật" : "Tạm tắt"}</span>
+          </div>
+
+          <form className="admin-bank-settings-form" onSubmit={submitSettings}>
+            <label className="admin-bank-switch-field">
+              <input
+                checked={settingsForm.enabled}
+                onChange={(event) =>
+                  setSettingsForm((current) => ({
+                    ...current,
+                    enabled: event.target.checked,
+                  }))
+                }
+                type="checkbox"
+              />
+              <span>
+                <strong>Bật nạp tiền qua ngân hàng</strong>
+                <small> Khi tắt, backend sẽ từ chối tạo QR nạp bank.</small>
+              </span>
+            </label>
+
+            <div className="admin-bank-settings-grid">
+              <label className="field-label">
+                Tiền tố nội dung
+                <input
+                  className="text-field"
+                  maxLength={24}
+                  onChange={(event) =>
+                    setSettingsForm((current) => ({
+                      ...current,
+                      prefix: event.target.value,
+                    }))
+                  }
+                  placeholder="NAP"
+                  required
+                  value={settingsForm.prefix}
+                />
+              </label>
+              <label className="field-label">
+                Số tiền tối thiểu
+                <input
+                  className="text-field"
+                  min={1}
+                  onChange={(event) =>
+                    setSettingsForm((current) => ({
+                      ...current,
+                      minAmount: Number(event.target.value),
+                    }))
+                  }
+                  required
+                  step={1000}
+                  type="number"
+                  value={settingsForm.minAmount}
+                />
+              </label>
+              <label className="field-label">
+                Số tiền tối đa
+                <input
+                  className="text-field"
+                  min={1}
+                  onChange={(event) =>
+                    setSettingsForm((current) => ({
+                      ...current,
+                      maxAmount: Number(event.target.value),
+                    }))
+                  }
+                  required
+                  step={1000}
+                  type="number"
+                  value={settingsForm.maxAmount}
+                />
+              </label>
+              <label className="field-label admin-bank-cron-field">
+                Link cron
+                <input
+                  className="text-field"
+                  onChange={(event) =>
+                    setSettingsForm((current) => ({
+                      ...current,
+                      cronLink: event.target.value,
+                    }))
+                  }
+                  placeholder="https://..."
+                  type="url"
+                  value={settingsForm.cronLink ?? ""}
+                />
+              </label>
+            </div>
+
+            <div className="admin-bank-settings-footer">
+              <div>
+                <strong>Nội dung mẫu</strong>
+                <span>{settingsForm.prefix.trim().toUpperCase() || "NAP"}USER_ID</span>
+              </div>
+              <div>
+                <strong>Link cron</strong>
+                <span>{settingsForm.cronLink?.trim() || "Chưa cấu hình"}</span>
+              </div>
+              <button
+                className="primary-button h-11 px-5"
+                disabled={isSettingsSaving}
+                type="submit"
+              >
+                {isSettingsSaving ? "Đang lưu..." : "Lưu cấu hình"}
+              </button>
+            </div>
+          </form>
         </section>
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
@@ -384,6 +586,7 @@ export function AdminBanksManager() {
                       <div className="admin-users-actions admin-bank-actions">
                         <button
                           className="ghost-button h-9 px-3"
+                          disabled={!settings.enabled || !bank.active}
                           onClick={() => openQr(bank)}
                           type="button"
                         >
@@ -590,7 +793,8 @@ export function AdminBanksManager() {
                   Số tiền
                   <input
                     className="text-field"
-                    min={10000}
+                    min={settings.minAmount}
+                    max={settings.maxAmount}
                     onChange={(event) => setQrAmount(event.target.value)}
                     required
                     step={1000}
@@ -651,4 +855,27 @@ async function readResponseJson(response: Response) {
   } catch {
     return null;
   }
+}
+
+function normalizeBankDepositSettings(data: unknown): BankDepositSettings {
+  const value =
+    data && typeof data === "object"
+      ? (data as Partial<BankDepositSettings>)
+      : {};
+
+  return {
+    enabled:
+      typeof value.enabled === "boolean" ? value.enabled : defaultSettings.enabled,
+    prefix: typeof value.prefix === "string" ? value.prefix : defaultSettings.prefix,
+    minAmount:
+      typeof value.minAmount === "number"
+        ? value.minAmount
+        : defaultSettings.minAmount,
+    maxAmount:
+      typeof value.maxAmount === "number"
+        ? value.maxAmount
+        : defaultSettings.maxAmount,
+    cronLink:
+      typeof value.cronLink === "string" ? value.cronLink : defaultSettings.cronLink,
+  };
 }

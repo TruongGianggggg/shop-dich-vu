@@ -99,6 +99,14 @@ export type BankAccountPayload = {
   active: boolean;
 };
 
+export type BankDepositSettings = {
+  enabled: boolean;
+  prefix: string;
+  minAmount: number;
+  maxAmount: number;
+  cronLink: string;
+};
+
 export type BankQr = {
   bankId: string;
   shortName: string;

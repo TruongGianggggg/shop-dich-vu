@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AccountActions } from "@/app/components/account-actions";
+import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   FeaturedPackage,
@@ -86,6 +87,7 @@ export default async function Home() {
           <a href="#services">Dich vu</a>
           <a href="#packages">Goi noi bat</a>
           <a href="#workflow">Quy trinh</a>
+          <DepositQrButton />
         </nav>
         <AccountActions />
       </header>
