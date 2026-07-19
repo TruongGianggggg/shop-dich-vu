@@ -1,5 +1,6 @@
 import { AdminServicesManager } from "@/app/components/admin/admin-services-manager";
 import { RoleGate } from "@/app/components/role-gate";
+import "./services-upload.css";
 
 export default function AdminServicesPage() {
   return (

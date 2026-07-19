@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   AuthResponse,
   getApiErrorMessage,
@@ -13,13 +13,35 @@ import { saveAuthSession } from "./use-auth-session";
 type AuthMode = "login" | "register";
 
 type AuthFormProps = {
+  closeHref?: string;
   mode: AuthMode;
+  returnUrl?: string;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+type ToastState = {
+  message: string;
+  type: "success" | "error";
+};
+
+export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLogin = mode === "login";
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  function showToast(nextToast: ToastState) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(nextToast);
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,23 +75,94 @@ export function AuthForm({ mode }: AuthFormProps) {
         typeof data !== "object" ||
         !("token" in data)
       ) {
-        setMessage(getApiErrorMessage(data, "Khong the xu ly yeu cau."));
+        const errorMessage =
+          isLogin && response.status === 401
+            ? "Tài khoản hoặc mật khẩu không chính xác."
+            : getApiErrorMessage(
+                data,
+                "Không thể xử lý yêu cầu đăng nhập.",
+              );
+        if (isLogin) showToast({ message: errorMessage, type: "error" });
+        else setMessage(errorMessage);
         return;
       }
 
       const authData = data as AuthResponse;
 
       saveAuthSession(authData);
-      router.push(getRoleDestination(authData.role));
+      if (isLogin) {
+        showToast({ message: "Đăng nhập thành công.", type: "success" });
+        await new Promise((resolve) => setTimeout(resolve, 850));
+      }
+      router.push(
+        authData.role === "USER" && returnUrl
+          ? returnUrl
+          : getRoleDestination(authData.role),
+      );
       router.refresh();
     } catch {
-      setMessage("Khong ket noi duoc backend. Hay kiem tra server Spring Boot.");
+      const errorMessage =
+        "Không kết nối được hệ thống. Vui lòng thử lại sau.";
+      if (isLogin) showToast({ message: errorMessage, type: "error" });
+      else setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  const isLogin = mode === "login";
+  if (isLogin) {
+    return (
+      <>
+        {toast ? (
+          <div className={`login-slide-toast is-${toast.type}`} role="status">
+            {toast.message}
+          </div>
+        ) : null}
+        <form className="login-popup" onSubmit={submit}>
+          <Link className="login-popup-close" href={closeHref}>
+            Đóng
+          </Link>
+          <div className="login-popup-heading">
+            <h1>Đăng nhập</h1>
+            <p>Vui lòng đăng nhập để tiếp tục</p>
+          </div>
+
+          <div className="login-popup-fields">
+            <label>
+              <span>Tài khoản</span>
+              <input
+                autoComplete="username"
+                name="login"
+                placeholder="Nhập tên tài khoản hoặc email"
+                required
+              />
+            </label>
+            <label>
+              <span>Mật khẩu</span>
+              <input
+                autoComplete="current-password"
+                maxLength={72}
+                minLength={6}
+                name="password"
+                placeholder="Nhập mật khẩu của bạn"
+                required
+                type="password"
+              />
+            </label>
+          </div>
+
+          <button className="login-popup-submit" disabled={isSubmitting}>
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+          </button>
+
+          <div className="login-popup-register">
+            <span>Bạn chưa có tài khoản?</span>
+            <Link href="/register">Đăng ký ngay</Link>
+          </div>
+        </form>
+      </>
+    );
+  }
 
   return (
     <form className="auth-panel" onSubmit={submit}>

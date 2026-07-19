@@ -147,13 +147,13 @@ export function DepositQrButton() {
   return (
     <>
       <button className="deposit-nav-button" onClick={openDeposit} type="button">
-        Nap tien
+        Nạp tiền
       </button>
 
       {isOpen ? (
         <div className="deposit-modal" role="presentation">
           <button
-            aria-label="Dong nap tien"
+            aria-label="Đóng nạp tiền"
             className="deposit-modal-backdrop"
             onClick={closeDeposit}
             type="button"
@@ -161,11 +161,11 @@ export function DepositQrButton() {
           <section aria-modal="true" className="deposit-modal-panel" role="dialog">
             <div className="deposit-modal-header">
               <div>
-                <p className="section-kicker">Nap tien</p>
-                <h2>Quet QR chuyen khoan</h2>
+                <p className="section-kicker">Nạp tiền</p>
+                <h2>Quét QR chuyển khoản</h2>
               </div>
               <button
-                aria-label="Dong"
+                aria-label="Đóng"
                 className="deposit-modal-close"
                 onClick={closeDeposit}
                 type="button"
@@ -176,7 +176,7 @@ export function DepositQrButton() {
 
             <div className="deposit-form">
               <label className="field-label">
-                Ngan hang
+                Ngân hàng
                 <select
                   className="text-field"
                   disabled={isLoadingBanks || banks.length === 0}
@@ -210,14 +210,14 @@ export function DepositQrButton() {
               {qrResult ? (
                 <div className="deposit-qr-result">
                   <Image
-                    alt="QR nap tien"
+                    alt="QR nạp tiền"
                     height={220}
                     src={qrResult.qrUrl}
                     unoptimized
                     width={220}
                   />
                   <div>
-                    <strong>Nhap so tien tren app ngan hang</strong>
+                    <strong>Nhập số tiền trên ứng dụng ngân hàng</strong>
                     <span>{qrResult.transferContent}</span>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export function DepositQrButton() {
 
               {error ? <p className="deposit-modal-error">{error}</p> : null}
               {!isLoadingBanks && banks.length === 0 ? (
-                <p className="deposit-modal-error">Chua co ngan hang dang bat.</p>
+                <p className="deposit-modal-error">Chưa có ngân hàng đang bật.</p>
               ) : null}
 
               <div className="deposit-modal-actions">
@@ -234,7 +234,7 @@ export function DepositQrButton() {
                   onClick={closeDeposit}
                   type="button"
                 >
-                  Dong
+                  Đóng
                 </button>
                 <button
                   className="primary-button h-11 px-5"
@@ -242,7 +242,7 @@ export function DepositQrButton() {
                   onClick={() => createQr(selectedBankId)}
                   type="button"
                 >
-                  {isCreatingQr ? "Dang tao..." : "Tao lai QR"}
+                  {isCreatingQr ? "Đang tạo..." : "Tạo lại QR"}
                 </button>
               </div>
             </div>

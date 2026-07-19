@@ -1,0 +1,59 @@
+.admin-service-image-field {
+  align-items: stretch;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 190px minmax(0, 1fr);
+  padding: 12px;
+}
+
+.admin-service-image-preview {
+  align-items: center;
+  aspect-ratio: 16 / 9;
+  background: #eef2f7 center / cover no-repeat;
+  border: 1px solid #dbe3ee;
+  border-radius: 11px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.admin-service-image-preview.has-image { background-color: #0f172a; }
+
+.admin-service-image-controls {
+  align-content: center;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.admin-service-image-controls p {
+  color: #64748b;
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.admin-service-image-controls small {
+  color: #94a3b8;
+  flex-basis: 100%;
+  font-size: 11px;
+}
+
+.admin-image-upload-button { cursor: pointer; display: inline-flex; }
+.admin-image-upload-button input {
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+
+@media (max-width: 560px) {
+  .admin-service-image-field { grid-template-columns: 1fr; }
+}

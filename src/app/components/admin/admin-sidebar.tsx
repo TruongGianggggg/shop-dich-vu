@@ -5,6 +5,7 @@ import {
   Landmark,
   LayoutDashboard,
   Package,
+  Settings,
   Users,
 } from "lucide-react";
 
@@ -14,7 +15,8 @@ type AdminSection =
   | "services"
   | "orders"
   | "deposits"
-  | "banks";
+  | "banks"
+  | "settings";
 
 const navItems = [
   {
@@ -52,6 +54,12 @@ const navItems = [
     icon: Landmark,
     label: "Ngân hàng",
     section: "banks",
+  },
+  {
+    href: "/admin/site-settings",
+    icon: Settings,
+    label: "Giao diện shop",
+    section: "settings",
   },
 ] satisfies {
   href: string;

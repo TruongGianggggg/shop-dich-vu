@@ -18,10 +18,10 @@ export function AccountActions() {
     return (
       <div className="flex items-center gap-2">
         <Link className="nav-link" href="/login">
-          Dang nhap
+          Đăng nhập
         </Link>
         <Link className="primary-button h-10 px-4 text-sm" href="/register">
-          Dang ky
+          Đăng ký
         </Link>
       </div>
     );
@@ -52,6 +52,11 @@ export function AccountActions() {
               prominent
             />
           ) : null}
+          <AccountMenuLink
+            href="/lich-su-mua"
+            label="Lịch sử mua"
+            onClick={() => setIsOpen(false)}
+          />
           <div className="account-section">
             <p>Khác</p>
             <button className="account-menu-button" onClick={logout}>

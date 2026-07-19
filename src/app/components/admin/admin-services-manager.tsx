@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ImageUp,
   Pencil,
   Plus,
   RefreshCw,
@@ -110,6 +111,7 @@ export function AdminServicesManager() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [isLoadingPackages, setIsLoadingPackages] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [updatingId, setUpdatingId] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -393,6 +395,55 @@ export function AdminServicesManager() {
       successMessage: editingId ? "Da cap nhat dich vu." : "Da tao dich vu.",
       session,
     });
+  }
+
+  async function uploadServiceImage(file: File) {
+    if (!session) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      setError("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Ảnh không được vượt quá 5 MB.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setError("");
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/admin/service-images", {
+        method: "POST",
+        headers: authHeaders(session),
+        body,
+      });
+      const data = (await readResponseJson(response)) as unknown;
+
+      if (!response.ok) {
+        throw new Error(
+          getAdminServiceErrorMessage(response, data, "Không tải được ảnh lên."),
+        );
+      }
+
+      const imageUrl =
+        data && typeof data === "object" && "imageUrl" in data
+          ? (data as { imageUrl?: unknown }).imageUrl
+          : null;
+      if (typeof imageUrl !== "string" || !imageUrl) {
+        throw new Error("Backend không trả về đường dẫn ảnh hợp lệ.");
+      }
+
+      setSubCategoryForm((current) => ({ ...current, imageUrl }));
+      setMessage("Đã tải ảnh lên. Hãy bấm Lưu để gắn ảnh vào dịch vụ.");
+    } catch (exception) {
+      setError(
+        exception instanceof Error ? exception.message : "Không tải được ảnh lên.",
+      );
+    } finally {
+      setIsUploadingImage(false);
+    }
   }
 
   async function submitPackage(event: FormEvent<HTMLFormElement>) {
@@ -849,9 +900,11 @@ export function AdminServicesManager() {
                     categories={categories}
                     form={subCategoryForm}
                     isSaving={isSaving}
+                    isUploadingImage={isUploadingImage}
                     onCancel={closeModal}
                     onChange={setSubCategoryForm}
                     onSubmit={submitSubCategory}
+                    onUploadImage={uploadServiceImage}
                   />
                 ) : null}
 
@@ -939,16 +992,20 @@ function SubCategoryFormView({
   categories,
   form,
   isSaving,
+  isUploadingImage,
   onCancel,
   onChange,
   onSubmit,
+  onUploadImage,
 }: {
   categories: ServiceCategory[];
   form: SubCategoryForm;
   isSaving: boolean;
+  isUploadingImage: boolean;
   onCancel: () => void;
   onChange: (form: SubCategoryForm) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onUploadImage: (file: File) => void;
 }) {
   return (
     <form className="admin-user-form" onSubmit={onSubmit}>
@@ -1027,16 +1084,54 @@ function SubCategoryFormView({
             value={form.the9pServiceCode}
           />
         </label>
-        <label className="field-label">
-          Image URL
-          <input
-            className="text-field"
-            onChange={(event) =>
-              onChange({ ...form, imageUrl: event.target.value })
-            }
-            value={form.imageUrl}
-          />
-        </label>
+        <div className="field-label admin-form-span-2">
+          Ảnh đại diện dịch vụ
+          <div className="admin-service-image-field">
+            <div
+              className={
+                form.imageUrl
+                  ? "admin-service-image-preview has-image"
+                  : "admin-service-image-preview"
+              }
+              style={
+                form.imageUrl
+                  ? { backgroundImage: `url(${JSON.stringify(form.imageUrl)})` }
+                  : undefined
+              }
+            >
+              {!form.imageUrl ? <ImageUp aria-hidden="true" size={28} /> : null}
+            </div>
+            <div className="admin-service-image-controls">
+              <p>Ảnh này dùng cho thẻ dịch vụ trên trang chủ. Gói giá không có ảnh riêng.</p>
+              <label className="ghost-button h-10 px-4 admin-image-upload-button">
+                <ImageUp aria-hidden="true" size={16} />
+                {isUploadingImage ? "Đang tải ảnh..." : "Chọn ảnh"}
+                <input
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={isUploadingImage || isSaving}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) onUploadImage(file);
+                    event.currentTarget.value = "";
+                  }}
+                  type="file"
+                />
+              </label>
+              {form.imageUrl ? (
+                <button
+                  className="danger-button h-10 px-4"
+                  disabled={isUploadingImage || isSaving}
+                  onClick={() => onChange({ ...form, imageUrl: "" })}
+                  type="button"
+                >
+                  <Trash2 aria-hidden="true" size={15} />
+                  Bỏ ảnh
+                </button>
+              ) : null}
+              <small>JPG, PNG hoặc WEBP — tối đa 5 MB.</small>
+            </div>
+          </div>
+        </div>
         <label className="field-label admin-form-span-2">
           Mô tả
           <textarea
