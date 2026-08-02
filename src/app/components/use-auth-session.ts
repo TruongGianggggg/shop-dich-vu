@@ -42,13 +42,41 @@ function parseSession(raw: string, key: string) {
   }
 
   try {
-    cachedSession = JSON.parse(decodeURIComponent(raw)) as AuthResponse;
+    const session = JSON.parse(decodeURIComponent(raw)) as AuthResponse;
+
+    if (isExpiredSession(session)) {
+      cachedSessionKey = "";
+      cachedSession = null;
+      return null;
+    }
+
+    cachedSession = session;
     cachedSessionKey = key;
     return cachedSession;
   } catch {
     cachedSessionKey = "";
     cachedSession = null;
     return null;
+  }
+}
+
+function isExpiredSession(session: AuthResponse) {
+  const [, encodedPayload] = session.token.split(".");
+
+  if (!encodedPayload) {
+    return true;
+  }
+
+  try {
+    const normalizedPayload = encodedPayload
+      .replace(/-/g, "+")
+      .replace(/_/g, "/")
+      .padEnd(Math.ceil(encodedPayload.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(normalizedPayload)) as { exp?: unknown };
+
+    return typeof payload.exp !== "number" || payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
   }
 }
 
