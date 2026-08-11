@@ -13,6 +13,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
   AuthResponse,
   BankAccount,
@@ -267,6 +268,16 @@ export function AdminBanksManager() {
       return;
     }
 
+    if (
+      !Number.isSafeInteger(settingsForm.minAmount)
+      || settingsForm.minAmount <= 0
+      || !Number.isSafeInteger(settingsForm.maxAmount)
+      || settingsForm.maxAmount < settingsForm.minAmount
+    ) {
+      setError("Số tiền tối thiểu và tối đa không hợp lệ.");
+      return;
+    }
+
     const payload: BankDepositSettings = {
       enabled: settingsForm.enabled,
       prefix: settingsForm.prefix.trim().toUpperCase(),
@@ -338,6 +349,15 @@ export function AdminBanksManager() {
     }
 
     const amount = Number(qrAmount);
+
+    if (
+      !Number.isSafeInteger(amount)
+      || amount < settings.minAmount
+      || amount > settings.maxAmount
+    ) {
+      setError(`Số tiền phải từ ${formatVnd(settings.minAmount)} đến ${formatVnd(settings.maxAmount)}.`);
+      return;
+    }
 
     setIsQrLoading(true);
     setError("");
@@ -468,34 +488,32 @@ export function AdminBanksManager() {
                 Số tiền tối thiểu
                 <input
                   className="text-field"
-                  min={1}
+                  inputMode="numeric"
                   onChange={(event) =>
                     setSettingsForm((current) => ({
                       ...current,
-                      minAmount: Number(event.target.value),
+                      minAmount: Number(normalizeIntegerInput(event.target.value) || 0),
                     }))
                   }
                   required
-                  step={1000}
-                  type="number"
-                  value={settingsForm.minAmount}
+                  type="text"
+                  value={formatIntegerInput(settingsForm.minAmount)}
                 />
               </label>
               <label className="field-label">
                 Số tiền tối đa
                 <input
                   className="text-field"
-                  min={1}
+                  inputMode="numeric"
                   onChange={(event) =>
                     setSettingsForm((current) => ({
                       ...current,
-                      maxAmount: Number(event.target.value),
+                      maxAmount: Number(normalizeIntegerInput(event.target.value) || 0),
                     }))
                   }
                   required
-                  step={1000}
-                  type="number"
-                  value={settingsForm.maxAmount}
+                  type="text"
+                  value={formatIntegerInput(settingsForm.maxAmount)}
                 />
               </label>
               <label className="field-label admin-bank-cron-field">
@@ -793,13 +811,11 @@ export function AdminBanksManager() {
                   Số tiền
                   <input
                     className="text-field"
-                    min={settings.minAmount}
-                    max={settings.maxAmount}
-                    onChange={(event) => setQrAmount(event.target.value)}
+                    inputMode="numeric"
+                    onChange={(event) => setQrAmount(normalizeIntegerInput(event.target.value))}
                     required
-                    step={1000}
-                    type="number"
-                    value={qrAmount}
+                    type="text"
+                    value={formatIntegerInput(qrAmount)}
                   />
                 </label>
                 {qrResult ? (

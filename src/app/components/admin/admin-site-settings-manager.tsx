@@ -4,6 +4,7 @@ import { ImageUp, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react"
 import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import { getApiErrorMessage, ManualMonthlyDepositEntry, SiteSettings } from "@/lib/shop-api";
 
 const defaultSettings: SiteSettings = {
@@ -377,10 +378,10 @@ export function AdminSiteSettingsManager() {
                 Năm
                 <input
                   className="text-field"
-                  max={2100}
-                  min={2000}
-                  onChange={(event) => setLeaderboardYear(Number(event.target.value))}
-                  type="number"
+                  inputMode="numeric"
+                  maxLength={4}
+                  onChange={(event) => setLeaderboardYear(Number(normalizeIntegerInput(event.target.value).slice(0, 4) || 0))}
+                  type="text"
                   value={leaderboardYear}
                 />
               </label>
@@ -403,13 +404,12 @@ export function AdminSiteSettingsManager() {
               Số tiền nạp
               <input
                 className="text-field"
-                min={1}
-                onChange={(event) => setManualForm({ ...manualForm, amount: event.target.value })}
-                placeholder="Ví dụ: 8000000"
+                inputMode="numeric"
+                onChange={(event) => setManualForm({ ...manualForm, amount: normalizeIntegerInput(event.target.value) })}
+                placeholder="Ví dụ: 8.000.000"
                 required
-                step={1}
-                type="number"
-                value={manualForm.amount}
+                type="text"
+                value={formatIntegerInput(manualForm.amount)}
               />
             </label>
             <button className="primary-button h-11 px-5" disabled={isSavingManual} type="submit">

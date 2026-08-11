@@ -242,6 +242,48 @@ export type ServicePackagePayload = {
   active: boolean;
 };
 
+export type GameServerCurrencyConfig = {
+  id: string;
+  name: string;
+  goldEnabled: boolean;
+  goldAmount: number;
+  goldPrice: number;
+  gemEnabled: boolean;
+  gemAmount: number;
+  gemPrice: number;
+  displayOrder: number;
+  active: boolean;
+};
+
+export type GameServerCurrencyConfigPayload = Omit<
+  GameServerCurrencyConfig,
+  "id"
+>;
+
+export type GameCurrencyType = "GOLD" | "GEM";
+
+export type GameCurrencyDisplaySettings = {
+  goldImageUrl: string;
+  gemImageUrl: string;
+};
+
+export type GameCurrencyOrder = {
+  id: string;
+  requestId: string;
+  userId: string;
+  serverConfigId: string;
+  serverName: string;
+  characterName: string;
+  currencyType: GameCurrencyType;
+  status: ServiceOrderStatus;
+  unitAmount: number;
+  unitPrice: number;
+  paymentAmount: number;
+  receivedAmount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export const AUTH_STORAGE_KEY = "shop-game-auth";
 
 export function getApiErrorMessage(data: unknown, fallback: string) {

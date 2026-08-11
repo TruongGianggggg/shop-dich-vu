@@ -12,6 +12,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
   AuthResponse,
   formatVnd,
@@ -956,11 +957,12 @@ function CategoryFormView({
           Thứ tự
           <input
             className="text-field"
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, displayOrder: event.target.value })
+              onChange({ ...form, displayOrder: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.displayOrder}
+            type="text"
+            value={formatIntegerInput(form.displayOrder)}
           />
         </label>
         <label className="field-label admin-form-span-2 admin-package-description">
@@ -1055,23 +1057,24 @@ function SubCategoryFormView({
           Thứ tự
           <input
             className="text-field"
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, displayOrder: event.target.value })
+              onChange({ ...form, displayOrder: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.displayOrder}
+            type="text"
+            value={formatIntegerInput(form.displayOrder)}
           />
         </label>
         <label className="field-label">
           Số gói/dịch vụ
           <input
             className="text-field"
-            min={0}
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, serviceCount: event.target.value })
+              onChange({ ...form, serviceCount: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.serviceCount ?? "0"}
+            type="text"
+            value={formatIntegerInput(form.serviceCount ?? "0")}
           />
         </label>
         <label className="field-label">
@@ -1206,46 +1209,47 @@ function PackageFormView({
           Giá bán
           <input
             className="text-field"
-            min={0}
-            onChange={(event) => onChange({ ...form, price: event.target.value })}
+            inputMode="numeric"
+            onChange={(event) => onChange({ ...form, price: normalizeIntegerInput(event.target.value) })}
             required
-            type="number"
-            value={form.price}
+            type="text"
+            value={formatIntegerInput(form.price)}
           />
         </label>
         <label className="field-label">
           Giá gốc
           <input
             className="text-field"
-            min={0}
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, originalPrice: event.target.value })
+              onChange({ ...form, originalPrice: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.originalPrice}
+            type="text"
+            value={formatIntegerInput(form.originalPrice)}
           />
         </label>
         <label className="field-label">
           9P amount
           <input
             className="text-field"
-            min={0}
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, the9pAmount: event.target.value })
+              onChange({ ...form, the9pAmount: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.the9pAmount}
+            type="text"
+            value={formatIntegerInput(form.the9pAmount)}
           />
         </label>
         <label className="field-label">
           Thứ tự
           <input
             className="text-field"
+            inputMode="numeric"
             onChange={(event) =>
-              onChange({ ...form, displayOrder: event.target.value })
+              onChange({ ...form, displayOrder: normalizeIntegerInput(event.target.value) })
             }
-            type="number"
-            value={form.displayOrder}
+            type="text"
+            value={formatIntegerInput(form.displayOrder)}
           />
         </label>
         <label className="field-label admin-form-span-2">

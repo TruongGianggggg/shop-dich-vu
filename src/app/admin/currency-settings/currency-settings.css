@@ -1,0 +1,406 @@
+.currency-settings-main {
+  background: #f8fafc;
+}
+
+.currency-images-panel {
+  margin-top: 18px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.currency-images-head {
+  align-items: center;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 18px 20px;
+}
+
+.currency-images-head h2 {
+  color: #111827;
+  font-size: 17px;
+  margin: 4px 0;
+}
+
+.currency-images-head > div > span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.currency-image-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 20px;
+}
+
+.currency-image-editor {
+  border: 1px solid #e5e7eb;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.currency-image-editor.gold { border-top: 3px solid #f59e0b; }
+.currency-image-editor.gem { border-top: 3px solid #8b5cf6; }
+
+.currency-image-preview {
+  align-items: center;
+  background: #f8fafc center / cover no-repeat;
+  color: #98a2b3;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  height: 190px;
+  justify-content: center;
+}
+
+.currency-image-preview span {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.currency-image-editor-body {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.currency-image-editor-body > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.currency-image-editor-body strong { color: #111827; font-size: 13px; }
+.currency-image-editor-body span { color: #667085; font-size: 10px; }
+.currency-image-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.currency-image-actions label { cursor: pointer; }
+.currency-image-actions input { height: 1px; opacity: 0; position: absolute; width: 1px; }
+
+.currency-service-picker {
+  align-items: end;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(280px, 520px) minmax(220px, 1fr);
+  margin-top: 18px;
+  padding: 20px;
+}
+
+.currency-service-picker label,
+.currency-service-picker > div {
+  display: grid;
+  gap: 8px;
+}
+
+.currency-service-picker label > span,
+.currency-service-picker > div > span {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.currency-service-picker > div {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+
+.currency-service-picker > div strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.currency-service-picker > p {
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.currency-columns {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.currency-panel {
+  overflow: hidden;
+  padding: 0;
+}
+
+.currency-panel.gold {
+  border-top: 3px solid #f59e0b;
+}
+
+.currency-panel.gem {
+  border-top: 3px solid #8b5cf6;
+}
+
+.currency-panel-head {
+  align-items: center;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 20px;
+}
+
+.currency-title,
+.currency-server-name {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.currency-title > span,
+.currency-server-name > span {
+  align-items: center;
+  border-radius: 11px;
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.gold .currency-title > span {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.gem .currency-title > span {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.currency-title p,
+.currency-title h2,
+.currency-server-name strong,
+.currency-server-name small {
+  margin: 0;
+}
+
+.currency-title p {
+  color: #98a2b3;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+
+.currency-title h2 {
+  color: #101828;
+  font-size: 19px;
+  margin-top: 2px;
+}
+
+.currency-server-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.currency-server-card {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 13px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(145px, 1fr) minmax(80px, .65fr) minmax(105px, .8fr) auto;
+  padding: 13px;
+}
+
+.currency-server-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 7px 18px rgba(15, 23, 42, .055);
+}
+
+.currency-server-name > span {
+  background: #f2f4f7;
+  color: #475467;
+  height: 34px;
+  width: 34px;
+}
+
+.currency-server-name strong {
+  color: #111827;
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.currency-server-name small {
+  color: #667085;
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.currency-rate {
+  display: grid;
+  gap: 4px;
+}
+
+.currency-rate span {
+  color: #98a2b3;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.currency-rate strong {
+  color: #344054;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.currency-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.currency-card-actions button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #475467;
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.currency-card-actions button:last-child {
+  color: #dc2626;
+}
+
+.currency-card-actions button:hover {
+  background: #f8fafc;
+}
+
+.currency-empty {
+  align-items: center;
+  color: #98a2b3;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  justify-content: center;
+  min-height: 170px;
+  padding: 24px;
+  text-align: center;
+}
+
+.currency-empty strong {
+  color: #475467;
+  font-size: 13px;
+}
+
+.currency-empty span {
+  font-size: 12px;
+}
+
+.currency-modal {
+  max-height: min(90vh, 820px);
+  max-width: min(760px, calc(100vw - 32px));
+  overflow-y: auto;
+  width: 760px;
+}
+
+.currency-form-body {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 20px;
+}
+
+.currency-form-wide,
+.currency-form-block {
+  grid-column: 1 / -1;
+}
+
+.currency-form-block {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin: 0;
+  padding: 15px;
+}
+
+.currency-form-block.gold {
+  border-left: 3px solid #f59e0b;
+}
+
+.currency-form-block.gem {
+  border-left: 3px solid #8b5cf6;
+}
+
+.currency-enable {
+  align-items: center;
+  color: #111827;
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: 900;
+  gap: 9px;
+}
+
+.currency-enable span {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.currency-form-block > div {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 13px;
+}
+
+.currency-active-field {
+  align-self: end;
+  min-height: 42px;
+}
+
+.currency-modal-error {
+  background: #fef2f2;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 20px 12px;
+  padding: 10px 12px;
+}
+
+@media (max-width: 1080px) {
+  .currency-columns,
+  .currency-image-grid,
+  .currency-service-picker {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .currency-images-head,
+  .currency-image-editor-body {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .currency-server-card {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .currency-server-name,
+  .currency-card-actions {
+    grid-column: 1 / -1;
+  }
+
+  .currency-form-body,
+  .currency-form-block > div {
+    grid-template-columns: 1fr;
+  }
+}

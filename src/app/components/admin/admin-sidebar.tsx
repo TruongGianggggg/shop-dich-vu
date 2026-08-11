@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ClipboardList,
+  Coins,
   CreditCard,
   Landmark,
   LayoutDashboard,
@@ -13,6 +14,7 @@ type AdminSection =
   | "dashboard"
   | "users"
   | "services"
+  | "currency-settings"
   | "orders"
   | "deposits"
   | "banks"
@@ -36,6 +38,12 @@ const navItems = [
     icon: Package,
     label: "Dịch vụ & gói",
     section: "services",
+  },
+  {
+    href: "/admin/currency-settings",
+    icon: Coins,
+    label: "Cấu hình Vàng & Ngọc",
+    section: "currency-settings",
   },
   {
     href: "/admin/orders",

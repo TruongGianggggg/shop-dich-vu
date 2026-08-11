@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
 import { AccountActions } from "@/app/components/account-actions";
 import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   formatVnd,
+  GameCurrencyDisplaySettings,
+  GameServerCurrencyConfig,
   MonthlyDepositLeaderboard,
   ServiceCategory,
   ServiceSubCategory,
@@ -47,12 +49,40 @@ async function getMonthlyLeaderboard() {
   }
 }
 
+async function getCurrencyServers() {
+  try {
+    return await fetchBackendJson<GameServerCurrencyConfig[]>(
+      "/api/currency-servers?activeOnly=true",
+    );
+  } catch {
+    return [];
+  }
+}
+
+async function getCurrencyDisplaySettings() {
+  try {
+    return await fetchBackendJson<GameCurrencyDisplaySettings>(
+      "/api/currency-settings",
+    );
+  } catch {
+    return { goldImageUrl: "", gemImageUrl: "" };
+  }
+}
+
 export default async function Home() {
-  const [{ categories, hasApiError }, siteSettings, leaderboard] =
+  const [
+    { categories, hasApiError },
+    siteSettings,
+    leaderboard,
+    currencyServers,
+    currencyDisplaySettings,
+  ] =
     await Promise.all([
       getCategories(),
       getPublicSiteSettings(),
       getMonthlyLeaderboard(),
+      getCurrencyServers(),
+      getCurrencyDisplaySettings(),
     ]);
 
   return (
@@ -91,6 +121,11 @@ export default async function Home() {
         <StorefrontOverview
           leaderboard={leaderboard}
           settings={siteSettings}
+        />
+
+        <CurrencyTopupSection
+          configs={currencyServers}
+          displaySettings={currencyDisplaySettings}
         />
 
         {hasApiError ? (
@@ -177,6 +212,57 @@ export default async function Home() {
         <p className="reference-footer-copyright">© {new Date().getFullYear()} {siteSettings.footerCopyright}</p>
       </footer>
     </div>
+  );
+}
+
+function CurrencyTopupSection({
+  configs,
+  displaySettings,
+}: {
+  configs: GameServerCurrencyConfig[];
+  displaySettings: GameCurrencyDisplaySettings;
+}) {
+  const goldServers = configs.filter((item) => item.goldEnabled).length;
+  const gemServers = configs.filter((item) => item.gemEnabled).length;
+
+  return (
+    <section className="reference-category currency-home-category">
+      <div className="reference-category-title">
+        <h2>Nạp Vàng và Ngọc</h2>
+        <span />
+        <p>Chọn loại tiền tệ và server, hệ thống sẽ tự tính số lượng thực nhận.</p>
+      </div>
+      <div className="currency-showcase-grid">
+        <Link className="currency-showcase-card gold" href="/nap-vang">
+          <div
+            className={displaySettings.goldImageUrl ? "currency-showcase-cover has-image" : "currency-showcase-cover"}
+            style={displaySettings.goldImageUrl ? { backgroundImage: `url(${JSON.stringify(displaySettings.goldImageUrl)})` } : undefined}
+          >
+            {!displaySettings.goldImageUrl ? <Coins size={58} /> : null}
+          </div>
+          <div className="currency-showcase-content">
+            <h3>MUA VÀNG</h3>
+            <p>MUA VÀNG NRO</p>
+            <span>{goldServers} server đang mở bán</span>
+            <strong className="currency-showcase-button">Mua ngay</strong>
+          </div>
+        </Link>
+        <Link className="currency-showcase-card gem" href="/nap-ngoc">
+          <div
+            className={displaySettings.gemImageUrl ? "currency-showcase-cover has-image" : "currency-showcase-cover"}
+            style={displaySettings.gemImageUrl ? { backgroundImage: `url(${JSON.stringify(displaySettings.gemImageUrl)})` } : undefined}
+          >
+            {!displaySettings.gemImageUrl ? <Gem size={58} /> : null}
+          </div>
+          <div className="currency-showcase-content">
+            <h3>MUA NGỌC</h3>
+            <p>MUA NGỌC NRO</p>
+            <span>{gemServers} server đang mở bán</span>
+            <strong className="currency-showcase-button">Mua ngay</strong>
+          </div>
+        </Link>
+      </div>
+    </section>
   );
 }
 
