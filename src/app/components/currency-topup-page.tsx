@@ -17,7 +17,7 @@ export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCu
     <div className="currency-shop-page">
       <header className="service-detail-header">
         <ShopBrand settings={settings} />
-        <nav><Link href="/">Trang chủ</Link><Link href="/lich-su-mua">Lịch sử mua</Link></nav>
+        <nav><Link href="/">Trang chủ</Link><Link href="/lich-su-vang-ngoc">Lịch sử Vàng & Ngọc</Link></nav>
         <AccountActions />
       </header>
       <main className="currency-shop-main">

@@ -8,6 +8,7 @@ import {
   Package,
   Settings,
   Users,
+  Gem,
 } from "lucide-react";
 
 type AdminSection =
@@ -15,6 +16,7 @@ type AdminSection =
   | "users"
   | "services"
   | "currency-settings"
+  | "currency-orders"
   | "orders"
   | "deposits"
   | "banks"
@@ -50,6 +52,12 @@ const navItems = [
     icon: ClipboardList,
     label: "Đơn hàng",
     section: "orders",
+  },
+  {
+    href: "/admin/currency-orders",
+    icon: Gem,
+    label: "Đơn Vàng & Ngọc",
+    section: "currency-orders",
   },
   {
     href: "/admin/deposits",

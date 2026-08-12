@@ -271,6 +271,7 @@ export type GameCurrencyOrder = {
   id: string;
   requestId: string;
   userId: string;
+  username: string;
   serverConfigId: string;
   serverName: string;
   characterName: string;
@@ -280,6 +281,8 @@ export type GameCurrencyOrder = {
   unitPrice: number;
   paymentAmount: number;
   receivedAmount: number;
+  adminNote: string | null;
+  walletRefunded: boolean;
   createdAt: string;
   updatedAt: string;
 };

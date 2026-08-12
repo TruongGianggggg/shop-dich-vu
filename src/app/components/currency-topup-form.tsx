@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Coins, Gem, Server } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useAuthSession } from "@/app/components/use-auth-session";
@@ -20,6 +21,7 @@ export function CurrencyTopupForm({
   currencyType: GameCurrencyType;
   configs: GameServerCurrencyConfig[];
 }) {
+  const router = useRouter();
   const session = useAuthSession();
   const [selectedConfigId, setSelectedConfigId] = useState(configs[0]?.id ?? "");
   const [paymentAmount, setPaymentAmount] = useState(
@@ -48,7 +50,7 @@ export function CurrencyTopupForm({
     setCreatedOrder(null);
 
     if (!session) {
-      window.location.href = `/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
     if (!selectedConfig || !isValidAmount) {
