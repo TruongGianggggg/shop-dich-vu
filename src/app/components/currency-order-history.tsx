@@ -77,7 +77,6 @@ export function CurrencyOrderHistory() {
               <div><small>Ngày tạo</small><strong>{formatDate(order.createdAt)}</strong></div>
             </div>
             {order.adminNote ? <p className="order-history-note">Ghi chú: {order.adminNote}</p> : null}
-            {order.walletRefunded ? <p className="order-history-note">Đã hoàn {formatVnd(order.paymentAmount)} vào ví.</p> : null}
           </article>
         ))}
       </div>

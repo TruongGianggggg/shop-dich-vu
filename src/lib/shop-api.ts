@@ -270,7 +270,6 @@ export type GameCurrencyDisplaySettings = {
 export type GameCurrencyOrder = {
   id: string;
   requestId: string;
-  userId: string;
   username: string;
   serverConfigId: string;
   serverName: string;
@@ -282,7 +281,6 @@ export type GameCurrencyOrder = {
   paymentAmount: number;
   receivedAmount: number;
   adminNote: string | null;
-  walletRefunded: boolean;
   createdAt: string;
   updatedAt: string;
 };

@@ -5216,21 +5216,56 @@ input {
 .currency-shop-empty a { color: #2563eb; font-size: 13px; font-weight: 800; }
 
 .currency-history-body { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.currency-order-toolbar { align-items: end; display: flex; gap: 14px; }
-.currency-order-toolbar > strong { margin-right: auto; }
-.currency-orders-table { min-width: 1180px; }
-.currency-orders-table td { vertical-align: top; }
+.currency-order-filter-panel { padding: 20px; }
+.currency-order-filter-head { margin-bottom: 16px; }
+.currency-order-filter-head > div { align-items: baseline; display: flex; gap: 10px; }
+.currency-order-filter-head strong { color: #1d2939; font-size: 15px; }
+.currency-order-filter-head span { color: #98a2b3; font-size: 12px; }
+.currency-order-filter-grid { align-items: end; display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+.currency-order-filter-grid label { color: #475467; display: grid; font-size: 11px; font-weight: 800; gap: 6px; }
+.currency-order-filter-actions { display: flex; gap: 8px; grid-column: span 2; }
+.currency-order-list-panel .role-table-wrap { scrollbar-color: #cbd5e1 transparent; scrollbar-width: thin; }
+.currency-order-list-meta { align-items: center; display: flex; gap: 10px; }
+.currency-order-list-meta strong { color: #344054; font-size: 12px; }
+.currency-order-list-meta span { background: #f2f4f7; border-radius: 999px; color: #667085; font-size: 11px; font-weight: 800; padding: 6px 10px; }
+.currency-orders-table { min-width: 1580px; table-layout: fixed; }
+.currency-orders-table th { white-space: nowrap; }
+.currency-orders-table th:nth-child(1) { width: 150px; }
+.currency-orders-table th:nth-child(2) { width: 250px; }
+.currency-orders-table th:nth-child(3) { width: 130px; }
+.currency-orders-table th:nth-child(4) { width: 150px; }
+.currency-orders-table th:nth-child(5) { width: 140px; }
+.currency-orders-table th:nth-child(6) { width: 90px; }
+.currency-orders-table th:nth-child(7),
+.currency-orders-table th:nth-child(8) { width: 145px; }
+.currency-orders-table th:nth-child(9) { width: 135px; }
+.currency-orders-table th:nth-child(10) { width: 170px; }
+.currency-orders-table th:nth-child(11) { width: 170px; }
+.currency-orders-table td { line-height: 1.45; vertical-align: middle; }
 .currency-orders-table td strong,
 .currency-orders-table td small { display: block; }
 .currency-orders-table td small { color: #98a2b3; margin-top: 5px; max-width: 180px; }
 .currency-orders-table .role-select { min-width: 150px; }
+.currency-date-cell strong { white-space: nowrap; }
+.currency-code-cell strong,
+.currency-note-cell span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.currency-code-cell strong { color: #475467; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.currency-user-cell strong { color: #175cd3; }
+.currency-money-cell strong { color: #344054; white-space: nowrap; }
+.currency-amount-cell strong { color: #027a48; white-space: nowrap; }
+.currency-type-pill { border-radius: 999px; display: inline-flex; font-size: 11px; font-weight: 900; padding: 6px 10px; }
+.currency-type-pill.gold { background: #fffaeb; border: 1px solid #fedf89; color: #b54708; }
+.currency-type-pill.gem { background: #f4f3ff; border: 1px solid #d9d6fe; color: #5925dc; }
+.currency-ended-label { color: #667085; font-size: 11px; font-weight: 800; }
+.currency-note-cell span { color: #667085; font-size: 12px; }
 
 @media (max-width: 780px) {
   .currency-showcase-grid,
   .currency-shop-shell { grid-template-columns: 1fr; }
   .currency-shop-intro { min-height: auto; }
   .currency-history-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .currency-order-toolbar { align-items: stretch; flex-direction: column; }
+  .currency-order-filter-grid { grid-template-columns: 1fr 1fr; }
+  .currency-order-filter-actions { grid-column: 1 / -1; }
 }
 
 @media (max-width: 560px) {
@@ -5239,4 +5274,6 @@ input {
   .currency-showcase-button { font-size: 18px; min-height: 52px; }
   .currency-topup-fields,
   .currency-topup-summary { grid-template-columns: 1fr; }
+  .currency-order-filter-grid { grid-template-columns: 1fr; }
+  .currency-order-filter-actions { flex-direction: column; }
 }
