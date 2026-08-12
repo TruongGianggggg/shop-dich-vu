@@ -79,6 +79,18 @@
 .currency-image-actions label { cursor: pointer; }
 .currency-image-actions input { height: 1px; opacity: 0; position: absolute; width: 1px; }
 
+.currency-main-description-field {
+  border-top: 1px solid #eef2f7;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+
+.currency-main-description-field textarea {
+  line-height: 1.55;
+  min-height: 96px;
+  resize: vertical;
+}
+
 .currency-service-picker {
   align-items: end;
   display: grid;
@@ -361,6 +373,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 13px;
 }
+
 
 .currency-active-field {
   align-self: end;

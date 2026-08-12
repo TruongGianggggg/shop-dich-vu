@@ -58,6 +58,8 @@ const emptyForm: ServerForm = {
 const emptyDisplaySettings: GameCurrencyDisplaySettings = {
   goldImageUrl: "",
   gemImageUrl: "",
+  goldDescription: "",
+  gemDescription: "",
 };
 
 export function AdminCurrencySettingsManager() {
@@ -104,7 +106,7 @@ export function AdminCurrencySettingsManager() {
         }
         if (!ignore) {
           setConfigs(data as GameServerCurrencyConfig[]);
-          setDisplayForm(settingsData as GameCurrencyDisplaySettings);
+          setDisplayForm(normalizeDisplaySettings(settingsData));
         }
       } catch (exception) {
         if (!ignore) {
@@ -199,7 +201,7 @@ export function AdminCurrencySettingsManager() {
       if (!response.ok) {
         throw new Error(getApiErrorMessage(data, "Không lưu được ảnh hiển thị."));
       }
-      setDisplayForm(data as GameCurrencyDisplaySettings);
+      setDisplayForm(normalizeDisplaySettings(data));
       setMessage("Đã lưu ảnh hiển thị Nạp Vàng và Nạp Ngọc.");
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Không lưu được ảnh hiển thị.");
@@ -367,22 +369,26 @@ export function AdminCurrencySettingsManager() {
               onClick={saveDisplaySettings}
               type="button"
             >
-              {isDisplaySaving ? "Đang lưu..." : "Lưu ảnh hiển thị"}
+              {isDisplaySaving ? "Đang lưu..." : "Lưu nội dung hiển thị"}
             </button>
           </div>
           <div className="currency-image-grid">
             <CurrencyImageEditor
               currency="gold"
+              description={displayForm.goldDescription}
               imageUrl={displayForm.goldImageUrl}
               isUploading={uploadingCurrency === "gold"}
               onChange={(imageUrl) => setDisplayForm((current) => ({ ...current, goldImageUrl: imageUrl }))}
+              onDescriptionChange={(description) => setDisplayForm((current) => ({ ...current, goldDescription: description }))}
               onUpload={(file) => uploadDisplayImage("gold", file)}
             />
             <CurrencyImageEditor
               currency="gem"
+              description={displayForm.gemDescription}
               imageUrl={displayForm.gemImageUrl}
               isUploading={uploadingCurrency === "gem"}
               onChange={(imageUrl) => setDisplayForm((current) => ({ ...current, gemImageUrl: imageUrl }))}
+              onDescriptionChange={(description) => setDisplayForm((current) => ({ ...current, gemDescription: description }))}
               onUpload={(file) => uploadDisplayImage("gem", file)}
             />
           </div>
@@ -494,15 +500,19 @@ export function AdminCurrencySettingsManager() {
 
 function CurrencyImageEditor({
   currency,
+  description,
   imageUrl,
   isUploading,
   onChange,
+  onDescriptionChange,
   onUpload,
 }: {
   currency: "gold" | "gem";
+  description: string;
   imageUrl: string;
   isUploading: boolean;
   onChange: (imageUrl: string) => void;
+  onDescriptionChange: (description: string) => void;
   onUpload: (file: File) => void;
 }) {
   const isGold = currency === "gold";
@@ -533,6 +543,17 @@ function CurrencyImageEditor({
           {imageUrl ? <button className="danger-button h-9 px-3" onClick={() => onChange("")} type="button"><Trash2 size={15} /> Xóa ảnh</button> : null}
         </div>
       </div>
+      <label className="field-label currency-main-description-field">
+        Mô tả trang Nạp {isGold ? "Vàng" : "Ngọc"}
+        <textarea
+          className="text-field"
+          maxLength={2000}
+          onChange={(event) => onDescriptionChange(event.target.value)}
+          placeholder={`Nhập mô tả chung hiển thị ở trang Nạp ${isGold ? "Vàng" : "Ngọc"}`}
+          rows={4}
+          value={description}
+        />
+      </label>
     </article>
   );
 }
@@ -644,4 +665,16 @@ async function readResponseJson(response: Response) {
   const text = await response.text();
   if (!text) return null;
   try { return JSON.parse(text) as unknown; } catch { return { message: text }; }
+}
+
+function normalizeDisplaySettings(value: unknown): GameCurrencyDisplaySettings {
+  const data = value && typeof value === "object"
+    ? value as Partial<GameCurrencyDisplaySettings>
+    : {};
+  return {
+    goldImageUrl: data.goldImageUrl ?? "",
+    gemImageUrl: data.gemImageUrl ?? "",
+    goldDescription: data.goldDescription ?? "",
+    gemDescription: data.gemDescription ?? "",
+  };
 }

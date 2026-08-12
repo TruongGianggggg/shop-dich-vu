@@ -87,7 +87,7 @@ export function AdminCurrencyOrdersManager() {
       <section className="role-panel currency-order-filter-panel">
         <div className="currency-order-filter-head"><div><strong>Tìm kiếm đơn hàng</strong><span>{(result?.totalElements ?? 0).toLocaleString("vi-VN")} kết quả</span></div></div>
         <form className="currency-order-filter-grid" onSubmit={searchOrders}>
-          <label><span>Mã đơn</span><input className="text-field" placeholder="CURRENCY_..." value={filters.requestId} onChange={(event) => setFilters({ ...filters, requestId: event.target.value })} /></label>
+          <label><span>Mã đơn</span><input className="text-field" maxLength={15} placeholder="Nhập mã 15 ký tự" value={filters.requestId} onChange={(event) => setFilters({ ...filters, requestId: event.target.value.toUpperCase() })} /></label>
           <label><span>Tên user</span><input className="text-field" placeholder="Nhập username" value={filters.username} onChange={(event) => setFilters({ ...filters, username: event.target.value })} /></label>
           <label><span>Tên nhân vật</span><input className="text-field" placeholder="Nhập tên nhân vật" value={filters.characterName} onChange={(event) => setFilters({ ...filters, characterName: event.target.value })} /></label>
           <label><span>Server</span><input className="text-field" placeholder="Nhập tên server" value={filters.serverName} onChange={(event) => setFilters({ ...filters, serverName: event.target.value })} /></label>

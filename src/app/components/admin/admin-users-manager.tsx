@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  ChevronLeft,
+  ChevronRight,
   Pencil,
   Plus,
   RefreshCw,
+  RotateCcw,
   Search,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -20,14 +24,22 @@ import {
 } from "@/lib/shop-api";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import {
+  formatIntegerInput,
+  isNonNegativeIntegerInput,
+  normalizeIntegerInput,
+} from "@/lib/integer-input";
 
 const pageSize = 20;
 const roles: UserRole[] = ["USER", "COLLABORATOR", "ADMIN"];
+type UserFilters = { username: string; email: string; role: "" | UserRole };
+const emptyFilters: UserFilters = { username: "", email: "", role: "" };
 const emptyForm = {
   username: "",
   email: "",
   password: "",
   role: "USER" as UserRole,
+  balance: "",
 };
 
 export function AdminUsersManager() {
@@ -35,8 +47,8 @@ export function AdminUsersManager() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pageInfo, setPageInfo] = useState<PageResponse<AdminUser> | null>(null);
   const [page, setPage] = useState(0);
-  const [query, setQuery] = useState("");
-  const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState<UserFilters>(emptyFilters);
+  const [appliedFilters, setAppliedFilters] = useState<UserFilters>(emptyFilters);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -67,9 +79,9 @@ export function AdminUsersManager() {
           size: String(pageSize),
         });
 
-        if (query) {
-          params.set("keyword", query);
-        }
+        if (appliedFilters.username) params.set("username", appliedFilters.username);
+        if (appliedFilters.email) params.set("email", appliedFilters.email);
+        if (appliedFilters.role) params.set("role", appliedFilters.role);
 
         const response = await fetch(`/api/admin/users?${params.toString()}`, {
           headers: authHeaders(activeSession),
@@ -111,27 +123,43 @@ export function AdminUsersManager() {
     return () => {
       ignore = true;
     };
-  }, [canLoad, page, query, refreshKey, session]);
+  }, [appliedFilters, canLoad, page, refreshKey, session]);
 
   const totalLabel = useMemo(() => {
     if (!pageInfo) {
-      return "0 nguoi dung";
+      return "0 người dùng";
     }
 
-    return `${pageInfo.totalElements.toLocaleString("vi-VN")} nguoi dung`;
+    return `${pageInfo.totalElements.toLocaleString("vi-VN")} người dùng`;
   }, [pageInfo]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     setPage(0);
-    setQuery(searchValue.trim());
+    setAppliedFilters({
+      username: filters.username.trim(),
+      email: filters.email.trim(),
+      role: filters.role,
+    });
+  }
+
+  function clearFilters() {
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPage(0);
+    setMessage("");
   }
 
   async function submitUserForm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!session) {
+      return;
+    }
+
+    if (editingUserId && !isNonNegativeIntegerInput(form.balance)) {
+      setError("Số dư phải là số nguyên từ 0 trở lên.");
       return;
     }
 
@@ -143,6 +171,7 @@ export function AdminUsersManager() {
       username: form.username,
       email: form.email,
       role: form.role,
+      ...(editingUserId ? { balance: Number(form.balance) } : {}),
       ...(form.password ? { password: form.password } : {}),
     };
 
@@ -215,6 +244,7 @@ export function AdminUsersManager() {
       email: user.email,
       password: "",
       role: user.role,
+      balance: String(user.balance),
     });
     setIsFormOpen(true);
     setMessage("");
@@ -338,7 +368,8 @@ export function AdminUsersManager() {
 
       <section className="role-main backoffice-users-main">
         <header className="role-topbar backoffice-users-header">
-          <div>
+          <div className="admin-users-heading">
+            <span><Users aria-hidden="true" size={14} /> Người dùng</span>
             <h1>Quản lý Users</h1>
           </div>
           <div className="role-topbar-actions">
@@ -364,28 +395,42 @@ export function AdminUsersManager() {
         </header>
 
         <section className="role-panel admin-users-toolbar">
-          <form onSubmit={submitSearch}>
+          <div className="admin-users-filter-head">
+            <div>
+              <h2>Tìm kiếm người dùng</h2>
+              <p>Lọc danh sách theo thông tin tài khoản.</p>
+            </div>
+          </div>
+          <form className="admin-users-filter-form" onSubmit={submitSearch}>
             <label className="field-label admin-users-search">
+              Username
               <span>
                 <Search aria-hidden="true" size={16} />
-                <input
-                  className="text-field"
-                  name="keyword"
-                  onChange={(event) => setSearchValue(event.target.value)}
-                  placeholder="Tìm username hoặc email..."
-                  value={searchValue}
-                />
+                <input className="text-field" onChange={(event) => setFilters((current) => ({ ...current, username: event.target.value }))} placeholder="Nhập username" value={filters.username} />
               </span>
             </label>
-            <button className="primary-button h-11 px-5" disabled={isLoading}>
-              <Search aria-hidden="true" size={16} />
-              Tìm
-            </button>
+            <label className="field-label">
+              Email
+              <input className="text-field" onChange={(event) => setFilters((current) => ({ ...current, email: event.target.value }))} placeholder="Nhập email" type="email" value={filters.email} />
+            </label>
+            <label className="field-label">
+              Role
+              <select className="role-select wide" onChange={(event) => setFilters((current) => ({ ...current, role: event.target.value as "" | UserRole }))} value={filters.role}>
+                <option value="">Tất cả role</option>
+                {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+              </select>
+            </label>
+            <div className="admin-users-filter-actions">
+              <button className="primary-button h-11 px-5" disabled={isLoading}>
+                <Search aria-hidden="true" size={16} />
+                Tìm kiếm
+              </button>
+              <button className="ghost-button h-11 px-4" disabled={isLoading} onClick={clearFilters} type="button">
+                <RotateCcw aria-hidden="true" size={15} />
+                Xóa lọc
+              </button>
+            </div>
           </form>
-          <div className="admin-users-summary">
-            <strong>{totalLabel}</strong>
-            <span>Trang {(pageInfo?.page ?? page) + 1}</span>
-          </div>
         </section>
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
@@ -395,32 +440,45 @@ export function AdminUsersManager() {
           <div className="role-panel-head">
             <div>
               <h2>Tài khoản hệ thống</h2>
+              <p>Danh sách tài khoản và trạng thái tài chính hiện tại.</p>
             </div>
-            <span>{isLoading ? "Dang tai" : totalLabel}</span>
+            <span>{isLoading ? "Đang tải" : totalLabel}</span>
           </div>
 
           <div className="role-table-wrap">
             <table className="role-table admin-users-table">
+              <colgroup>
+                <col className="admin-users-col-index" />
+                <col className="admin-users-col-username" />
+                <col className="admin-users-col-deposit-code" />
+                <col className="admin-users-col-email" />
+                <col className="admin-users-col-role" />
+                <col className="admin-users-col-balance" />
+                <col className="admin-users-col-collaborator" />
+                <col className="admin-users-col-created" />
+                <col className="admin-users-col-actions" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>STT</th>
-                  <th>Username</th>
+                  <th>Người dùng</th>
+                  <th>Mã nạp</th>
                   <th>Email</th>
-                  <th>Role</th>
-                  <th>So du</th>
+                  <th>Phân quyền</th>
+                  <th>Số dư</th>
                   <th>CTV</th>
-                  <th>Ngay tao</th>
-                  <th>Thao tac</th>
+                  <th>Ngày tạo</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user, index) => (
                   <tr key={user.id}>
-                    <td>{index + 1}</td>
+                    <td>{page * pageSize + index + 1}</td>
                     <td>
                       <strong>{user.username}</strong>
-                      <small>{user.id}</small>
                     </td>
+                    <td><code className="admin-user-deposit-code">{user.depositCode}</code></td>
                     <td>{user.email}</td>
                     <td>
                       <select
@@ -439,7 +497,7 @@ export function AdminUsersManager() {
                         ))}
                       </select>
                     </td>
-                    <td>{formatVnd(user.balance)}</td>
+                    <td><strong className="admin-user-balance">{formatVnd(user.balance)}</strong></td>
                     <td>
                       <span>{formatVnd(user.collaboratorBalance)}</span>
                       <small>{formatVnd(user.collaboratorTotalEarned)}</small>
@@ -470,7 +528,7 @@ export function AdminUsersManager() {
                 ))}
                 {!isLoading && users.length === 0 ? (
                   <tr>
-                    <td colSpan={8}>Khong co nguoi dung phu hop.</td>
+                    <td colSpan={9}>Không có người dùng phù hợp.</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -484,8 +542,12 @@ export function AdminUsersManager() {
               onClick={() => setPage((current) => Math.max(0, current - 1))}
               type="button"
             >
-              Truoc
+              <ChevronLeft aria-hidden="true" size={16} />
+              Trước
             </button>
+            <span className="admin-users-page-status">
+              Trang <strong>{(pageInfo?.page ?? page) + 1}</strong> / {Math.max(pageInfo?.totalPages ?? 1, 1)}
+            </span>
             <button
               className="ghost-button h-10 px-4"
               disabled={isLoading || pageInfo?.last !== false}
@@ -493,6 +555,7 @@ export function AdminUsersManager() {
               type="button"
             >
               Sau
+              <ChevronRight aria-hidden="true" size={16} />
             </button>
           </div>
         </section>
@@ -596,6 +659,20 @@ export function AdminUsersManager() {
                     ))}
                   </select>
                 </label>
+                {editingUserId ? (
+                  <label className="field-label admin-user-balance-field">
+                    Số dư (VNĐ)
+                    <input
+                      className="text-field"
+                      inputMode="numeric"
+                      onChange={(event) => setForm((current) => ({ ...current, balance: normalizeIntegerInput(event.target.value) }))}
+                      required
+                      type="text"
+                      value={formatIntegerInput(form.balance)}
+                    />
+                    <small>Nhập số dư mới. Hệ thống sẽ lưu giao dịch điều chỉnh.</small>
+                  </label>
+                ) : null}
               </div>
               <div className="admin-user-modal-actions">
                 <button

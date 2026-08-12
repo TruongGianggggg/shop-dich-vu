@@ -162,6 +162,7 @@ export type AdminUser = {
   id: string;
   username: string;
   email: string;
+  depositCode: string;
   role: UserRole;
   balance: number;
   totalDeposited: number;
@@ -265,6 +266,8 @@ export type GameCurrencyType = "GOLD" | "GEM";
 export type GameCurrencyDisplaySettings = {
   goldImageUrl: string;
   gemImageUrl: string;
+  goldDescription: string;
+  gemDescription: string;
 };
 
 export type GameCurrencyOrder = {

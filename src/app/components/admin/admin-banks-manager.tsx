@@ -536,7 +536,7 @@ export function AdminBanksManager() {
             <div className="admin-bank-settings-footer">
               <div>
                 <strong>Nội dung mẫu</strong>
-                <span>{settingsForm.prefix.trim().toUpperCase() || "NAP"}USER_ID</span>
+                <span>{settingsForm.prefix.trim().toUpperCase() || "NAP"}XXXXXXXXXXXXXXX</span>
               </div>
               <div>
                 <strong>Link cron</strong>

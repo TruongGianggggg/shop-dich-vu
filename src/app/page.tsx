@@ -54,7 +54,7 @@ async function getCurrencyDisplaySettings() {
       "/api/currency-settings",
     );
   } catch {
-    return { goldImageUrl: "", gemImageUrl: "" };
+    return { goldImageUrl: "", gemImageUrl: "", goldDescription: "", gemDescription: "" };
   }
 }
 
