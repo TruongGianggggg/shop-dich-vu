@@ -2229,6 +2229,67 @@ input {
   justify-content: flex-end;
 }
 
+@keyframes admin-the9p-spin {
+  to { transform: rotate(360deg); }
+}
+
+.admin-the9p-spin {
+  animation: admin-the9p-spin 0.8s linear infinite;
+}
+
+.admin-the9p-test-result {
+  border-left: 4px solid #dc2626;
+  margin-bottom: 18px;
+  padding: 18px;
+}
+
+.admin-the9p-test-result.success {
+  border-left-color: #059669;
+}
+
+.admin-the9p-test-head {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.admin-the9p-test-head h2 {
+  color: #111827;
+  font-size: 17px;
+  margin: 3px 0 0;
+}
+
+.admin-the9p-test-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.admin-the9p-test-meta span {
+  background: #f3f4f6;
+  border-radius: 999px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.admin-the9p-test-result pre {
+  background: #101828;
+  border-radius: 12px;
+  color: #d1fadf;
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 14px 0 0;
+  max-height: 360px;
+  overflow: auto;
+  padding: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .admin-subcategory-row {
   background: white;
   border: 1px solid #e5e7eb;

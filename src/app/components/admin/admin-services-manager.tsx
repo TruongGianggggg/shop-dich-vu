@@ -58,6 +58,15 @@ type PackageForm = {
   active: boolean;
 };
 
+type The9pTestResult = {
+  checkedAt: string;
+  data: unknown;
+  durationMs: number;
+  ok: boolean;
+  productCount: number | null;
+  status: number;
+};
+
 const emptyCategoryForm: CategoryForm = {
   name: "",
   description: "",
@@ -113,6 +122,9 @@ export function AdminServicesManager() {
   const [isLoadingPackages, setIsLoadingPackages] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isTestingThe9p, setIsTestingThe9p] = useState(false);
+  const [the9pTestResult, setThe9pTestResult] =
+    useState<The9pTestResult | null>(null);
   const [updatingId, setUpdatingId] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -261,6 +273,67 @@ export function AdminServicesManager() {
   function refreshAll() {
     setMessage("");
     setRefreshKey((current) => current + 1);
+  }
+
+  async function testThe9pConnection() {
+    if (!session) {
+      return;
+    }
+
+    const startedAt = performance.now();
+    setIsTestingThe9p(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/the9p/recharge-products", {
+        headers: authHeaders(session),
+      });
+      const data = await readResponseJson(response);
+      const result: The9pTestResult = {
+        checkedAt: new Date().toISOString(),
+        data,
+        durationMs: Math.round(performance.now() - startedAt),
+        ok: response.ok,
+        productCount: Array.isArray(data) ? data.length : null,
+        status: response.status,
+      };
+
+      setThe9pTestResult(result);
+
+      if (!response.ok) {
+        setError(
+          getAdminServiceErrorMessage(
+            response,
+            data,
+            "The9P không trả về kết quả hợp lệ.",
+          ),
+        );
+        return;
+      }
+
+      setMessage(
+        `Kết nối The9P thành công, nhận được ${result.productCount ?? 0} sản phẩm.`,
+      );
+    } catch (exception) {
+      const data = {
+        message:
+          exception instanceof Error
+            ? exception.message
+            : "Không gọi được API kiểm tra The9P.",
+      };
+      setThe9pTestResult({
+        checkedAt: new Date().toISOString(),
+        data,
+        durationMs: Math.round(performance.now() - startedAt),
+        ok: false,
+        productCount: null,
+        status: 0,
+      });
+      setError(data.message);
+    } finally {
+      setIsTestingThe9p(false);
+    }
   }
 
   function openCreateCategory() {
@@ -612,6 +685,19 @@ export function AdminServicesManager() {
           <div className="role-topbar-actions">
             <button
               className="ghost-button h-11 px-5"
+              disabled={isTestingThe9p || !canLoad}
+              onClick={testThe9pConnection}
+              type="button"
+            >
+              <RefreshCw
+                aria-hidden="true"
+                className={isTestingThe9p ? "admin-the9p-spin" : undefined}
+                size={16}
+              />
+              {isTestingThe9p ? "Đang gọi The9P..." : "Kiểm tra The9P"}
+            </button>
+            <button
+              className="ghost-button h-11 px-5"
               disabled={isLoadingCategories}
               onClick={refreshAll}
               type="button"
@@ -640,6 +726,45 @@ export function AdminServicesManager() {
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
         {error ? <p className="admin-users-message error">{error}</p> : null}
+
+        {the9pTestResult ? (
+          <section
+            className={`role-panel admin-the9p-test-result ${
+              the9pTestResult.ok ? "success" : "error"
+            }`}
+          >
+            <div className="admin-the9p-test-head">
+              <div>
+                <p className="section-kicker">BE → The9P · productlist</p>
+                <h2>
+                  {the9pTestResult.ok
+                    ? "The9P đã trả kết quả"
+                    : "Kiểm tra The9P thất bại"}
+                </h2>
+              </div>
+              <button
+                aria-label="Đóng kết quả kiểm tra The9P"
+                className="ghost-button h-9 px-3"
+                onClick={() => setThe9pTestResult(null)}
+                type="button"
+              >
+                <X aria-hidden="true" size={15} />
+                Đóng
+              </button>
+            </div>
+            <div className="admin-the9p-test-meta">
+              <span>HTTP: {the9pTestResult.status || "Không có phản hồi"}</span>
+              <span>Thời gian: {the9pTestResult.durationMs} ms</span>
+              <span>
+                Sản phẩm: {the9pTestResult.productCount ?? "Không xác định"}
+              </span>
+              <span>
+                Kiểm tra lúc: {formatDateTime(the9pTestResult.checkedAt)}
+              </span>
+            </div>
+            <pre>{JSON.stringify(the9pTestResult.data, null, 2)}</pre>
+          </section>
+        ) : null}
 
         <section className="admin-services-layout">
           <div className="role-panel admin-services-tree">
@@ -1412,4 +1537,11 @@ function nullableNumberFromInput(value: string) {
   }
 
   return numberFromInput(value);
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "medium",
+  }).format(new Date(value));
 }
