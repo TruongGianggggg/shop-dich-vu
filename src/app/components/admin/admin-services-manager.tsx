@@ -67,6 +67,17 @@ type The9pTestResult = {
   status: number;
 };
 
+type The9pSyncResult = {
+  productCount: number;
+  parentCategoriesCreated: number;
+  subCategoriesCreated: number;
+  subCategoriesUpdated: number;
+  packagesCreated: number;
+  packagesUpdated: number;
+  packagesDisabled: number;
+  skippedProducts: number;
+};
+
 const emptyCategoryForm: CategoryForm = {
   name: "",
   description: "",
@@ -102,6 +113,7 @@ const serviceTypes = [
   "TOPUP_CAROT",
   "TOPUP_LIEN_QUAN_QUAN_HUY",
   "TOPUP_FREE_FIRE_DIAMOND",
+  "TOPUP_THE9P",
 ];
 
 export function AdminServicesManager() {
@@ -123,6 +135,7 @@ export function AdminServicesManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isTestingThe9p, setIsTestingThe9p] = useState(false);
+  const [isSyncingThe9p, setIsSyncingThe9p] = useState(false);
   const [the9pTestResult, setThe9pTestResult] =
     useState<The9pTestResult | null>(null);
   const [updatingId, setUpdatingId] = useState("");
@@ -333,6 +346,49 @@ export function AdminServicesManager() {
       setError(data.message);
     } finally {
       setIsTestingThe9p(false);
+    }
+  }
+
+  async function syncThe9pPackages() {
+    if (!session) {
+      return;
+    }
+
+    setIsSyncingThe9p(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/the9p/sync-packages", {
+        method: "POST",
+        headers: authHeaders(session),
+      });
+      const data = await readResponseJson(response);
+
+      if (!response.ok) {
+        setError(
+          getAdminServiceErrorMessage(
+            response,
+            data,
+            "Không đồng bộ được sản phẩm từ The9P.",
+          ),
+        );
+        return;
+      }
+
+      const result = data as The9pSyncResult;
+      setMessage(
+        `Đã lấy ${result.productCount} sản phẩm từ The9P: tạo ${result.subCategoriesCreated} danh mục, tạo ${result.packagesCreated} gói, cập nhật ${result.packagesUpdated} gói${result.packagesDisabled ? `, ngừng bán ${result.packagesDisabled} gói` : ""}.`,
+      );
+      setRefreshKey((current) => current + 1);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Không gọi được API đồng bộ The9P.",
+      );
+    } finally {
+      setIsSyncingThe9p(false);
     }
   }
 
@@ -684,8 +740,21 @@ export function AdminServicesManager() {
           </div>
           <div className="role-topbar-actions">
             <button
+              className="primary-button h-11 px-5"
+              disabled={isSyncingThe9p || isTestingThe9p || !canLoad}
+              onClick={syncThe9pPackages}
+              type="button"
+            >
+              <RefreshCw
+                aria-hidden="true"
+                className={isSyncingThe9p ? "admin-the9p-spin" : undefined}
+                size={16}
+              />
+              {isSyncingThe9p ? "Đang lấy gói..." : "Lấy gói từ The9P"}
+            </button>
+            <button
               className="ghost-button h-11 px-5"
-              disabled={isTestingThe9p || !canLoad}
+              disabled={isTestingThe9p || isSyncingThe9p || !canLoad}
               onClick={testThe9pConnection}
               type="button"
             >
