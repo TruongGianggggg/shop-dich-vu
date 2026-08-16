@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
+import { prepareLogoForUpload } from "@/lib/logo-background";
 import { getApiErrorMessage, ManualMonthlyDepositEntry, SiteSettings } from "@/lib/shop-api";
 
 const defaultSettings: SiteSettings = {
@@ -118,8 +119,12 @@ export function AdminSiteSettingsManager() {
     setError("");
     setMessage("");
     try {
+      const uploadFile = field === "logoUrl" ? await prepareLogoForUpload(file) : file;
+      if (uploadFile.size > 5 * 1024 * 1024) {
+        throw new Error("Logo sau khi bỏ nền không được vượt quá 5 MB.");
+      }
       const body = new FormData();
-      body.append("file", file);
+      body.append("file", uploadFile);
       const response = await fetch("/api/admin/site-settings/images", {
         method: "POST",
         headers: { Authorization: `${session.tokenType} ${session.token}` },
@@ -137,7 +142,11 @@ export function AdminSiteSettingsManager() {
         throw new Error("Backend không trả đường dẫn ảnh hợp lệ.");
       }
       setForm((current) => ({ ...current, [field]: imageUrl }));
-      setMessage("Đã tải ảnh lên. Bấm Lưu cấu hình để áp dụng.");
+      setMessage(
+        field === "logoUrl"
+          ? "Đã bỏ nền và tải logo PNG trong suốt. Bấm Lưu cấu hình để áp dụng."
+          : "Đã tải ảnh lên. Bấm Lưu cấu hình để áp dụng.",
+      );
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Không tải được ảnh lên.");
     } finally {
@@ -498,7 +507,10 @@ function ImageEditor({ field, imageUrl, isBanner = false, isUploading, label, on
             </button>
           ) : null}
         </div>
-        <small>JPG, PNG hoặc WEBP, tối đa 5 MB.</small>
+        <small>
+          JPG, PNG hoặc WEBP, tối đa 5 MB.
+          {field === "logoUrl" ? " Nền trắng/caro ở mép ảnh sẽ tự động được bỏ." : ""}
+        </small>
       </div>
       <div
         className={`site-image-preview${isBanner ? " is-banner" : ""}${imageUrl ? " has-image" : ""}`}
