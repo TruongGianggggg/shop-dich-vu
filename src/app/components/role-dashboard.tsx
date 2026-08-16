@@ -158,7 +158,7 @@ export const adminDashboardData = {
   subtitle:
     "Quản trị danh mục, gói dịch vụ, nạp tiền, ngân hàng, phân quyền và cộng tác viên theo API shop-game.",
   primaryActionLabel: "Tạo danh mục",
-  primaryActionHref: "/admin/services",
+  primaryActionHref: "/admin/service-categories",
   metrics: [
     { label: "Doanh thu hôm nay", value: "12.8M", trend: "+18% so với hôm qua", tone: "green" },
     { label: "Đơn đang xử lý", value: "42", trend: "8 đơn cần nhận", tone: "blue" },

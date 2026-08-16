@@ -3,9 +3,10 @@ import {
   ClipboardList,
   Coins,
   CreditCard,
+  FolderTree,
   Landmark,
+  Layers3,
   LayoutDashboard,
-  Package,
   Settings,
   Users,
   Gem,
@@ -14,7 +15,8 @@ import {
 type AdminSection =
   | "dashboard"
   | "users"
-  | "services"
+  | "service-categories"
+  | "service-sub-categories"
   | "currency-settings"
   | "currency-orders"
   | "orders"
@@ -36,10 +38,16 @@ const navItems = [
     section: "users",
   },
   {
-    href: "/admin/services",
-    icon: Package,
-    label: "Dịch vụ & gói",
-    section: "services",
+    href: "/admin/service-categories",
+    icon: FolderTree,
+    label: "Danh mục cha",
+    section: "service-categories",
+  },
+  {
+    href: "/admin/service-sub-categories",
+    icon: Layers3,
+    label: "Danh mục con",
+    section: "service-sub-categories",
   },
   {
     href: "/admin/currency-settings",

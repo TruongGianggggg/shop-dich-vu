@@ -2,13 +2,14 @@
 
 import {
   ImageUp,
+  List,
   Pencil,
   Plus,
   RefreshCw,
   Trash2,
   X,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
@@ -116,11 +117,31 @@ const serviceTypes = [
   "TOPUP_THE9P",
 ];
 
-export function AdminServicesManager() {
+type ServicesView = "parents" | "children";
+const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
+
+export function AdminServicesManager({
+  view = "parents",
+  initialCategoryId = "",
+}: {
+  view?: ServicesView;
+  initialCategoryId?: string;
+}) {
   const session = useAuthSession();
+  const initialParentSelection =
+    view === "children" && !initialCategoryId
+      ? ALL_PARENT_CATEGORIES
+      : initialCategoryId;
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [packages, setPackages] = useState<ServicePackage[]>([]);
+  const [selectedParentId, setSelectedParentId] = useState(
+    initialParentSelection,
+  );
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
+  const [childSearch, setChildSearch] = useState("");
+  const [showPackages, setShowPackages] = useState(false);
+  const selectedParentIdRef = useRef(initialParentSelection);
+  const selectedSubCategoryIdRef = useRef("");
   const [modalMode, setModalMode] = useState<ModalMode>("");
   const [editingId, setEditingId] = useState("");
   const [categoryForm, setCategoryForm] =
@@ -156,6 +177,29 @@ export function AdminServicesManager() {
   );
   const selectedSubCategory =
     subCategories.find((item) => item.id === selectedSubCategoryId) ?? null;
+  const selectedParent =
+    categories.find((category) => category.id === selectedParentId) ?? null;
+  const visibleSubCategories = useMemo(
+    () =>
+      selectedParentId === ALL_PARENT_CATEGORIES
+        ? subCategories
+        : (selectedParent?.children ?? []),
+    [selectedParent, selectedParentId, subCategories],
+  );
+  const filteredSubCategories = useMemo(() => {
+    const keyword = childSearch.trim().toLocaleLowerCase("vi");
+
+    if (!keyword) {
+      return visibleSubCategories;
+    }
+
+    return visibleSubCategories.filter((item) =>
+      [item.name, item.type, item.the9pServiceCode ?? ""]
+        .join(" ")
+        .toLocaleLowerCase("vi")
+        .includes(keyword),
+    );
+  }, [childSearch, visibleSubCategories]);
 
   useEffect(() => {
     if (!canLoad || !session) {
@@ -202,21 +246,51 @@ export function AdminServicesManager() {
           .sort((a, b) => a.displayOrder - b.displayOrder);
 
         setCategories(nextCategories);
-        setSelectedSubCategoryId((current) => {
-          if (
-            current &&
-            nextCategories.some((category) =>
-              category.children.some((child) => child.id === current),
-            )
-          ) {
-            return current;
+        if (view === "children") {
+          if (selectedParentIdRef.current === ALL_PARENT_CATEGORIES) {
+            setSelectedParentId(ALL_PARENT_CATEGORIES);
+
+            const allChildren = nextCategories.flatMap(
+              (category) => category.children,
+            );
+            if (
+              !allChildren.some(
+                (child) => child.id === selectedSubCategoryIdRef.current,
+              )
+            ) {
+              selectedSubCategoryIdRef.current = "";
+              setSelectedSubCategoryId("");
+              setPackages([]);
+              setShowPackages(false);
+            }
+            return;
           }
 
-          return nextCategories[0]?.children[0]?.id ?? "";
-        });
+          const nextParent =
+            nextCategories.find(
+              (category) => category.id === selectedParentIdRef.current,
+            ) ??
+            nextCategories.find((category) => category.id === initialCategoryId) ??
+            nextCategories[0];
+          const nextParentId = nextParent?.id ?? "";
+          selectedParentIdRef.current = nextParentId;
+          setSelectedParentId(nextParentId);
+
+          if (
+            !nextParent?.children.some(
+              (child) => child.id === selectedSubCategoryIdRef.current,
+            )
+          ) {
+            const nextChildId = nextParent?.children[0]?.id ?? "";
+            selectedSubCategoryIdRef.current = nextChildId;
+            setSelectedSubCategoryId(nextChildId);
+            setPackages([]);
+          }
+        }
       } catch (exception) {
         if (!ignore) {
           setCategories([]);
+          selectedSubCategoryIdRef.current = "";
           setSelectedSubCategoryId("");
           setError(
             exception instanceof Error
@@ -236,7 +310,7 @@ export function AdminServicesManager() {
     return () => {
       ignore = true;
     };
-  }, [canLoad, refreshKey, session]);
+  }, [canLoad, initialCategoryId, refreshKey, session, view]);
 
   useEffect(() => {
     if (!canLoad || !session || !selectedSubCategoryId) {
@@ -497,6 +571,68 @@ export function AdminServicesManager() {
     });
   }
 
+  async function updateCategoryInline(
+    category: ServiceCategory,
+    changes: Partial<Pick<ServiceCategory, "active" | "displayOrder">>,
+  ) {
+    if (!session || updatingId === category.id) {
+      return;
+    }
+
+    const nextCategory = { ...category, ...changes };
+    const payload: ServiceCategoryPayload = {
+      name: nextCategory.name,
+      description: nextCategory.description ?? "",
+      displayOrder: nextCategory.displayOrder,
+      active: nextCategory.active,
+    };
+
+    setUpdatingId(category.id);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/service-categories/${category.id}`,
+        {
+          method: "PUT",
+          headers: {
+            ...authHeaders(session),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const data = await readResponseJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          getAdminServiceErrorMessage(
+            response,
+            data,
+            "Không cập nhật được danh mục.",
+          ),
+        );
+      }
+
+      setCategories((current) =>
+        current
+          .map((item) => (item.id === category.id ? nextCategory : item))
+          .sort((a, b) => a.displayOrder - b.displayOrder),
+      );
+      setMessage(`Đã cập nhật danh mục ${category.name}.`);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Không cập nhật được danh mục.",
+      );
+      setRefreshKey((current) => current + 1);
+    } finally {
+      setUpdatingId("");
+    }
+  }
+
   async function submitSubCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -525,6 +661,82 @@ export function AdminServicesManager() {
       successMessage: editingId ? "Da cap nhat dich vu." : "Da tao dich vu.",
       session,
     });
+  }
+
+  async function updateSubCategoryInline(
+    subCategory: ServiceSubCategory,
+    changes: Partial<Pick<ServiceSubCategory, "active" | "displayOrder">>,
+  ) {
+    if (!session || updatingId === subCategory.id) {
+      return;
+    }
+
+    const nextSubCategory = { ...subCategory, ...changes };
+    const payload: ServiceSubCategoryPayload = {
+      parentId: nextSubCategory.parentId,
+      name: nextSubCategory.name,
+      description: nextSubCategory.description,
+      imageUrl: nextSubCategory.imageUrl,
+      type: nextSubCategory.type,
+      the9pServiceCode: nextSubCategory.the9pServiceCode,
+      displayOrder: nextSubCategory.displayOrder,
+      serviceCount: nextSubCategory.serviceCount,
+      active: nextSubCategory.active,
+    };
+
+    setUpdatingId(subCategory.id);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/service-sub-categories/${subCategory.id}`,
+        {
+          method: "PUT",
+          headers: {
+            ...authHeaders(session),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const data = await readResponseJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          getAdminServiceErrorMessage(
+            response,
+            data,
+            "Không cập nhật được danh mục con.",
+          ),
+        );
+      }
+
+      setCategories((current) =>
+        current.map((category) =>
+          category.id === subCategory.parentId
+            ? {
+                ...category,
+                children: category.children
+                  .map((item) =>
+                    item.id === subCategory.id ? nextSubCategory : item,
+                  )
+                  .sort((a, b) => a.displayOrder - b.displayOrder),
+              }
+            : category,
+        ),
+      );
+      setMessage(`Đã cập nhật danh mục con ${subCategory.name}.`);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Không cập nhật được danh mục con.",
+      );
+      setRefreshKey((current) => current + 1);
+    } finally {
+      setUpdatingId("");
+    }
   }
 
   async function uploadServiceImage(file: File) {
@@ -651,7 +863,9 @@ export function AdminServicesManager() {
             await fetchPackageList(session, (payload as ServicePackagePayload).subCategoryId),
           ).sort((a, b) => a.displayOrder - b.displayOrder),
         );
-        setSelectedSubCategoryId((payload as ServicePackagePayload).subCategoryId);
+        const packageSubCategoryId = (payload as ServicePackagePayload).subCategoryId;
+        selectedSubCategoryIdRef.current = packageSubCategoryId;
+        setSelectedSubCategoryId(packageSubCategoryId);
       } else {
         setRefreshKey((current) => current + 1);
       }
@@ -729,74 +943,126 @@ export function AdminServicesManager() {
     }
   }
 
+  function selectParent(parentId: string) {
+    selectedParentIdRef.current = parentId;
+    setSelectedParentId(parentId);
+    const nextChildId =
+      categories.find((category) => category.id === parentId)?.children[0]?.id ?? "";
+    selectedSubCategoryIdRef.current = nextChildId;
+    setSelectedSubCategoryId(nextChildId);
+    setPackages([]);
+    setShowPackages(false);
+  }
+
+  function selectSubCategory(subCategoryId: string) {
+    selectedSubCategoryIdRef.current = subCategoryId;
+    setSelectedSubCategoryId(subCategoryId);
+  }
+
+  function openPackages(subCategoryId: string) {
+    selectSubCategory(subCategoryId);
+    setShowPackages(true);
+  }
+
   return (
     <main className="role-dashboard">
-      <AdminSidebar active="services" />
+      <AdminSidebar
+        active={
+          view === "parents"
+            ? "service-categories"
+            : "service-sub-categories"
+        }
+      />
 
       <section className="role-main backoffice-users-main admin-services-main">
         <header className="role-topbar backoffice-users-header">
           <div>
-            <h1>Quản lý dịch vụ & gói</h1>
+            <div>
+              <p className="section-kicker">DỊCH VỤ CỬA HÀNG</p>
+              <h1>
+                {view === "parents"
+                  ? "Danh mục cha"
+                  : "Danh mục con"}
+              </h1>
+            </div>
           </div>
           <div className="role-topbar-actions">
-            <button
-              className="primary-button h-11 px-5"
-              disabled={isSyncingThe9p || isTestingThe9p || !canLoad}
-              onClick={syncThe9pPackages}
-              type="button"
-            >
-              <RefreshCw
-                aria-hidden="true"
-                className={isSyncingThe9p ? "admin-the9p-spin" : undefined}
-                size={16}
-              />
-              {isSyncingThe9p ? "Đang lấy gói..." : "Lấy gói từ The9P"}
-            </button>
-            <button
-              className="ghost-button h-11 px-5"
-              disabled={isTestingThe9p || isSyncingThe9p || !canLoad}
-              onClick={testThe9pConnection}
-              type="button"
-            >
-              <RefreshCw
-                aria-hidden="true"
-                className={isTestingThe9p ? "admin-the9p-spin" : undefined}
-                size={16}
-              />
-              {isTestingThe9p ? "Đang gọi The9P..." : "Kiểm tra The9P"}
-            </button>
-            <button
-              className="ghost-button h-11 px-5"
-              disabled={isLoadingCategories}
-              onClick={refreshAll}
-              type="button"
-            >
-              <RefreshCw aria-hidden="true" size={16} />
-              Tải lại
-            </button>
-            <button
-              className="ghost-button h-11 px-5"
-              onClick={() => openCreateSubCategory()}
-              type="button"
-            >
-              <Plus aria-hidden="true" size={16} />
-              Dịch vụ
-            </button>
-            <button
-              className="primary-button h-11 px-5"
-              onClick={() => openCreatePackage()}
-              type="button"
-            >
-              <Plus aria-hidden="true" size={16} />
-              Gói
-            </button>
+            {view === "children" ? (
+              <>
+                <button
+                  className="primary-button h-11 px-5"
+                  disabled={isSyncingThe9p || isTestingThe9p || !canLoad}
+                  onClick={syncThe9pPackages}
+                  type="button"
+                >
+                  <RefreshCw
+                    aria-hidden="true"
+                    className={isSyncingThe9p ? "admin-the9p-spin" : undefined}
+                    size={16}
+                  />
+                  {isSyncingThe9p ? "Đang lấy gói..." : "Lấy gói từ The9P"}
+                </button>
+                <button
+                  className="ghost-button h-11 px-5"
+                  disabled={isTestingThe9p || isSyncingThe9p || !canLoad}
+                  onClick={testThe9pConnection}
+                  type="button"
+                >
+                  <RefreshCw
+                    aria-hidden="true"
+                    className={isTestingThe9p ? "admin-the9p-spin" : undefined}
+                    size={16}
+                  />
+                  {isTestingThe9p ? "Đang gọi The9P..." : "Kiểm tra The9P"}
+                </button>
+              </>
+            ) : null}
+            {view === "children" ? (
+              <button
+                className="ghost-button h-11 px-5"
+                disabled={isLoadingCategories}
+                onClick={refreshAll}
+                type="button"
+              >
+                <RefreshCw aria-hidden="true" size={16} />
+                Tải lại
+              </button>
+            ) : null}
+            {view === "parents" ? (
+              <button
+                className="primary-button admin-category-add-button h-11 px-5"
+                onClick={openCreateCategory}
+                type="button"
+              >
+                <Plus aria-hidden="true" size={16} />
+                Thêm danh mục
+              </button>
+            ) : (
+              <>
+                <button
+                  className="primary-button admin-category-add-button h-11 px-5"
+                  disabled={categories.length === 0}
+                  onClick={() =>
+                    openCreateSubCategory(
+                      selectedParentId === ALL_PARENT_CATEGORIES
+                        ? categories[0]?.id
+                        : selectedParentId,
+                    )
+                  }
+                  type="button"
+                >
+                  <Plus aria-hidden="true" size={16} />
+                  Thêm danh mục con
+                </button>
+              </>
+            )}
           </div>
         </header>
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
         {error ? <p className="admin-users-message error">{error}</p> : null}
 
-        {the9pTestResult ? (
+        {view === "children" && the9pTestResult ? (
           <section
             className={`role-panel admin-the9p-test-result ${
               the9pTestResult.ok ? "success" : "error"
@@ -835,216 +1101,456 @@ export function AdminServicesManager() {
           </section>
         ) : null}
 
-        <section className="admin-services-layout">
-          <div className="role-panel admin-services-tree">
-            <div className="role-panel-head">
-              <div>
-                <h2>Danh mục dịch vụ</h2>
-              </div>
-              <button
-                className="ghost-button h-9 px-3"
-                onClick={openCreateCategory}
-                type="button"
-              >
-                <Plus aria-hidden="true" size={15} />
-                Danh mục
-              </button>
+        {view === "parents" ? (
+          <section className="role-panel admin-parent-categories-panel">
+            <div className="admin-category-table-title">
+              <h2>Danh mục ({categories.length})</h2>
             </div>
+            <div className="admin-category-table-wrap">
+              <table className="admin-category-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tên</th>
+                    <th>Sự ưu tiên</th>
+                    <th>Trạng thái</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((category) => (
+                    <tr key={category.id}>
+                      <td>
+                        <span
+                          className="admin-category-id"
+                          title={category.id}
+                        >
+                          {category.id.slice(0, 8)}
+                        </span>
+                      </td>
+                      <td>
+                        <strong className="admin-category-name">
+                          {category.name}
+                        </strong>
+                      </td>
+                      <td>
+                        <input
+                          aria-label={`Sự ưu tiên của ${category.name}`}
+                          className="admin-category-order-input"
+                          defaultValue={category.displayOrder}
+                          disabled={updatingId === category.id}
+                          key={`${category.id}-${category.displayOrder}`}
+                          min="0"
+                          onBlur={(event) => {
+                            const displayOrder = numberFromInput(
+                              event.currentTarget.value,
+                            );
+                            if (displayOrder !== category.displayOrder) {
+                              void updateCategoryInline(category, {
+                                displayOrder,
+                              });
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.currentTarget.blur();
+                            }
+                          }}
+                          type="number"
+                        />
+                      </td>
+                      <td>
+                        <label className="admin-category-switch">
+                          <input
+                            aria-label={`Trạng thái của ${category.name}`}
+                            checked={category.active}
+                            disabled={updatingId === category.id}
+                            onChange={(event) =>
+                              void updateCategoryInline(category, {
+                                active: event.currentTarget.checked,
+                              })
+                            }
+                            type="checkbox"
+                          />
+                          <span aria-hidden="true" />
+                        </label>
+                      </td>
+                      <td>
+                        <div className="admin-category-icon-actions">
+                          <button
+                            aria-label={`Sửa ${category.name}`}
+                            className="admin-category-icon-button"
+                            onClick={() => openEditCategory(category)}
+                            title="Sửa"
+                            type="button"
+                          >
+                            <Pencil aria-hidden="true" size={17} />
+                          </button>
+                          <button
+                            aria-label={`Xóa ${category.name}`}
+                            className="admin-category-icon-button danger"
+                            disabled={updatingId === category.id}
+                            onClick={() =>
+                              deleteEntity(
+                                "category",
+                                category.id,
+                                category.name,
+                              )
+                            }
+                            title="Xóa"
+                            type="button"
+                          >
+                            <Trash2 aria-hidden="true" size={17} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!isLoadingCategories && categories.length === 0 ? (
+                    <tr>
+                      <td className="admin-category-empty" colSpan={5}>
+                        Chưa có danh mục cha.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+            <div className="admin-category-table-footer">
+              Hiển thị {categories.length} trong tổng số {categories.length} kết quả
+            </div>
+          </section>
+        ) : (
+          <>
+            <section className="role-panel admin-child-filter-panel">
+              <label>
+                <span>Danh mục cha</span>
+                <select
+                  className="role-select wide"
+                  onChange={(event) => selectParent(event.target.value)}
+                  value={selectedParentId}
+                >
+                  <option value={ALL_PARENT_CATEGORIES}>
+                    Tất cả danh mục cha ({subCategories.length})
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name} ({category.children.length})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="admin-child-search-field">
+                <span>Tìm kiếm</span>
+                <input
+                  onChange={(event) => setChildSearch(event.target.value)}
+                  placeholder="Tên, loại hoặc mã The9P..."
+                  type="search"
+                  value={childSearch}
+                />
+              </label>
+            </section>
 
-            <div className="admin-service-list">
-              {categories.map((category) => (
-                <article className="admin-service-card" key={category.id}>
-                  <div className="admin-service-card-head">
-                    <div>
-                      <strong>{category.name}</strong>
-                      <span>{category.children.length} dịch vụ</span>
-                    </div>
-                    <StatusPill active={category.active} />
+            <section className="role-panel admin-child-categories-panel">
+              <div className="admin-category-table-title">
+                <h2>
+                  Danh sách danh mục con ({filteredSubCategories.length})
+                </h2>
+              </div>
+              <div className="admin-child-table-wrap">
+                <table className="admin-child-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Ảnh</th>
+                      <th>Tên</th>
+                      <th>Danh mục cha</th>
+                      <th>Loại / Mã The9P</th>
+                      <th>Số gói</th>
+                      <th>Sự ưu tiên</th>
+                      <th>Trạng thái</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSubCategories.map((child) => (
+                      <tr key={child.id}>
+                        <td>
+                          <span
+                            className="admin-category-id"
+                            title={child.id}
+                          >
+                            {child.id.slice(0, 8)}
+                          </span>
+                        </td>
+                        <td>
+                          <div
+                            className={
+                              child.imageUrl
+                                ? "admin-child-image has-image"
+                                : "admin-child-image"
+                            }
+                            style={
+                              child.imageUrl
+                                ? {
+                                    backgroundImage: `url(${JSON.stringify(child.imageUrl)})`,
+                                  }
+                                : undefined
+                            }
+                          >
+                            {!child.imageUrl ? (
+                              <ImageUp aria-hidden="true" size={20} />
+                            ) : null}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="admin-child-name-cell">
+                            <strong>{child.name}</strong>
+                            <small>{child.description ?? "Chưa có mô tả"}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="admin-child-parent-badge">
+                            {categories.find(
+                              (category) => category.id === child.parentId,
+                            )?.name ?? "—"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="admin-child-code-cell">
+                            <strong>{child.type}</strong>
+                            <small>{child.the9pServiceCode ?? "Chưa gắn mã"}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <strong>{child.serviceCount}</strong>
+                        </td>
+                        <td>
+                          <input
+                            aria-label={`Sự ưu tiên của ${child.name}`}
+                            className="admin-category-order-input"
+                            defaultValue={child.displayOrder}
+                            disabled={updatingId === child.id}
+                            key={`${child.id}-${child.displayOrder}`}
+                            min="0"
+                            onBlur={(event) => {
+                              const displayOrder = numberFromInput(
+                                event.currentTarget.value,
+                              );
+                              if (displayOrder !== child.displayOrder) {
+                                void updateSubCategoryInline(child, {
+                                  displayOrder,
+                                });
+                              }
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.currentTarget.blur();
+                              }
+                            }}
+                            type="number"
+                          />
+                        </td>
+                        <td>
+                          <label className="admin-category-switch">
+                            <input
+                              aria-label={`Trạng thái của ${child.name}`}
+                              checked={child.active}
+                              disabled={updatingId === child.id}
+                              onChange={(event) =>
+                                void updateSubCategoryInline(child, {
+                                  active: event.currentTarget.checked,
+                                })
+                              }
+                              type="checkbox"
+                            />
+                            <span aria-hidden="true" />
+                          </label>
+                        </td>
+                        <td>
+                          <div className="admin-child-actions">
+                            <button
+                              className="admin-child-packages-button"
+                              onClick={() => openPackages(child.id)}
+                              type="button"
+                            >
+                              <List aria-hidden="true" size={15} />
+                              Xem gói
+                            </button>
+                            <button
+                              aria-label={`Sửa ${child.name}`}
+                              className="admin-category-icon-button"
+                              onClick={() => openEditSubCategory(child)}
+                              title="Sửa"
+                              type="button"
+                            >
+                              <Pencil aria-hidden="true" size={17} />
+                            </button>
+                            <button
+                              aria-label={`Xóa ${child.name}`}
+                              className="admin-category-icon-button danger"
+                              disabled={updatingId === child.id}
+                              onClick={() =>
+                                deleteEntity(
+                                  "subCategory",
+                                  child.id,
+                                  child.name,
+                                  child.parentId,
+                                )
+                              }
+                              title="Xóa"
+                              type="button"
+                            >
+                              <Trash2 aria-hidden="true" size={17} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!isLoadingCategories &&
+                    filteredSubCategories.length === 0 ? (
+                      <tr>
+                        <td className="admin-category-empty" colSpan={9}>
+                          {childSearch
+                            ? "Không tìm thấy danh mục con phù hợp."
+                            : "Danh mục cha này chưa có danh mục con."}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+              <div className="admin-category-table-footer">
+                Hiển thị {filteredSubCategories.length} trong tổng số{" "}
+                {visibleSubCategories.length} kết quả
+              </div>
+            </section>
+
+            {showPackages && selectedSubCategory ? (
+              <section className="role-panel role-table-panel backoffice-table-card admin-packages-panel admin-child-packages-panel">
+                <div className="role-panel-head admin-packages-head">
+                  <div>
+                    <p className="section-kicker">
+                      {selectedSubCategory?.categoryName ?? "Chưa chọn danh mục con"}
+                    </p>
+                    <h2>{selectedSubCategory?.name ?? "Danh sách gói"}</h2>
                   </div>
-                  <p>{category.description ?? "Chua co mo ta."}</p>
                   <div className="admin-services-actions">
+                    {selectedSubCategory ? (
+                      <button
+                        className="ghost-button h-9 px-3"
+                        onClick={() => openEditSubCategory(selectedSubCategory)}
+                        type="button"
+                      >
+                        <Pencil aria-hidden="true" size={14} />
+                        Sửa danh mục con
+                      </button>
+                    ) : null}
+                    {selectedSubCategory ? (
+                      <button
+                        className="danger-button h-9 px-3"
+                        disabled={updatingId === selectedSubCategory.id}
+                        onClick={() =>
+                          deleteEntity(
+                            "subCategory",
+                            selectedSubCategory.id,
+                            selectedSubCategory.name,
+                            selectedSubCategory.parentId,
+                          )
+                        }
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={14} />
+                        Xóa danh mục con
+                      </button>
+                    ) : null}
                     <button
-                      className="ghost-button h-9 px-3"
-                      onClick={() => openCreateSubCategory(category.id)}
+                      className="primary-button h-9 px-3"
+                      disabled={!selectedSubCategoryId}
+                      onClick={() => openCreatePackage()}
                       type="button"
                     >
                       <Plus aria-hidden="true" size={14} />
-                      Dịch vụ
+                      Thêm gói
                     </button>
                     <button
+                      aria-label="Đóng danh sách gói"
                       className="ghost-button h-9 px-3"
-                      onClick={() => openEditCategory(category)}
+                      onClick={() => setShowPackages(false)}
                       type="button"
                     >
-                      <Pencil aria-hidden="true" size={14} />
-                      Sửa
-                    </button>
-                    <button
-                      className="danger-button h-9 px-3"
-                      disabled={updatingId === category.id}
-                      onClick={() =>
-                        deleteEntity("category", category.id, category.name)
-                      }
-                      type="button"
-                    >
-                      <Trash2 aria-hidden="true" size={14} />
-                      Xóa
+                      <X aria-hidden="true" size={14} />
+                      Đóng
                     </button>
                   </div>
-                  <div className="admin-subcategory-list">
-                    {category.children.map((child) => (
-                      <button
-                        className={
-                          child.id === selectedSubCategoryId
-                            ? "admin-subcategory-row active"
-                            : "admin-subcategory-row"
-                        }
-                        key={child.id}
-                        onClick={() => setSelectedSubCategoryId(child.id)}
-                        type="button"
-                      >
-                        <span>
-                          <strong>{child.name}</strong>
-                          <small>{child.type}</small>
-                        </span>
-                        <StatusPill active={child.active} />
-                      </button>
-                    ))}
-                  </div>
-                </article>
-              ))}
-              {!isLoadingCategories && categories.length === 0 ? (
-                <div className="admin-services-empty">
-                  Chưa có danh mục dịch vụ.
                 </div>
-              ) : null}
-            </div>
-          </div>
 
-          <div className="role-panel role-table-panel backoffice-table-card admin-packages-panel">
-            <div className="role-panel-head admin-packages-head">
-              <div>
-                <p className="section-kicker">
-                  {selectedSubCategory?.categoryName ?? "Chưa chọn dịch vụ"}
-                </p>
-                <h2>{selectedSubCategory?.name ?? "Gói dịch vụ"}</h2>
-              </div>
-              <div className="admin-services-actions">
-                {selectedSubCategory ? (
-                  <button
-                    className="ghost-button h-9 px-3"
-                    onClick={() => openEditSubCategory(selectedSubCategory)}
-                    type="button"
-                  >
-                    <Pencil aria-hidden="true" size={14} />
-                    Sửa dịch vụ
-                  </button>
-                ) : null}
-                {selectedSubCategory ? (
-                  <button
-                    className="danger-button h-9 px-3"
-                    disabled={updatingId === selectedSubCategory.id}
-                    onClick={() =>
-                      deleteEntity(
-                        "subCategory",
-                        selectedSubCategory.id,
-                        selectedSubCategory.name,
-                        selectedSubCategory.parentId,
-                      )
-                    }
-                    type="button"
-                  >
-                    <Trash2 aria-hidden="true" size={14} />
-                    Xóa dịch vụ
-                  </button>
-                ) : null}
-                <button
-                  className="primary-button h-9 px-3"
-                  disabled={!selectedSubCategoryId}
-                  onClick={() => openCreatePackage()}
-                  type="button"
-                >
-                  <Plus aria-hidden="true" size={14} />
-                  Thêm gói
-                </button>
-              </div>
-            </div>
-
-            <div className="admin-service-meta">
-              <p>
-                <strong>Form fields</strong>
-                <span>
-                  {selectedSubCategory?.requiredFormFields.length
-                    ? selectedSubCategory.requiredFormFields.join(", ")
-                    : "Không yêu cầu"}
-                </span>
-              </p>
-              <p>
-                <strong>Mã 9P</strong>
-                <span>{selectedSubCategory?.the9pServiceCode ?? "Chưa gắn"}</span>
-              </p>
-            </div>
-
-            <div className="admin-package-list">
-              <div className="admin-package-list-head" aria-hidden="true">
-                <span>Gói</span>
-                <span>Giá</span>
-                <span>9P amount</span>
-                <span>Thứ tự</span>
-                <span>Trạng thái</span>
-                <span>Thao tác</span>
-              </div>
-              {packages.map((item) => (
-                <article className="admin-package-row" key={item.id}>
-                  <div className="admin-package-main">
-                    <strong>{item.name}</strong>
-                    <small>{item.description ?? item.id}</small>
-                  </div>
-                  <div className="admin-package-price">
-                    <strong>{formatVnd(item.price)}</strong>
-                    {item.originalPrice ? (
-                      <small>{formatVnd(item.originalPrice)}</small>
-                    ) : null}
-                  </div>
-                  <span>{item.the9pAmount ?? "Tuỳ chỉnh"}</span>
-                  <span>{item.displayOrder}</span>
-                  <StatusPill active={item.active} />
-                  <div className="admin-package-actions">
-                    <button
-                      className="ghost-button h-9 px-3"
-                      onClick={() => openEditPackage(item)}
-                      type="button"
-                    >
-                      <Pencil aria-hidden="true" size={15} />
-                      Sửa
-                    </button>
-                    <button
-                      className="danger-button h-9 px-3"
-                      disabled={updatingId === item.id}
-                      onClick={() =>
-                        deleteEntity(
-                          "package",
-                          item.id,
-                          item.name,
-                          item.subCategoryId,
-                        )
-                      }
-                      type="button"
-                    >
-                      <Trash2 aria-hidden="true" size={15} />
-                      Xóa
-                    </button>
-                  </div>
-                </article>
-              ))}
-              {!isLoadingPackages && packages.length === 0 ? (
-                <div className="admin-services-empty">
-                  Chưa có gói dịch vụ trong mục này.
+                <div className="admin-service-meta">
+                  <p>
+                    <strong>Form fields</strong>
+                    <span>
+                      {selectedSubCategory?.requiredFormFields.length
+                        ? selectedSubCategory.requiredFormFields.join(", ")
+                        : "Không yêu cầu"}
+                    </span>
+                  </p>
+                  <p>
+                    <strong>Mã 9P</strong>
+                    <span>{selectedSubCategory?.the9pServiceCode ?? "Chưa gắn"}</span>
+                  </p>
                 </div>
-              ) : null}
-            </div>
-          </div>
-        </section>
+
+                <div className="admin-package-list">
+                  <div className="admin-package-list-head" aria-hidden="true">
+                    <span>Gói</span>
+                    <span>Giá</span>
+                    <span>9P amount</span>
+                    <span>Thứ tự</span>
+                    <span>Trạng thái</span>
+                    <span>Thao tác</span>
+                  </div>
+                  {packages.map((item) => (
+                    <article className="admin-package-row" key={item.id}>
+                      <div className="admin-package-main">
+                        <strong>{item.name}</strong>
+                        <small>{item.description ?? item.id}</small>
+                      </div>
+                      <div className="admin-package-price">
+                        <strong>{formatVnd(item.price)}</strong>
+                        {item.originalPrice ? <small>{formatVnd(item.originalPrice)}</small> : null}
+                      </div>
+                      <span>{item.the9pAmount ?? "Tuỳ chỉnh"}</span>
+                      <span>{item.displayOrder}</span>
+                      <StatusPill active={item.active} />
+                      <div className="admin-package-actions">
+                        <button
+                          className="ghost-button h-9 px-3"
+                          onClick={() => openEditPackage(item)}
+                          type="button"
+                        >
+                          <Pencil aria-hidden="true" size={15} />
+                          Sửa
+                        </button>
+                        <button
+                          className="danger-button h-9 px-3"
+                          disabled={updatingId === item.id}
+                          onClick={() => deleteEntity("package", item.id, item.name, item.subCategoryId)}
+                          type="button"
+                        >
+                          <Trash2 aria-hidden="true" size={15} />
+                          Xóa
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                  {!isLoadingPackages && packages.length === 0 ? (
+                    <div className="admin-services-empty">Chưa có gói dịch vụ trong mục này.</div>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
+          </>
+        )}
       </section>
 
       {modalMode && typeof document !== "undefined"

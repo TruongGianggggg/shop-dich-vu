@@ -1,11 +1,5 @@
-import { AdminServicesManager } from "@/app/components/admin/admin-services-manager";
-import { RoleGate } from "@/app/components/role-gate";
-import "./services-upload.css";
+import { redirect } from "next/navigation";
 
 export default function AdminServicesPage() {
-  return (
-    <RoleGate allowedRoles={["ADMIN"]}>
-      <AdminServicesManager />
-    </RoleGate>
-  );
+  redirect("/admin/service-categories");
 }
