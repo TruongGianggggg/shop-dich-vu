@@ -119,6 +119,7 @@ const serviceTypes = [
 
 type ServicesView = "parents" | "children";
 const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
+const ADMIN_TABLE_PAGE_SIZE = 10;
 
 export function AdminServicesManager({
   view = "parents",
@@ -140,6 +141,8 @@ export function AdminServicesManager({
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
   const [childSearch, setChildSearch] = useState("");
   const [showPackages, setShowPackages] = useState(false);
+  const [parentPage, setParentPage] = useState(1);
+  const [childPage, setChildPage] = useState(1);
   const selectedParentIdRef = useRef(initialParentSelection);
   const selectedSubCategoryIdRef = useRef("");
   const [modalMode, setModalMode] = useState<ModalMode>("");
@@ -200,6 +203,24 @@ export function AdminServicesManager({
         .includes(keyword),
     );
   }, [childSearch, visibleSubCategories]);
+  const parentTotalPages = Math.max(
+    1,
+    Math.ceil(categories.length / ADMIN_TABLE_PAGE_SIZE),
+  );
+  const currentParentPage = Math.min(parentPage, parentTotalPages);
+  const paginatedCategories = categories.slice(
+    (currentParentPage - 1) * ADMIN_TABLE_PAGE_SIZE,
+    currentParentPage * ADMIN_TABLE_PAGE_SIZE,
+  );
+  const childTotalPages = Math.max(
+    1,
+    Math.ceil(filteredSubCategories.length / ADMIN_TABLE_PAGE_SIZE),
+  );
+  const currentChildPage = Math.min(childPage, childTotalPages);
+  const paginatedSubCategories = filteredSubCategories.slice(
+    (currentChildPage - 1) * ADMIN_TABLE_PAGE_SIZE,
+    currentChildPage * ADMIN_TABLE_PAGE_SIZE,
+  );
 
   useEffect(() => {
     if (!canLoad || !session) {
@@ -952,6 +973,7 @@ export function AdminServicesManager({
     setSelectedSubCategoryId(nextChildId);
     setPackages([]);
     setShowPackages(false);
+    setChildPage(1);
   }
 
   function selectSubCategory(subCategoryId: string) {
@@ -1118,7 +1140,7 @@ export function AdminServicesManager({
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((category) => (
+                  {paginatedCategories.map((category) => (
                     <tr key={category.id}>
                       <td>
                         <span
@@ -1216,9 +1238,12 @@ export function AdminServicesManager({
                 </tbody>
               </table>
             </div>
-            <div className="admin-category-table-footer">
-              Hiển thị {categories.length} trong tổng số {categories.length} kết quả
-            </div>
+            <AdminTablePagination
+              currentPage={currentParentPage}
+              onPageChange={setParentPage}
+              pageSize={ADMIN_TABLE_PAGE_SIZE}
+              totalItems={categories.length}
+            />
           </section>
         ) : (
           <>
@@ -1243,7 +1268,10 @@ export function AdminServicesManager({
               <label className="admin-child-search-field">
                 <span>Tìm kiếm</span>
                 <input
-                  onChange={(event) => setChildSearch(event.target.value)}
+                  onChange={(event) => {
+                    setChildSearch(event.target.value);
+                    setChildPage(1);
+                  }}
                   placeholder="Tên, loại hoặc mã The9P..."
                   type="search"
                   value={childSearch}
@@ -1273,7 +1301,7 @@ export function AdminServicesManager({
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSubCategories.map((child) => (
+                    {paginatedSubCategories.map((child) => (
                       <tr key={child.id}>
                         <td>
                           <span
@@ -1420,10 +1448,12 @@ export function AdminServicesManager({
                   </tbody>
                 </table>
               </div>
-              <div className="admin-category-table-footer">
-                Hiển thị {filteredSubCategories.length} trong tổng số{" "}
-                {visibleSubCategories.length} kết quả
-              </div>
+              <AdminTablePagination
+                currentPage={currentChildPage}
+                onPageChange={setChildPage}
+                pageSize={ADMIN_TABLE_PAGE_SIZE}
+                totalItems={filteredSubCategories.length}
+              />
             </section>
 
             {showPackages &&
@@ -2015,6 +2045,66 @@ function ModalActions({
       <button className="primary-button h-11 px-5" disabled={isSaving} type="submit">
         {isSaving ? "Đang lưu..." : "Lưu"}
       </button>
+    </div>
+  );
+}
+
+function AdminTablePagination({
+  currentPage,
+  onPageChange,
+  pageSize,
+  totalItems,
+}: {
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  totalItems: number;
+}) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+  const firstItem = totalItems === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const lastItem = Math.min(safePage * pageSize, totalItems);
+  const firstVisiblePage = Math.max(
+    1,
+    Math.min(safePage - 2, totalPages - 4),
+  );
+  const visiblePages = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => firstVisiblePage + index,
+  );
+
+  return (
+    <div className="admin-category-table-footer">
+      <span>
+        Hiển thị {firstItem}–{lastItem} trong tổng số {totalItems} kết quả
+      </span>
+      <nav aria-label="Phân trang danh mục" className="admin-table-pagination">
+        <button
+          disabled={safePage === 1}
+          onClick={() => onPageChange(safePage - 1)}
+          type="button"
+        >
+          Trước
+        </button>
+        {visiblePages.map((page) => (
+          <button
+            aria-current={page === safePage ? "page" : undefined}
+            className={page === safePage ? "active" : undefined}
+            key={page}
+            onClick={() => onPageChange(page)}
+            type="button"
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          disabled={safePage === totalPages}
+          onClick={() => onPageChange(safePage + 1)}
+          type="button"
+        >
+          Sau
+        </button>
+      </nav>
     </div>
   );
 }
