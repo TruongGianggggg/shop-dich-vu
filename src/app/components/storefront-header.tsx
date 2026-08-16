@@ -94,12 +94,6 @@ export function StorefrontHeader() {
             <i>●</i> Hồ sơ
           </Link>
           <DepositQrButton />
-          <Link
-            className={pathname === "/lich-su-vang-ngoc" ? "is-active" : ""}
-            href="/lich-su-vang-ngoc"
-          >
-            <i>$</i> Dòng tiền
-          </Link>
         </nav>
 
         <div className="reference-account">

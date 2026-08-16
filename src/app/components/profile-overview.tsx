@@ -117,7 +117,6 @@ export function ProfileOverview() {
           <div className="profile-quick-actions">
             <DepositQrButton />
             <Link href="/lich-su-mua"><History size={18} />Lịch sử mua</Link>
-            <Link href="/lich-su-vang-ngoc"><WalletCards size={18} />Dòng tiền</Link>
             {session.role === "ADMIN" ? (
               <Link href="/admin"><ShieldCheck size={18} />Admin Panel</Link>
             ) : null}
