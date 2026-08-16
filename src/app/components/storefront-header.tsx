@@ -88,8 +88,8 @@ export function StorefrontHeader() {
             <i>▱</i> Dịch vụ khác
           </Link>
           <Link
-            className={pathname === "/login" ? "is-active" : ""}
-            href="/login"
+            className={pathname === "/ho-so" ? "is-active" : ""}
+            href="/ho-so"
           >
             <i>●</i> Hồ sơ
           </Link>

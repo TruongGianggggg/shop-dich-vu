@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { getRoleDestination } from "@/lib/shop-api";
+import { formatVnd, getRoleDestination } from "@/lib/shop-api";
 import { clearAuthSession, useAuthSession } from "./use-auth-session";
+import { useUserBalance } from "./use-user-balance";
 
 export function AccountActions() {
   const session = useAuthSession();
+  const { isLoading: isLoadingBalance, wallet } = useUserBalance();
   const [isOpen, setIsOpen] = useState(false);
 
   function logout() {
@@ -37,19 +39,27 @@ export function AccountActions() {
       >
         <span className="account-avatar">{session.username.slice(0, 1)}</span>
         <span className="account-trigger-copy">
-          <strong>{session.username}</strong>
+          <span className="account-trigger-name-row">
+            <strong>{session.username}</strong>
+            <b>{isLoadingBalance && !wallet ? "..." : formatVnd(wallet?.balance ?? 0)}</b>
+          </span>
           <small>{session.role}</small>
         </span>
         <span className="account-caret">›</span>
       </button>
       {isOpen ? (
         <div className="account-dropdown">
+          <AccountMenuLink
+            href="/ho-so"
+            label="Hồ sơ tài khoản"
+            onClick={() => setIsOpen(false)}
+            prominent
+          />
           {session.role === "ADMIN" ? (
             <AccountMenuLink
               href={getRoleDestination("ADMIN")}
               label="Admin Panel"
               onClick={() => setIsOpen(false)}
-              prominent
             />
           ) : null}
           <AccountMenuLink
