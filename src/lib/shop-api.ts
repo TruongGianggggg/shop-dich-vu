@@ -288,6 +288,22 @@ export type GameCurrencyOrder = {
   updatedAt: string;
 };
 
+export type GameNotification = {
+  id: number;
+  eventType: string;
+  serverName: string;
+  message: string;
+  characterName: string;
+  bossName: string;
+  location: string;
+  timestamp: string;
+};
+
+export type GameNotificationFilters = {
+  serverNames: string[];
+  eventTypes: string[];
+};
+
 export const AUTH_STORAGE_KEY = "shop-game-auth";
 
 export function getApiErrorMessage(data: unknown, fallback: string) {

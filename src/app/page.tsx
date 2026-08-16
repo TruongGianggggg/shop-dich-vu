@@ -85,6 +85,9 @@ export default async function Home() {
             <Link href="/lich-su-mua">
               <i>⌁</i> Lịch sử mua
             </Link>
+            <Link href="/thong-bao">
+              <i>◉</i> Thông báo
+            </Link>
             <a href="#dich-vu">
               <i>▱</i> Dịch vụ khác
             </a>
