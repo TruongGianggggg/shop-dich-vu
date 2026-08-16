@@ -67,6 +67,11 @@ export function AccountActions() {
             label="Lịch sử mua"
             onClick={() => setIsOpen(false)}
           />
+          <AccountMenuLink
+            href="/lich-su-vang-ngoc"
+            label="Lịch sử Vàng & Ngọc"
+            onClick={() => setIsOpen(false)}
+          />
           <div className="account-section">
             <p>Khác</p>
             <button className="account-menu-button" onClick={logout}>
