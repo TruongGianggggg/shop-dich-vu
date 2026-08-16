@@ -2616,8 +2616,43 @@ input {
   background: #157347;
 }
 
+.admin-child-packages-modal {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 55;
+}
+
+.admin-child-packages-modal-backdrop {
+  backdrop-filter: blur(3px);
+  background: rgba(15, 23, 42, 0.66);
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  position: absolute;
+}
+
 .admin-child-packages-panel {
-  margin-top: 18px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.32);
+  max-height: calc(100vh - 48px);
+  max-width: 1320px;
+  overflow: auto;
+  padding: 22px;
+  position: relative;
+  width: min(100%, 1320px);
+  z-index: 1;
+}
+
+.admin-child-packages-panel .role-panel-head {
+  margin-bottom: 0;
+}
+
+.admin-child-packages-panel .admin-package-list {
+  min-width: 920px;
 }
 
 .admin-child-category-list {
@@ -3248,6 +3283,15 @@ input {
 
   .admin-child-filter-panel {
     grid-template-columns: 1fr;
+  }
+
+  .admin-child-packages-modal {
+    padding: 10px;
+  }
+
+  .admin-child-packages-panel {
+    max-height: calc(100vh - 20px);
+    padding: 16px;
   }
 
   .admin-parent-picker-panel {

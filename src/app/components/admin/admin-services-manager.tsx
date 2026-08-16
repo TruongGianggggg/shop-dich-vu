@@ -1426,14 +1426,34 @@ export function AdminServicesManager({
               </div>
             </section>
 
-            {showPackages && selectedSubCategory ? (
-              <section className="role-panel role-table-panel backoffice-table-card admin-packages-panel admin-child-packages-panel">
+            {showPackages &&
+            selectedSubCategory &&
+            typeof document !== "undefined"
+              ? createPortal(
+                  <div
+                    className="admin-child-packages-modal"
+                    role="presentation"
+                  >
+                    <button
+                      aria-label="Đóng danh sách gói"
+                      className="admin-child-packages-modal-backdrop"
+                      onClick={() => setShowPackages(false)}
+                      type="button"
+                    />
+                    <section
+                      aria-labelledby="admin-child-packages-title"
+                      aria-modal="true"
+                      className="role-panel role-table-panel backoffice-table-card admin-packages-panel admin-child-packages-panel"
+                      role="dialog"
+                    >
                 <div className="role-panel-head admin-packages-head">
                   <div>
                     <p className="section-kicker">
                       {selectedSubCategory?.categoryName ?? "Chưa chọn danh mục con"}
                     </p>
-                    <h2>{selectedSubCategory?.name ?? "Danh sách gói"}</h2>
+                    <h2 id="admin-child-packages-title">
+                      {selectedSubCategory?.name ?? "Danh sách gói"}
+                    </h2>
                   </div>
                   <div className="admin-services-actions">
                     {selectedSubCategory ? (
@@ -1547,8 +1567,11 @@ export function AdminServicesManager({
                     <div className="admin-services-empty">Chưa có gói dịch vụ trong mục này.</div>
                   ) : null}
                 </div>
-              </section>
-            ) : null}
+                    </section>
+                  </div>,
+                  document.body,
+                )
+              : null}
           </>
         )}
       </section>
