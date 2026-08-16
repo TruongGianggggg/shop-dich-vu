@@ -641,7 +641,7 @@ export function AdminBanksManager() {
                     })
                   }
                   required
-                  type="number"
+                  type="text"
                   value={cardSettingsForm.discountPercent}
                 />
               </label>
