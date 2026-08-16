@@ -37,11 +37,12 @@ export function CurrencyOrderHistory() {
         Object.entries(appliedFilters).forEach(([key, value]) => {
           if (value.trim()) params.set(key, value.trim());
         });
-        const response = await fetch(`/api/currency-orders?${params}`, {
+        const response = await fetch(`/api/currency-orders/history?${params}`, {
           headers: { Authorization: `Bearer ${session!.token}` },
         });
-        const data = await response.json();
+        const data = await readResponseJson(response);
         if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được lịch sử."));
+        if (!data) throw new Error("Dữ liệu lịch sử trả về không hợp lệ.");
         if (!ignore) setResult(data as PageResponse<GameCurrencyOrder>);
       } catch (reason) {
         if (!ignore) setError(reason instanceof Error ? reason.message : "Không tải được lịch sử.");
@@ -123,4 +124,18 @@ export function CurrencyOrderHistory() {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+}
+
+async function readResponseJson(response: Response) {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
 }
