@@ -6,6 +6,7 @@ import {
   BankAccount,
   BankQr,
   CardDepositResponse,
+  CardDepositSettings,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
@@ -44,6 +45,7 @@ export function DepositQrButton() {
   const [cardSerial, setCardSerial] = useState("");
   const [cardPin, setCardPin] = useState("");
   const [cardResult, setCardResult] = useState<CardDepositResponse | null>(null);
+  const [cardDiscountPercent, setCardDiscountPercent] = useState(0);
   const [isSubmittingCard, setIsSubmittingCard] = useState(false);
   const [error, setError] = useState("");
 
@@ -155,6 +157,37 @@ export function DepositQrButton() {
       ignore = true;
     };
   }, [createQr, isOpen, method]);
+
+  useEffect(() => {
+    if (!isOpen || method !== "card") {
+      return;
+    }
+
+    let ignore = false;
+
+    async function loadCardSettings() {
+      try {
+        const response = await fetch("/api/deposits/cards/settings");
+        const data = (await readResponseJson(response)) as CardDepositSettings | unknown;
+        if (!response.ok) {
+          throw new Error(getApiErrorMessage(data, "Không tải được chiết khấu thẻ."));
+        }
+        if (!ignore) {
+          const percent = Number((data as CardDepositSettings).discountPercent);
+          setCardDiscountPercent(Number.isInteger(percent) ? Math.min(99, Math.max(0, percent)) : 0);
+        }
+      } catch (exception) {
+        if (!ignore) {
+          setError(exception instanceof Error ? exception.message : "Không tải được chiết khấu thẻ.");
+        }
+      }
+    }
+
+    void loadCardSettings();
+    return () => {
+      ignore = true;
+    };
+  }, [isOpen, method]);
 
   function openDeposit() {
     if (!session) {
@@ -409,6 +442,14 @@ export function DepositQrButton() {
                 <p className="deposit-card-note">
                   Chọn đúng nhà mạng và mệnh giá. Thẻ sai mệnh giá có thể bị The9P áp dụng phí phạt.
                 </p>
+
+                <div className="deposit-card-result deposit-card-estimate">
+                  <strong>Chiết khấu shop: {cardDiscountPercent}%</strong>
+                  <span>
+                    Mệnh giá {formatVnd(cardAmount)} dự kiến nhận tối đa {formatVnd(Math.floor(cardAmount * (100 - cardDiscountPercent) / 100))}.
+                  </span>
+                  <span>Số tiền thực nhận không vượt quá số tiền The9P thanh toán.</span>
+                </div>
 
                 {cardResult ? (
                   <div className="deposit-card-result" role="status">

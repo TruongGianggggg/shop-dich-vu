@@ -57,6 +57,10 @@ export type CardDepositResponse = {
   updatedAt: string;
 };
 
+export type CardDepositSettings = {
+  discountPercent: number;
+};
+
 export type ServiceOrder = {
   id: string;
   subCategoryId: string;

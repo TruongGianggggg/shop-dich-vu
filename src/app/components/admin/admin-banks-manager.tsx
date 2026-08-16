@@ -20,6 +20,7 @@ import {
   BankAccountPayload,
   BankDepositSettings,
   BankQr,
+  CardDepositSettings,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
@@ -30,6 +31,10 @@ const defaultSettings: BankDepositSettings = {
   minAmount: 10000,
   maxAmount: 100000000,
   cronLink: "",
+};
+
+const defaultCardSettings: CardDepositSettings = {
+  discountPercent: 0,
 };
 
 const emptyForm = {
@@ -59,6 +64,9 @@ export function AdminBanksManager() {
   const [settingsForm, setSettingsForm] =
     useState<BankDepositSettings>(defaultSettings);
   const [isSettingsSaving, setIsSettingsSaving] = useState(false);
+  const [cardSettings, setCardSettings] = useState<CardDepositSettings>(defaultCardSettings);
+  const [cardSettingsForm, setCardSettingsForm] = useState<CardDepositSettings>(defaultCardSettings);
+  const [isCardSettingsSaving, setIsCardSettingsSaving] = useState(false);
   const [qrBank, setQrBank] = useState<BankAccount | null>(null);
   const [qrAmount, setQrAmount] = useState(String(defaultSettings.minAmount));
   const [qrUserId, setQrUserId] = useState("");
@@ -79,13 +87,17 @@ export function AdminBanksManager() {
 
       try {
         const headers = authHeaders(activeSession);
-        const [response, settingsResponse] = await Promise.all([
+        const [response, settingsResponse, cardSettingsResponse] = await Promise.all([
           fetch("/api/banks", { headers }),
           fetch("/api/banks/settings", { headers }),
+          fetch("/api/deposits/cards/settings", { headers }),
         ]);
         const data = (await readResponseJson(response)) as BankAccount[] | unknown;
         const settingsData = (await readResponseJson(settingsResponse)) as
           | BankDepositSettings
+          | unknown;
+        const cardSettingsData = (await readResponseJson(cardSettingsResponse)) as
+          | CardDepositSettings
           | unknown;
 
         if (!response.ok) {
@@ -98,6 +110,12 @@ export function AdminBanksManager() {
           );
         }
 
+        if (!cardSettingsResponse.ok) {
+          throw new Error(
+            getApiErrorMessage(cardSettingsData, "Không tải được cấu hình nạp thẻ."),
+          );
+        }
+
         if (!ignore) {
           setBanks(
             (data as BankAccount[]).sort((a, b) =>
@@ -107,12 +125,17 @@ export function AdminBanksManager() {
           const loadedSettings = normalizeBankDepositSettings(settingsData);
           setSettings(loadedSettings);
           setSettingsForm(loadedSettings);
+          const loadedCardSettings = normalizeCardDepositSettings(cardSettingsData);
+          setCardSettings(loadedCardSettings);
+          setCardSettingsForm(loadedCardSettings);
         }
       } catch (exception) {
         if (!ignore) {
           setBanks([]);
           setSettings(defaultSettings);
           setSettingsForm(defaultSettings);
+          setCardSettings(defaultCardSettings);
+          setCardSettingsForm(defaultCardSettings);
           setError(
             exception instanceof Error
               ? exception.message
@@ -322,6 +345,47 @@ export function AdminBanksManager() {
       );
     } finally {
       setIsSettingsSaving(false);
+    }
+  }
+
+  async function submitCardSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!session) {
+      return;
+    }
+
+    const discountPercent = Number(cardSettingsForm.discountPercent);
+    if (!Number.isInteger(discountPercent) || discountPercent < 0 || discountPercent > 99) {
+      setError("Chiết khấu thẻ phải là số nguyên từ 0 đến 99%.");
+      return;
+    }
+
+    setIsCardSettingsSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/deposits/cards/settings", {
+        method: "PUT",
+        headers: {
+          ...authHeaders(session),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ discountPercent }),
+      });
+      const data = (await readResponseJson(response)) as CardDepositSettings | unknown;
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Không lưu được cấu hình nạp thẻ."));
+      }
+
+      const savedSettings = normalizeCardDepositSettings(data);
+      setCardSettings(savedSettings);
+      setCardSettingsForm(savedSettings);
+      setMessage("Đã lưu chiết khấu nạp thẻ.");
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không lưu được cấu hình nạp thẻ.");
+    } finally {
+      setIsCardSettingsSaving(false);
     }
   }
 
@@ -548,6 +612,54 @@ export function AdminBanksManager() {
                 type="submit"
               >
                 {isSettingsSaving ? "Đang lưu..." : "Lưu cấu hình"}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section className="role-panel admin-bank-settings-panel">
+          <div className="role-panel-head">
+            <div>
+              <p className="section-kicker">Cấu hình gạch thẻ</p>
+              <h2>Chiết khấu nạp thẻ The9P</h2>
+            </div>
+            <span>Người dùng nhận {100 - cardSettings.discountPercent}%</span>
+          </div>
+
+          <form className="admin-bank-settings-form" onSubmit={submitCardSettings}>
+            <div className="admin-bank-settings-grid">
+              <label className="field-label">
+                Chiết khấu shop (%)
+                <input
+                  className="text-field"
+                  inputMode="numeric"
+                  max={99}
+                  min={0}
+                  onChange={(event) =>
+                    setCardSettingsForm({
+                      discountPercent: Number(normalizeIntegerInput(event.target.value) || 0),
+                    })
+                  }
+                  required
+                  type="number"
+                  value={cardSettingsForm.discountPercent}
+                />
+              </label>
+            </div>
+
+            <div className="admin-bank-settings-footer">
+              <div>
+                <strong>Ví dụ thẻ 100.000đ</strong>
+                <span>
+                  Chiết khấu {cardSettingsForm.discountPercent}% — nhận tối đa {formatVnd(Math.floor(100000 * (100 - cardSettingsForm.discountPercent) / 100))}
+                </span>
+              </div>
+              <button
+                className="primary-button h-11 px-5"
+                disabled={isCardSettingsSaving}
+                type="submit"
+              >
+                {isCardSettingsSaving ? "Đang lưu..." : "Lưu chiết khấu"}
               </button>
             </div>
           </form>
@@ -893,5 +1005,18 @@ function normalizeBankDepositSettings(data: unknown): BankDepositSettings {
         : defaultSettings.maxAmount,
     cronLink:
       typeof value.cronLink === "string" ? value.cronLink : defaultSettings.cronLink,
+  };
+}
+
+function normalizeCardDepositSettings(data: unknown): CardDepositSettings {
+  const value = data && typeof data === "object"
+    ? (data as Partial<CardDepositSettings>)
+    : {};
+  const discountPercent = Number(value.discountPercent);
+
+  return {
+    discountPercent: Number.isInteger(discountPercent)
+      ? Math.min(99, Math.max(0, discountPercent))
+      : defaultCardSettings.discountPercent,
   };
 }
