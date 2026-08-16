@@ -117,6 +117,7 @@ export default async function Home() {
                             ? "auto-topup"
                             : category.id,
                         )}`}
+                        scroll
                       >
                         Xem thêm dịch vụ <span>→</span>
                       </Link>
