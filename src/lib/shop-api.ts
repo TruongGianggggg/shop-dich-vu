@@ -43,6 +43,20 @@ export type DepositHistory = {
   updatedAt: string;
 };
 
+export type CardDepositResponse = {
+  id: string;
+  transId: string;
+  userId: string;
+  telco: string;
+  declaredAmount: number;
+  serial: string;
+  creditedAmount: number;
+  status: DepositStatus;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ServiceOrder = {
   id: string;
   subCategoryId: string;
