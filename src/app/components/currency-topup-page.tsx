@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { Coins, Gem } from "lucide-react";
-import { AccountActions } from "@/app/components/account-actions";
 import { CurrencyTopupForm } from "@/app/components/currency-topup-form";
-import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import { GameCurrencyDisplaySettings, GameCurrencyType, GameServerCurrencyConfig } from "@/lib/shop-api";
-import { getPublicSiteSettings } from "@/lib/site-settings";
 
 export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCurrencyType }) {
-  const [settings, configs, currencySettings] = await Promise.all([
-    getPublicSiteSettings(),
+  const [configs, currencySettings] = await Promise.all([
     getConfigs(currencyType),
     getCurrencySettings(),
   ]);
@@ -19,11 +15,6 @@ export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCu
 
   return (
     <div className="currency-shop-page">
-      <header className="service-detail-header">
-        <ShopBrand settings={settings} />
-        <nav><Link href="/">Trang chủ</Link><Link href="/lich-su-vang-ngoc">Lịch sử Vàng & Ngọc</Link></nav>
-        <AccountActions />
-      </header>
       <main className="currency-shop-main">
         <div className="currency-shop-breadcrumb"><Link href="/">Trang chủ</Link><span>/</span><b>Nạp {isGold ? "Vàng" : "Ngọc"}</b></div>
         <section className="currency-shop-shell">

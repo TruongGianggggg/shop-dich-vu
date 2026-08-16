@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
-import { AccountActions } from "@/app/components/account-actions";
-import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import {
@@ -74,39 +72,6 @@ export default async function Home() {
 
   return (
     <div className="reference-storefront">
-      <header className="reference-header-wrap">
-        <div className="reference-header">
-          <ShopBrand settings={siteSettings} />
-
-          <nav className="reference-nav" aria-label="Điều hướng chính">
-            <Link className="is-active" href="/">
-              <i>⌂</i> Trang chủ
-            </Link>
-            <Link href="/lich-su-mua">
-              <i>⌁</i> Lịch sử mua
-            </Link>
-            <Link href="/thong-bao">
-              <i>◉</i> Thông báo
-            </Link>
-            <a href="#dich-vu">
-              <i>▱</i> Dịch vụ khác
-            </a>
-            <Link href="/login">
-              <i>●</i> Hồ sơ
-            </Link>
-            <DepositQrButton />
-            <Link href="/login">
-              <i>$</i> Dòng tiền
-            </Link>
-          </nav>
-
-          <div className="reference-account">
-            <button aria-label="Đổi ngôn ngữ" type="button">◎</button>
-            <AccountActions />
-          </div>
-        </div>
-      </header>
-
       <main className="reference-main" id="dich-vu">
         <StorefrontOverview
           leaderboard={leaderboard}

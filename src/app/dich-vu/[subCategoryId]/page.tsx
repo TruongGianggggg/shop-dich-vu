@@ -1,14 +1,11 @@
 import Link from "next/link";
-import { AccountActions } from "@/app/components/account-actions";
 import { ServiceOrderForm } from "@/app/components/service-order-form";
-import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   ServiceCategory,
   ServicePackage,
   ServiceSubCategory,
 } from "@/lib/shop-api";
-import { getPublicSiteSettings } from "@/lib/site-settings";
 import "./detail.css";
 
 async function getService(subCategoryId: string) {
@@ -57,10 +54,7 @@ export default async function ServiceDetailPage({
   params: Promise<{ subCategoryId: string }>;
 }) {
   const { subCategoryId } = await params;
-  const [data, siteSettings] = await Promise.all([
-    getService(subCategoryId),
-    getPublicSiteSettings(),
-  ]);
+  const data = await getService(subCategoryId);
 
   if (!data) {
     return (
@@ -74,15 +68,6 @@ export default async function ServiceDetailPage({
 
   return (
     <div className="service-detail-page">
-      <header className="service-detail-header">
-        <ShopBrand settings={siteSettings} />
-        <nav>
-          <Link href="/">Trang chủ</Link>
-          <Link href="/lich-su-mua">Lịch sử mua</Link>
-        </nav>
-        <AccountActions />
-      </header>
-
       <main className="service-detail-main">
         <div className="detail-page-title">
           <h1>Dịch Vụ - {data.service.name}</h1>

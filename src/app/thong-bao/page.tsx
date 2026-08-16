@@ -1,18 +1,14 @@
-import Link from "next/link";
 import { BellRing } from "lucide-react";
 import {
   EMPTY_PAGE,
   NotificationsBoard,
 } from "@/app/components/notifications-board";
-import { AccountActions } from "@/app/components/account-actions";
-import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   GameNotification,
   GameNotificationFilters,
   PageResponse,
 } from "@/lib/shop-api";
-import { getPublicSiteSettings } from "@/lib/site-settings";
 import "./notifications.css";
 
 async function getNotificationData() {
@@ -26,23 +22,10 @@ async function getNotificationData() {
 }
 
 export default async function NotificationsPage() {
-  const [siteSettings, notificationData] = await Promise.all([
-    getPublicSiteSettings(),
-    getNotificationData(),
-  ]);
+  const notificationData = await getNotificationData();
 
   return (
     <div className="notifications-page">
-      <header className="service-detail-header notifications-header">
-        <ShopBrand settings={siteSettings} />
-        <nav>
-          <Link href="/">Trang chủ</Link>
-          <Link aria-current="page" href="/thong-bao">Thông báo</Link>
-          <Link href="/lich-su-mua">Lịch sử mua</Link>
-        </nav>
-        <AccountActions />
-      </header>
-
       <main className="notifications-main">
         <div className="notifications-hero">
           <div className="notifications-hero-icon"><BellRing size={27} /></div>
