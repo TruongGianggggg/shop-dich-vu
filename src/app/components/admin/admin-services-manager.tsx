@@ -235,7 +235,7 @@ export function AdminServicesManager({
       setError("");
 
       try {
-        const response = await fetch("/api/admin/service-categories", {
+        const response = await fetch(serviceCategoryPath(), {
           headers: authHeaders(activeSession),
         });
         const data = (await readResponseJson(response)) as
@@ -394,7 +394,7 @@ export function AdminServicesManager({
     setMessage("");
 
     try {
-      const response = await fetch("/api/admin/the9p/recharge-products", {
+      const response = await fetch("/api/the9p/recharge-products", {
         headers: authHeaders(session),
       });
       const data = await readResponseJson(response);
@@ -454,7 +454,7 @@ export function AdminServicesManager({
     setMessage("");
 
     try {
-      const response = await fetch("/api/admin/the9p/sync-packages", {
+      const response = await fetch("/api/the9p/sync-packages", {
         method: "POST",
         headers: authHeaders(session),
       });
@@ -582,9 +582,7 @@ export function AdminServicesManager({
     };
 
     await saveEntity({
-      path: editingId
-        ? `/api/admin/service-categories/${editingId}`
-        : "/api/admin/service-categories",
+      path: serviceCategoryPath(editingId),
       method: editingId ? "PUT" : "POST",
       payload,
       successMessage: editingId ? "Da cap nhat danh muc." : "Da tao danh muc.",
@@ -614,7 +612,7 @@ export function AdminServicesManager({
 
     try {
       const response = await fetch(
-        `/api/admin/service-categories/${category.id}`,
+        serviceCategoryPath(category.id),
         {
           method: "PUT",
           headers: {
@@ -674,9 +672,7 @@ export function AdminServicesManager({
     };
 
     await saveEntity({
-      path: editingId
-        ? `/api/admin/service-sub-categories/${editingId}`
-        : "/api/admin/service-sub-categories",
+      path: serviceSubCategoryPath(payload.parentId, editingId),
       method: editingId ? "PUT" : "POST",
       payload,
       successMessage: editingId ? "Da cap nhat dich vu." : "Da tao dich vu.",
@@ -711,7 +707,7 @@ export function AdminServicesManager({
 
     try {
       const response = await fetch(
-        `/api/admin/service-sub-categories/${subCategory.id}`,
+        serviceSubCategoryPath(subCategory.parentId, subCategory.id),
         {
           method: "PUT",
           headers: {
@@ -828,9 +824,7 @@ export function AdminServicesManager({
     };
 
     await saveEntity({
-      path: editingId
-        ? `/api/admin/service-packages/${editingId}`
-        : "/api/admin/service-packages",
+      path: servicePackagePath(payload.subCategoryId, editingId),
       method: editingId ? "PUT" : "POST",
       payload,
       successMessage: editingId ? "Da cap nhat goi dich vu." : "Da tao goi dich vu.",
@@ -922,14 +916,10 @@ export function AdminServicesManager({
 
     const path =
       kind === "category"
-        ? `/api/admin/service-categories/${id}`
+        ? serviceCategoryPath(id)
         : kind === "subCategory"
-          ? `/api/admin/service-sub-categories/${id}?parentId=${encodeURIComponent(
-              parentId,
-            )}`
-          : `/api/admin/service-packages/${id}?subCategoryId=${encodeURIComponent(
-              parentId,
-            )}`;
+          ? serviceSubCategoryPath(parentId, id)
+          : servicePackagePath(parentId, id);
 
     setUpdatingId(id);
     setError("");
@@ -2131,35 +2121,13 @@ function getModalTitle(mode: ModalMode, isEditing: boolean) {
 
 async function fetchPackageList(session: AuthResponse, subCategoryId: string) {
   const response = await fetch(
-    `/api/admin/service-sub-categories/${subCategoryId}/packages`,
+    servicePackagePath(subCategoryId),
     { headers: authHeaders(session) },
   );
   const data = await readResponseJson(response);
 
   if (response.ok) {
     return data;
-  }
-
-  if (response.status === 404) {
-    const fallbackResponse = await fetch(
-      `/api/admin/service-packages?subCategoryId=${encodeURIComponent(
-        subCategoryId,
-      )}`,
-      { headers: authHeaders(session) },
-    );
-    const fallbackData = await readResponseJson(fallbackResponse);
-
-    if (fallbackResponse.ok) {
-      return fallbackData;
-    }
-
-    throw new Error(
-      getAdminServiceErrorMessage(
-        fallbackResponse,
-        fallbackData,
-        "Khong tai duoc goi dich vu.",
-      ),
-    );
   }
 
   throw new Error(
@@ -2177,10 +2145,33 @@ function getAdminServiceErrorMessage(
   }
 
   if (response.status === 403) {
-    return "Backend tu choi quyen 403. Tai khoan hien tai chua co quyen ADMIN cho API dich vu, hoac endpoint BE dang map sai.";
+    return "Backend từ chối quyền 403. Hãy đăng nhập lại bằng tài khoản ADMIN.";
   }
 
   return getApiErrorMessage(data, fallback);
+}
+
+function serviceCategoryPath(categoryId = "") {
+  const basePath = "/api/service-categories";
+  return categoryId
+    ? `${basePath}/${encodeURIComponent(categoryId)}`
+    : basePath;
+}
+
+function serviceSubCategoryPath(parentId: string, subCategoryId = "") {
+  const basePath = `${serviceCategoryPath(parentId)}/children`;
+  return subCategoryId
+    ? `${basePath}/${encodeURIComponent(subCategoryId)}`
+    : basePath;
+}
+
+function servicePackagePath(subCategoryId: string, packageId = "") {
+  const basePath = `/api/service-sub-categories/${encodeURIComponent(
+    subCategoryId,
+  )}/packages`;
+  return packageId
+    ? `${basePath}/${encodeURIComponent(packageId)}`
+    : basePath;
 }
 
 function normalizeList<T>(data: unknown) {

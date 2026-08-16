@@ -53,8 +53,8 @@ export function DepositHistoryManager() {
         });
         const headers = authHeaders(activeSession);
         const [response, walletResponse] = await Promise.all([
-          fetch(`/api/admin/deposits?${params}`, { headers }),
-          fetch(`/api/admin/wallet/${activeSession.userId}`, { headers }),
+          fetch(`/api/service-orders/history/deposits?${params}`, { headers }),
+          fetch(`/api/wallet/${activeSession.userId}`, { headers }),
         ]);
         const data = (await readResponseJson(response)) as
           | PageResponse<DepositHistory>

@@ -80,8 +80,8 @@ export function AdminBanksManager() {
       try {
         const headers = authHeaders(activeSession);
         const [response, settingsResponse] = await Promise.all([
-          fetch("/api/admin/banks", { headers }),
-          fetch("/api/admin/banks/settings", { headers }),
+          fetch("/api/banks", { headers }),
+          fetch("/api/banks/settings", { headers }),
         ]);
         const data = (await readResponseJson(response)) as BankAccount[] | unknown;
         const settingsData = (await readResponseJson(settingsResponse)) as
@@ -195,7 +195,7 @@ export function AdminBanksManager() {
 
     try {
       const response = await fetch(
-        editingId ? `/api/admin/banks/${editingId}` : "/api/admin/banks",
+        editingId ? `/api/banks/${editingId}` : "/api/banks",
         {
           method: editingId ? "PUT" : "POST",
           headers: {
@@ -240,7 +240,7 @@ export function AdminBanksManager() {
     setMessage("");
 
     try {
-      const response = await fetch(`/api/admin/banks/${bank.id}`, {
+      const response = await fetch(`/api/banks/${bank.id}`, {
         method: "DELETE",
         headers: authHeaders(session),
       });
@@ -291,7 +291,7 @@ export function AdminBanksManager() {
     setMessage("");
 
     try {
-      const response = await fetch("/api/admin/banks/settings", {
+      const response = await fetch("/api/banks/settings", {
         method: "PUT",
         headers: {
           ...authHeaders(session),
@@ -369,7 +369,7 @@ export function AdminBanksManager() {
         amount: String(amount),
       });
       const response = await fetch(
-        `/api/admin/banks/${qrBank.id}/qr?${params.toString()}`,
+        `/api/banks/${qrBank.id}/qr?${params.toString()}`,
         { headers: authHeaders(session) },
       );
       const data = (await readResponseJson(response)) as BankQr | unknown;

@@ -50,7 +50,7 @@ export function AdminOrdersManager() {
           page: String(page),
           size: String(pageSize),
         });
-        const response = await fetch(`/api/admin/orders?${params}`, {
+        const response = await fetch(`/api/service-orders/history?${params}`, {
           headers: authHeaders(activeSession),
         });
         const data = (await readResponseJson(response)) as
