@@ -4893,6 +4893,79 @@ input {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.reference-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.reference-more-link,
+.reference-back-link {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.reference-more-link {
+  background: linear-gradient(90deg, #159eff, #657ee8);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(40, 126, 226, 0.2);
+  color: white;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 24px;
+}
+
+.reference-back-link {
+  color: #526079;
+  gap: 7px;
+  margin-bottom: 28px;
+}
+
+.reference-category-page .reference-main {
+  min-height: calc(100vh - 104px);
+}
+
+.reference-category-title h1 {
+  background: linear-gradient(90deg, #139dff 8%, #5d71df 45%, #f33c45 88%);
+  background-clip: text;
+  color: transparent;
+  font-family: "Arial Narrow", Arial, sans-serif;
+  font-size: clamp(27px, 3vw, 38px);
+  font-weight: 950;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.reference-all-services-search {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 460px;
+}
+
+.reference-category-loading > div:first-child,
+.reference-category-loading .reference-service-grid > span {
+  animation: reference-pulse 1.2s ease-in-out infinite alternate;
+  background: #e4ebf4;
+  border-radius: 12px;
+}
+
+.reference-category-loading > div:first-child {
+  height: 44px;
+  margin: 0 auto 32px;
+  width: 280px;
+}
+
+.reference-category-loading .reference-service-grid > span {
+  height: 390px;
+}
+
+@keyframes reference-pulse {
+  to { opacity: 0.45; }
+}
+
 .reference-service-card {
   background: white;
   background-clip: padding-box;

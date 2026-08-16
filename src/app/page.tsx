@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
+import { ReferenceServiceCard } from "@/app/components/reference-service-card";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { fetchBackendJson } from "@/lib/backend";
 import {
@@ -7,7 +8,6 @@ import {
   GameCurrencyDisplaySettings,
   MonthlyDepositLeaderboard,
   ServiceCategory,
-  ServiceSubCategory,
   SiteSettings,
 } from "@/lib/shop-api";
 import { getPublicSiteSettings } from "@/lib/site-settings";
@@ -99,24 +99,24 @@ export default async function Home() {
                 {category.description ? <p>{category.description}</p> : null}
               </div>
 
-              {category.children.length > 4 ? (
-                <label className="reference-search">
-                  <span>⌕</span>
-                  <input
-                    aria-label={`Tìm trong ${category.name}`}
-                    placeholder={`Tìm nhóm trong ${category.name.toUpperCase()}...`}
-                    readOnly
-                    type="search"
-                  />
-                </label>
-              ) : null}
-
               {category.children.length ? (
-                <div className="reference-service-grid">
-                  {category.children.map((service) => (
-                    <ReferenceServiceCard service={service} key={service.id} />
-                  ))}
-                </div>
+                <>
+                  <div className="reference-service-grid">
+                    {category.children.slice(0, 12).map((service) => (
+                      <ReferenceServiceCard service={service} key={service.id} />
+                    ))}
+                  </div>
+                  {category.children.length > 12 ? (
+                    <div className="reference-more-wrap">
+                      <Link
+                        className="reference-more-link"
+                        href={`/danh-muc/${encodeURIComponent(category.id)}`}
+                      >
+                        Xem thêm dịch vụ <span>→</span>
+                      </Link>
+                    </div>
+                  ) : null}
+                </>
               ) : (
                 <p className="reference-empty-category">
                   Danh mục này chưa có dịch vụ đang hoạt động.
@@ -256,36 +256,6 @@ function StorefrontOverview({
         <div className="monthly-leaderboard-note">Chỉ tính tiền đã cộng vào ví</div>
       </div>
     </section>
-  );
-}
-
-function ReferenceServiceCard({ service }: { service: ServiceSubCategory }) {
-  return (
-    <article className="reference-service-card">
-      <div
-        className="reference-service-image"
-        style={
-          service.imageUrl
-            ? { backgroundImage: `url(${JSON.stringify(service.imageUrl)})` }
-            : undefined
-        }
-      >
-        {!service.imageUrl ? (
-          <div className="reference-placeholder">
-            <span>{service.name.slice(0, 2).toUpperCase()}</span>
-            <small>SHOP GAME</small>
-          </div>
-        ) : null}
-      </div>
-      <div className="reference-card-content">
-        <h3>{service.name}</h3>
-        <strong className="reference-ready">Sẵn Sàng</strong>
-        <p>{service.serviceCount.toLocaleString("vi-VN")} lượt đã phục vụ</p>
-        <Link href={`/dich-vu/${encodeURIComponent(service.id)}`}>
-          Xem Tất Cả <span>→</span>
-        </Link>
-      </div>
-    </article>
   );
 }
 

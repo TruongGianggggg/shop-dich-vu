@@ -1918,6 +1918,13 @@ function PackageFormView({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   subCategories: Array<ServiceSubCategory & { categoryName: string }>;
 }) {
+  const selectedSubCategory = subCategories.find(
+    (item) => item.id === form.subCategoryId,
+  );
+  const isAutomaticTopup = selectedSubCategory
+    ? selectedSubCategory.type !== "GAME_SERVICE"
+    : false;
+
   return (
     <form className="admin-user-form admin-package-form" onSubmit={onSubmit}>
       <div className="admin-user-form-content">
@@ -1975,6 +1982,7 @@ function PackageFormView({
           Mệnh giá nhà cung cấp
           <input
             className="text-field"
+            disabled={isAutomaticTopup}
             inputMode="numeric"
             onChange={(event) =>
               onChange({ ...form, the9pAmount: normalizeIntegerInput(event.target.value) })
@@ -1982,6 +1990,9 @@ function PackageFormView({
             type="text"
             value={formatIntegerInput(form.the9pAmount)}
           />
+          {isAutomaticTopup ? (
+            <small>Mệnh giá này được cố định theo nhà cung cấp.</small>
+          ) : null}
         </label>
         <label className="field-label">
           Thứ tự
