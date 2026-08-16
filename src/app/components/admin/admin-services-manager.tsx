@@ -414,21 +414,21 @@ export function AdminServicesManager({
           getAdminServiceErrorMessage(
             response,
             data,
-            "The9P không trả về kết quả hợp lệ.",
+            "Nhà cung cấp không trả về kết quả hợp lệ.",
           ),
         );
         return;
       }
 
       setMessage(
-        `Kết nối The9P thành công, nhận được ${result.productCount ?? 0} sản phẩm.`,
+        `Kết nối nhà cung cấp thành công, nhận được ${result.productCount ?? 0} sản phẩm.`,
       );
     } catch (exception) {
       const data = {
         message:
           exception instanceof Error
             ? exception.message
-            : "Không gọi được API kiểm tra The9P.",
+            : "Không gọi được API kiểm tra nhà cung cấp.",
       };
       setThe9pTestResult({
         checkedAt: new Date().toISOString(),
@@ -465,7 +465,7 @@ export function AdminServicesManager({
           getAdminServiceErrorMessage(
             response,
             data,
-            "Không đồng bộ được sản phẩm từ The9P.",
+            "Không đồng bộ được sản phẩm từ nhà cung cấp.",
           ),
         );
         return;
@@ -473,14 +473,14 @@ export function AdminServicesManager({
 
       const result = data as The9pSyncResult;
       setMessage(
-        `Đã lấy ${result.productCount} sản phẩm từ The9P: tạo ${result.subCategoriesCreated} danh mục, tạo ${result.packagesCreated} gói, cập nhật ${result.packagesUpdated} gói${result.packagesDisabled ? `, ngừng bán ${result.packagesDisabled} gói` : ""}.`,
+        `Đã lấy ${result.productCount} sản phẩm từ nhà cung cấp: tạo ${result.subCategoriesCreated} danh mục, tạo ${result.packagesCreated} gói, cập nhật ${result.packagesUpdated} gói${result.packagesDisabled ? `, ngừng bán ${result.packagesDisabled} gói` : ""}.`,
       );
       setRefreshKey((current) => current + 1);
     } catch (exception) {
       setError(
         exception instanceof Error
           ? exception.message
-          : "Không gọi được API đồng bộ The9P.",
+          : "Không gọi được API đồng bộ nhà cung cấp.",
       );
     } finally {
       setIsSyncingThe9p(false);
@@ -1012,7 +1012,7 @@ export function AdminServicesManager({
                     className={isSyncingThe9p ? "admin-the9p-spin" : undefined}
                     size={16}
                   />
-                  {isSyncingThe9p ? "Đang lấy gói..." : "Lấy gói từ The9P"}
+                  {isSyncingThe9p ? "Đang lấy gói..." : "Lấy gói từ nhà cung cấp"}
                 </button>
                 <button
                   className="ghost-button h-11 px-5"
@@ -1025,7 +1025,7 @@ export function AdminServicesManager({
                     className={isTestingThe9p ? "admin-the9p-spin" : undefined}
                     size={16}
                   />
-                  {isTestingThe9p ? "Đang gọi The9P..." : "Kiểm tra The9P"}
+                  {isTestingThe9p ? "Đang kiểm tra..." : "Kiểm tra kết nối"}
                 </button>
               </>
             ) : null}
@@ -1082,15 +1082,15 @@ export function AdminServicesManager({
           >
             <div className="admin-the9p-test-head">
               <div>
-                <p className="section-kicker">BE → The9P · productlist</p>
+                <p className="section-kicker">BE → Nhà cung cấp · productlist</p>
                 <h2>
                   {the9pTestResult.ok
-                    ? "The9P đã trả kết quả"
-                    : "Kiểm tra The9P thất bại"}
+                    ? "Nhà cung cấp đã trả kết quả"
+                    : "Kiểm tra nhà cung cấp thất bại"}
                 </h2>
               </div>
               <button
-                aria-label="Đóng kết quả kiểm tra The9P"
+                aria-label="Đóng kết quả kiểm tra nhà cung cấp"
                 className="ghost-button h-9 px-3"
                 onClick={() => setThe9pTestResult(null)}
                 type="button"
@@ -1262,7 +1262,7 @@ export function AdminServicesManager({
                     setChildSearch(event.target.value);
                     setChildPage(1);
                   }}
-                  placeholder="Tên, loại hoặc mã The9P..."
+                  placeholder="Tên, loại hoặc mã nhà cung cấp..."
                   type="search"
                   value={childSearch}
                 />
@@ -1283,7 +1283,7 @@ export function AdminServicesManager({
                       <th>Ảnh</th>
                       <th>Tên</th>
                       <th>Danh mục cha</th>
-                      <th>Loại / Mã The9P</th>
+                      <th>Loại / Mã nhà cung cấp</th>
                       <th>Số gói</th>
                       <th>Sự ưu tiên</th>
                       <th>Trạng thái</th>
@@ -1336,7 +1336,7 @@ export function AdminServicesManager({
                         </td>
                         <td>
                           <div className="admin-child-code-cell">
-                            <strong>{child.type}</strong>
+                            <strong>{serviceTypeLabel(child.type)}</strong>
                             <small>{child.the9pServiceCode ?? "Chưa gắn mã"}</small>
                           </div>
                         </td>
@@ -1535,7 +1535,7 @@ export function AdminServicesManager({
                     </span>
                   </p>
                   <p>
-                    <strong>Mã 9P</strong>
+                    <strong>Mã nhà cung cấp</strong>
                     <span>{selectedSubCategory?.the9pServiceCode ?? "Chưa gắn"}</span>
                   </p>
                 </div>
@@ -1544,7 +1544,7 @@ export function AdminServicesManager({
                   <div className="admin-package-list-head" aria-hidden="true">
                     <span>Gói</span>
                     <span>Giá</span>
-                    <span>9P amount</span>
+                    <span>Mệnh giá nhà cung cấp</span>
                     <span>Thứ tự</span>
                     <span>Trạng thái</span>
                     <span>Thao tác</span>
@@ -1782,7 +1782,7 @@ function SubCategoryFormView({
           >
             {serviceTypes.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {serviceTypeLabel(type)}
               </option>
             ))}
           </select>
@@ -1821,7 +1821,7 @@ function SubCategoryFormView({
           />
         </label>
         <label className="field-label">
-          Mã dịch vụ 9P
+          Mã dịch vụ nhà cung cấp
           <input
             className="text-field"
             onChange={(event) =>
@@ -1972,7 +1972,7 @@ function PackageFormView({
           />
         </label>
         <label className="field-label">
-          9P amount
+          Mệnh giá nhà cung cấp
           <input
             className="text-field"
             inputMode="numeric"
@@ -2105,6 +2105,10 @@ function StatusPill({ active }: { active: boolean }) {
       {active ? "Active" : "Tắt"}
     </span>
   );
+}
+
+function serviceTypeLabel(type: string) {
+  return type === "TOPUP_THE9P" ? "TOPUP_CARD" : type;
 }
 
 function getModalTitle(mode: ModalMode, isEditing: boolean) {

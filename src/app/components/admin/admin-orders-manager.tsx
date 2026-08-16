@@ -398,7 +398,7 @@ export function AdminOrdersManager() {
                         : formatVnd(detailOrder.collaboratorEarningAmount)
                     }
                   />
-                  <CompactRow label="Mã The9P" value={detailOrder.the9pOrderCode ?? "Không có"} />
+                  <CompactRow label="Mã nhà cung cấp" value={detailOrder.the9pOrderCode ?? "Không có"} />
                   <CompactRow label="Tạo lúc" value={formatDateTime(detailOrder.createdAt)} />
                 </div>
               </section>

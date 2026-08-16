@@ -240,7 +240,7 @@ export function DepositQrButton() {
       const data = await readResponseJson(response);
 
       if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "Không gửi được thẻ tới The9P."));
+        throw new Error(getApiErrorMessage(data, "Không gửi được card."));
       }
 
       setCardResult(data as CardDepositResponse);
@@ -249,7 +249,7 @@ export function DepositQrButton() {
       setError(
         exception instanceof Error
           ? exception.message
-          : "Không gửi được thẻ tới The9P.",
+          : "Không gửi được card.",
       );
     } finally {
       setIsSubmittingCard(false);
@@ -303,7 +303,7 @@ export function DepositQrButton() {
                 role="tab"
                 type="button"
               >
-                Thẻ cào The9P
+                Nạp card
               </button>
             </div>
 
@@ -420,6 +420,7 @@ export function DepositQrButton() {
                     onChange={(event) => setCardSerial(cleanCardValue(event.target.value))}
                     placeholder="Nhập số serial trên thẻ"
                     required
+                    type="text"
                     value={cardSerial}
                   />
                 </label>
@@ -434,13 +435,13 @@ export function DepositQrButton() {
                     onChange={(event) => setCardPin(cleanCardValue(event.target.value))}
                     placeholder="Nhập mã thẻ sau lớp tráng bạc"
                     required
-                    type="password"
+                    type="text"
                     value={cardPin}
                   />
                 </label>
 
                 <p className="deposit-card-note">
-                  Chọn đúng nhà mạng và mệnh giá. Thẻ sai mệnh giá có thể bị The9P áp dụng phí phạt.
+                  Chọn đúng nhà mạng và mệnh giá. Card sai mệnh giá có thể bị áp dụng phí phạt.
                 </p>
 
                 <div className="deposit-card-result deposit-card-estimate">
@@ -448,14 +449,14 @@ export function DepositQrButton() {
                   <span>
                     Mệnh giá {formatVnd(cardAmount)} dự kiến nhận tối đa {formatVnd(Math.floor(cardAmount * (100 - cardDiscountPercent) / 100))}.
                   </span>
-                  <span>Số tiền thực nhận không vượt quá số tiền The9P thanh toán.</span>
+                  <span>Số tiền thực nhận không vượt quá số tiền nhà cung cấp thanh toán.</span>
                 </div>
 
                 {cardResult ? (
                   <div className="deposit-card-result" role="status">
                     <strong>Đã gửi thẻ thành công</strong>
                     <span>Mã giao dịch: {cardResult.transId}</span>
-                    <span>Trạng thái: Đang chờ The9P xử lý</span>
+                    <span>Trạng thái: Đang chờ xử lý</span>
                   </div>
                 ) : null}
                 {error ? <p className="deposit-modal-error">{error}</p> : null}

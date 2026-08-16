@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return await proxyBackendResponse("/api/the9p/sync-packages", request);
   } catch {
     return Response.json(
-      { message: "Không kết nối được backend để đồng bộ gói The9P." },
+      { message: "Không kết nối được backend để đồng bộ gói từ nhà cung cấp." },
       { status: 502 },
     );
   }

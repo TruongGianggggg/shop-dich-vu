@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return await proxyBackendResponse("/api/the9p/recharge-products", request);
   } catch {
     return Response.json(
-      { message: "Không kết nối được backend để kiểm tra The9P." },
+      { message: "Không kết nối được backend để kiểm tra nhà cung cấp." },
       { status: 502 },
     );
   }

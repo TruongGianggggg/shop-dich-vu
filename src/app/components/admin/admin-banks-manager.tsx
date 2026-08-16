@@ -621,7 +621,7 @@ export function AdminBanksManager() {
           <div className="role-panel-head">
             <div>
               <p className="section-kicker">Cấu hình gạch thẻ</p>
-              <h2>Chiết khấu nạp thẻ The9P</h2>
+              <h2>Chiết khấu nạp card</h2>
             </div>
             <span>Người dùng nhận {100 - cardSettings.discountPercent}%</span>
           </div>
