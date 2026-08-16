@@ -4754,22 +4754,90 @@ input {
 
 .storefront-banner {
   align-items: center;
-  aspect-ratio: 16 / 7.2;
+  aspect-ratio: 16 / 9;
   background: linear-gradient(135deg, #1764be, #39bde2);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   border: 2px solid #4b92ed;
   border-radius: 13px;
   display: flex;
   justify-content: center;
-  min-height: 320px;
+  min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .storefront-banner > div { color: #fff; display: grid; gap: 8px; text-align: center; }
 .storefront-banner > div strong { font-size: 32px; font-weight: 950; }
 .storefront-banner > div span { opacity: .72; }
+
+.storefront-banner.has-image {
+  background: #0f172a;
+}
+
+.storefront-banner-image {
+  object-fit: contain;
+}
+
+.storefront-banner-arrow {
+  align-items: center;
+  background: rgba(15, 23, 42, .58);
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: opacity 160ms ease, background 160ms ease;
+  width: 40px;
+  z-index: 2;
+}
+
+.storefront-banner:hover .storefront-banner-arrow,
+.storefront-banner-arrow:focus-visible {
+  opacity: 1;
+}
+
+.storefront-banner-arrow:hover {
+  background: rgba(37, 99, 235, .88);
+}
+
+.storefront-banner-arrow.is-previous { left: 14px; }
+.storefront-banner-arrow.is-next { right: 14px; }
+
+.storefront-banner-dots {
+  align-items: center;
+  background: rgba(15, 23, 42, .48);
+  border-radius: 999px;
+  bottom: 12px;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 7px !important;
+  left: 50%;
+  padding: 6px 9px;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.storefront-banner-dots button {
+  background: rgba(255, 255, 255, .6);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 7px;
+  padding: 0;
+  transition: width 160ms ease, background 160ms ease;
+  width: 7px;
+}
+
+.storefront-banner-dots button.is-active {
+  background: #fff;
+  width: 20px;
+}
 
 .monthly-leaderboard {
   background: #fff;
@@ -4778,7 +4846,7 @@ input {
   box-shadow: 0 10px 26px rgba(33, 67, 110, .09);
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 320px;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -6046,6 +6114,101 @@ input {
     align-items: flex-start;
     gap: 12px;
   }
+}
+
+/* Storefront entry announcement */
+.storefront-announcement-backdrop {
+  align-items: center;
+  background: rgba(25, 39, 62, .58);
+  backdrop-filter: blur(5px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 10000;
+}
+
+.storefront-announcement-card {
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, .75);
+  border-radius: 20px;
+  box-shadow: 0 28px 80px rgba(15, 31, 58, .3);
+  max-height: min(680px, calc(100vh - 40px));
+  max-width: 560px;
+  overflow: auto;
+  padding: 38px 38px 30px;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+.storefront-announcement-close {
+  align-items: center;
+  background: #f5f7fa;
+  border: 1px solid #e5eaf1;
+  border-radius: 10px;
+  color: #536176;
+  cursor: pointer;
+  display: flex;
+  height: 38px;
+  justify-content: center;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 38px;
+}
+
+.storefront-announcement-title {
+  align-items: center;
+  color: #168eff;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 3px 42px 0;
+}
+
+.storefront-announcement-title h2 {
+  color: #15213a;
+  font-size: clamp(20px, 4vw, 25px);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.storefront-announcement-card > p {
+  color: #5f6b7d;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.75;
+  margin: 22px 0 28px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.storefront-announcement-confirm {
+  background: linear-gradient(135deg, #168eff, #526ff0);
+  border: 0;
+  border-radius: 11px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, .25);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 850;
+  min-height: 44px;
+  min-width: 130px;
+  padding: 0 24px;
+}
+
+.storefront-announcement-close:hover,
+.storefront-announcement-confirm:hover {
+  filter: brightness(.97);
+}
+
+@media (max-width: 560px) {
+  .storefront-announcement-backdrop { padding: 14px; }
+  .storefront-announcement-card { border-radius: 17px; padding: 34px 20px 24px; }
+  .storefront-announcement-card > p { font-size: 14px; }
+  .storefront-announcement-title { padding-left: 34px; padding-right: 34px; }
 }
 
 /* Independent gold and gem storefront */

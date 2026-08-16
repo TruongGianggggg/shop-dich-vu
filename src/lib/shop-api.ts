@@ -154,6 +154,10 @@ export type SiteSettings = {
   shopName: string;
   logoUrl: string;
   bannerUrl: string;
+  bannerUrls: string[];
+  announcementEnabled: boolean;
+  announcementTitle: string;
+  announcementContent: string;
   footerTitle: string;
   footerDescription: string;
   footerCopyright: string;

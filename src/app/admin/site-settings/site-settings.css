@@ -207,6 +207,140 @@
   background-color: #fff;
 }
 
+.site-banner-preview-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.site-banner-preview-item {
+  background: #fff;
+  border: 1px solid #e1e5eb;
+  border-radius: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.site-banner-preview-image {
+  aspect-ratio: 16 / 9;
+  background: #f4f6f9 center / contain no-repeat;
+  border-bottom: 1px solid #e8ebf0;
+}
+
+.site-banner-preview-actions {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  padding: 7px 8px;
+}
+
+.site-banner-preview-actions strong {
+  color: #566074;
+  font-size: 11px;
+  margin-right: auto;
+}
+
+.site-banner-preview-actions button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dce1e8;
+  border-radius: 4px;
+  color: #556074;
+  cursor: pointer;
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.site-banner-preview-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+
+.php-announcement-section {
+  border-bottom: 1px solid #e9edf2;
+  display: grid;
+  gap: 15px;
+  margin-bottom: 18px;
+  padding-bottom: 20px;
+}
+
+.php-announcement-heading {
+  align-items: center;
+  background: #f7f9fc;
+  border: 1px solid #e3e8ef;
+  border-radius: 6px;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.php-announcement-heading h3 {
+  color: #344054;
+  font-size: 13px;
+  margin: 0;
+}
+
+.php-announcement-heading p {
+  color: #8993a4;
+  font-size: 11px;
+  margin: 5px 0 0;
+}
+
+.php-announcement-section > label {
+  color: #374151;
+  display: grid;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 8px;
+}
+
+.php-announcement-section > small {
+  color: #8993a4;
+  font-size: 11px;
+}
+
+.php-announcement-toggle {
+  align-items: center;
+  color: #475467;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.php-announcement-toggle input {
+  accent-color: #2563eb;
+  height: 18px;
+  width: 18px;
+}
+
+.php-announcement-content {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.site-banner-preview-actions button.is-danger {
+  border-color: #f2c5ca;
+  color: #dc3545;
+}
+
+.site-banner-empty {
+  align-items: center;
+  aspect-ratio: 16 / 9;
+  background: #f8f9fb;
+  border: 1px dashed #d9dee7;
+  border-radius: 5px;
+  color: #9ca3af;
+  display: flex;
+  font-size: 13px;
+  justify-content: center;
+}
+
 .php-footer-section {
   display: grid;
   gap: 14px;
@@ -407,6 +541,10 @@
   .site-image-preview.is-banner {
     height: 130px;
     width: 100%;
+  }
+
+  .site-banner-preview-list {
+    grid-template-columns: 1fr;
   }
 
   .manual-period-fields {

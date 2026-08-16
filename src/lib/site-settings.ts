@@ -6,6 +6,10 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   shopName: "SHOP GAME",
   logoUrl: "",
   bannerUrl: "",
+  bannerUrls: [],
+  announcementEnabled: false,
+  announcementTitle: "Thông báo mới",
+  announcementContent: "",
   footerTitle: "SHOP GAME",
   footerDescription: "Dịch vụ game trực tuyến nhanh chóng và an toàn.",
   footerCopyright: "Shop Game. All rights reserved.",
@@ -19,7 +23,18 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
 
 export async function getPublicSiteSettings() {
   try {
-    return await fetchBackendJson<SiteSettings>("/api/site-settings");
+    const settings = await fetchBackendJson<SiteSettings>("/api/site-settings");
+    const bannerUrls = Array.isArray(settings.bannerUrls)
+      ? settings.bannerUrls
+      : settings.bannerUrl
+        ? [settings.bannerUrl]
+        : [];
+    return {
+      ...DEFAULT_SITE_SETTINGS,
+      ...settings,
+      bannerUrl: bannerUrls[0] ?? "",
+      bannerUrls,
+    };
   } catch {
     return DEFAULT_SITE_SETTINGS;
   }

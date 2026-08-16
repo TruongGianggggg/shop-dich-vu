@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
 import { ReferenceServiceCard } from "@/app/components/reference-service-card";
 import { ShopBrand } from "@/app/components/shop-brand";
+import { StorefrontBannerCarousel } from "@/app/components/storefront-banner-carousel";
+import { StorefrontAnnouncement } from "@/app/components/storefront-announcement";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   formatVnd,
@@ -72,6 +74,11 @@ export default async function Home() {
 
   return (
     <div className="reference-storefront">
+      <StorefrontAnnouncement
+        content={siteSettings.announcementContent}
+        enabled={siteSettings.announcementEnabled}
+        title={siteSettings.announcementTitle}
+      />
       <main className="reference-main" id="dich-vu">
         <StorefrontOverview
           leaderboard={leaderboard}
@@ -194,9 +201,9 @@ function CurrencyTopupSection({
             {!displaySettings.goldImageUrl ? <Coins size={58} /> : null}
           </div>
           <div className="currency-showcase-content">
-            <h3>MUA VÀNG</h3>
-            <p>MUA VÀNG NRO</p>
-            <strong className="currency-showcase-button">Mua ngay</strong>
+            <h3>NẠP VÀNG</h3>
+            <p>NẠP VÀNG NRO</p>
+            <strong className="currency-showcase-button">Nạp ngay</strong>
           </div>
         </Link>
         <Link className="currency-showcase-card gem" href="/nap-ngoc">
@@ -207,9 +214,9 @@ function CurrencyTopupSection({
             {!displaySettings.gemImageUrl ? <Gem size={58} /> : null}
           </div>
           <div className="currency-showcase-content">
-            <h3>MUA NGỌC</h3>
-            <p>MUA NGỌC NRO</p>
-            <strong className="currency-showcase-button">Mua ngay</strong>
+            <h3>NẠP NGỌC</h3>
+            <p>NẠP NGỌC NRO</p>
+            <strong className="currency-showcase-button">Nạp ngay</strong>
           </div>
         </Link>
       </div>
@@ -224,24 +231,20 @@ function StorefrontOverview({
   leaderboard: MonthlyDepositLeaderboard | null;
   settings: SiteSettings;
 }) {
-  if (!settings.bannerUrl && !leaderboard) return null;
+  const bannerUrls = settings.bannerUrls?.length
+    ? settings.bannerUrls
+    : settings.bannerUrl
+      ? [settings.bannerUrl]
+      : [];
+  if (!bannerUrls.length && !leaderboard) return null;
 
   return (
     <section className="storefront-overview" aria-label="Banner và top nạp tháng">
-      <div
-        className={`storefront-banner${settings.bannerUrl ? " has-image" : ""}`}
-        role="img"
-        aria-label={`Banner ${settings.shopName}`}
-        style={
-          settings.bannerUrl
-            ? { backgroundImage: `url(${JSON.stringify(settings.bannerUrl)})` }
-            : undefined
-        }
-      >
-        {!settings.bannerUrl ? (
-          <div><strong>{settings.shopName}</strong><span>{settings.footerDescription}</span></div>
-        ) : null}
-      </div>
+      <StorefrontBannerCarousel
+        bannerUrls={bannerUrls}
+        description={settings.footerDescription}
+        shopName={settings.shopName}
+      />
       <div className="monthly-leaderboard">
         <div className="monthly-leaderboard-head">
           <strong>TOP NẠP {String(leaderboard?.month ?? new Date().getMonth() + 1).padStart(2, "0")}/{leaderboard?.year ?? new Date().getFullYear()}</strong>

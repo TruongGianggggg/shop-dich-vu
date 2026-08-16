@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageUp, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageUp, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
@@ -12,6 +12,10 @@ const defaultSettings: SiteSettings = {
   shopName: "SHOP GAME",
   logoUrl: "",
   bannerUrl: "",
+  bannerUrls: [],
+  announcementEnabled: false,
+  announcementTitle: "Thông báo mới",
+  announcementContent: "",
   footerTitle: "SHOP GAME",
   footerDescription: "Dịch vụ game trực tuyến nhanh chóng và an toàn.",
   footerCopyright: "Shop Game. All rights reserved.",
@@ -23,7 +27,7 @@ const defaultSettings: SiteSettings = {
   footerZaloUrl: "",
 };
 
-type ImageField = "logoUrl" | "bannerUrl";
+type ImageField = "logoUrl" | "bannerUrls";
 
 export function AdminSiteSettingsManager() {
   const session = useAuthSession();
@@ -57,7 +61,7 @@ export function AdminSiteSettingsManager() {
         if (!response.ok) {
           throw new Error(getApiErrorMessage(data, "Không tải được cấu hình shop."));
         }
-        if (!ignore) setForm(data as SiteSettings);
+        if (!ignore) setForm(normalizeSiteSettings(data as SiteSettings));
       } catch (exception) {
         if (!ignore) {
           setError(exception instanceof Error ? exception.message : "Không tải được cấu hình shop.");
@@ -106,6 +110,10 @@ export function AdminSiteSettingsManager() {
 
   async function uploadImage(field: ImageField, file: File) {
     if (!session) return;
+    if (field === "bannerUrls" && form.bannerUrls.length >= 8) {
+      setError("Chỉ có thể sử dụng tối đa 8 ảnh banner.");
+      return;
+    }
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
       setError("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.");
       return;
@@ -141,11 +149,17 @@ export function AdminSiteSettingsManager() {
       if (typeof imageUrl !== "string" || !imageUrl) {
         throw new Error("Backend không trả đường dẫn ảnh hợp lệ.");
       }
-      setForm((current) => ({ ...current, [field]: imageUrl }));
+      setForm((current) => {
+        if (field === "bannerUrls") {
+          const bannerUrls = [...current.bannerUrls, imageUrl].slice(0, 8);
+          return { ...current, bannerUrl: bannerUrls[0] ?? "", bannerUrls };
+        }
+        return { ...current, logoUrl: imageUrl };
+      });
       setMessage(
         field === "logoUrl"
           ? "Đã bỏ nền và tải logo PNG trong suốt. Bấm Lưu cấu hình để áp dụng."
-          : "Đã tải ảnh lên. Bấm Lưu cấu hình để áp dụng.",
+          : "Đã thêm banner. Bấm Lưu cấu hình để áp dụng.",
       );
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Không tải được ảnh lên.");
@@ -173,7 +187,7 @@ export function AdminSiteSettingsManager() {
       if (!response.ok) {
         throw new Error(getApiErrorMessage(data, "Không lưu được cấu hình shop."));
       }
-      setForm(data as SiteSettings);
+      setForm(normalizeSiteSettings(data as SiteSettings));
       setMessage("Đã lưu cấu hình giao diện shop.");
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Không lưu được cấu hình shop.");
@@ -303,15 +317,59 @@ export function AdminSiteSettingsManager() {
               onUpload={uploadImage}
             />
 
-            <ImageEditor
-              field="bannerUrl"
-              imageUrl={form.bannerUrl}
-              isBanner
-              isUploading={uploadingField === "bannerUrl"}
-              label="Banner chính"
-              onClear={() => setForm({ ...form, bannerUrl: "" })}
-              onUpload={uploadImage}
+            <BannerEditor
+              bannerUrls={form.bannerUrls}
+              isUploading={uploadingField === "bannerUrls"}
+              onMove={(index, direction) => {
+                const nextIndex = index + direction;
+                if (nextIndex < 0 || nextIndex >= form.bannerUrls.length) return;
+                const bannerUrls = [...form.bannerUrls];
+                [bannerUrls[index], bannerUrls[nextIndex]] = [bannerUrls[nextIndex], bannerUrls[index]];
+                setForm({ ...form, bannerUrl: bannerUrls[0] ?? "", bannerUrls });
+              }}
+              onRemove={(index) => {
+                const bannerUrls = form.bannerUrls.filter((_, itemIndex) => itemIndex !== index);
+                setForm({ ...form, bannerUrl: bannerUrls[0] ?? "", bannerUrls });
+              }}
+              onUpload={(file) => uploadImage("bannerUrls", file)}
             />
+            <div className="php-announcement-section">
+              <div className="php-announcement-heading">
+                <div>
+                  <h3>THÔNG BÁO KHI VÀO SHOP</h3>
+                  <p>Hiển thị popup ở chính giữa màn hình khi khách mở trang chủ.</p>
+                </div>
+                <label className="php-announcement-toggle">
+                  <input
+                    checked={form.announcementEnabled}
+                    onChange={(event) => setForm({ ...form, announcementEnabled: event.target.checked })}
+                    type="checkbox"
+                  />
+                  <span>{form.announcementEnabled ? "Đang bật" : "Đang tắt"}</span>
+                </label>
+              </div>
+              <label>
+                <span>Tiêu đề thông báo</span>
+                <input
+                  className="php-form-control"
+                  maxLength={200}
+                  onChange={(event) => setForm({ ...form, announcementTitle: event.target.value })}
+                  placeholder="Ví dụ: Thông báo mới"
+                  value={form.announcementTitle}
+                />
+              </label>
+              <label>
+                <span>Nội dung thông báo</span>
+                <textarea
+                  className="php-form-control php-announcement-content"
+                  maxLength={3000}
+                  onChange={(event) => setForm({ ...form, announcementContent: event.target.value })}
+                  placeholder="Nhập nội dung cần thông báo tới khách hàng..."
+                  value={form.announcementContent}
+                />
+              </label>
+              <small>Mỗi lần sửa tiêu đề hoặc nội dung, thông báo sẽ hiện lại với khách đã đóng bản cũ.</small>
+            </div>
             <div className="php-footer-section">
               <h3>NỘI DUNG FOOTER</h3>
               <label>
@@ -520,6 +578,103 @@ function ImageEditor({ field, imageUrl, isBanner = false, isUploading, label, on
       </div>
     </div>
   );
+}
+
+function BannerEditor({
+  bannerUrls,
+  isUploading,
+  onMove,
+  onRemove,
+  onUpload,
+}: {
+  bannerUrls: string[];
+  isUploading: boolean;
+  onMove: (index: number, direction: -1 | 1) => void;
+  onRemove: (index: number) => void;
+  onUpload: (file: File) => void;
+}) {
+  return (
+    <div className="site-banner-editor php-setting-row">
+      <div className="site-image-control">
+        <span className="site-image-label">Banner trang chủ</span>
+        <div className="site-image-actions">
+          <label className="php-file-control site-image-upload">
+            <ImageUp aria-hidden="true" size={16} />
+            {isUploading ? "Đang tải ảnh..." : "Thêm ảnh banner"}
+            <input
+              accept="image/jpeg,image/png,image/webp"
+              disabled={isUploading || bannerUrls.length >= 8}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) onUpload(file);
+                event.currentTarget.value = "";
+              }}
+              type="file"
+            />
+          </label>
+        </div>
+        <small>
+          Nên dùng ảnh tỷ lệ 16:9. JPG, PNG hoặc WEBP, tối đa 5 MB mỗi ảnh;
+          tối đa 8 banner. Thứ tự bên dưới cũng là thứ tự trình chiếu.
+        </small>
+      </div>
+
+      <div className="site-banner-preview-list">
+        {bannerUrls.map((imageUrl, index) => (
+          <article className="site-banner-preview-item" key={`${imageUrl}-${index}`}>
+            <div
+              className="site-banner-preview-image"
+              style={{ backgroundImage: `url(${JSON.stringify(imageUrl)})` }}
+            />
+            <div className="site-banner-preview-actions">
+              <strong>Banner {index + 1}</strong>
+              <button
+                aria-label="Chuyển banner sang trái"
+                disabled={index === 0}
+                onClick={() => onMove(index, -1)}
+                type="button"
+              >
+                <ChevronLeft aria-hidden="true" size={15} />
+              </button>
+              <button
+                aria-label="Chuyển banner sang phải"
+                disabled={index === bannerUrls.length - 1}
+                onClick={() => onMove(index, 1)}
+                type="button"
+              >
+                <ChevronRight aria-hidden="true" size={15} />
+              </button>
+              <button
+                aria-label="Xóa banner"
+                className="is-danger"
+                onClick={() => onRemove(index)}
+                type="button"
+              >
+                <Trash2 aria-hidden="true" size={14} />
+              </button>
+            </div>
+          </article>
+        ))}
+        {!bannerUrls.length ? (
+          <div className="site-banner-empty">Chưa có ảnh banner</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function normalizeSiteSettings(settings: SiteSettings): SiteSettings {
+  const bannerUrls = Array.isArray(settings.bannerUrls)
+    ? settings.bannerUrls.filter((value) => typeof value === "string" && value.trim())
+    : settings.bannerUrl
+      ? [settings.bannerUrl]
+      : [];
+  return {
+    ...defaultSettings,
+    ...settings,
+    bannerUrl: bannerUrls[0] ?? "",
+    bannerUrls,
+  };
 }
 
 async function readJson(response: Response) {
