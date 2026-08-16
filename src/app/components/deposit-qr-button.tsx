@@ -433,7 +433,7 @@ export function DepositQrButton() {
                     maxLength={32}
                     minLength={8}
                     onChange={(event) => setCardPin(cleanCardValue(event.target.value))}
-                    placeholder="Nhập mã thẻ sau lớp tráng bạc"
+                    placeholder="Nhập mã thẻ"
                     required
                     type="text"
                     value={cardPin}

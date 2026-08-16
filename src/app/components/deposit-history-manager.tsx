@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   AuthResponse,
+  CardDepositDetail,
   DepositHistory,
   DepositStatus,
   formatVnd,
@@ -29,6 +31,9 @@ export function DepositHistoryManager() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalDeposited, setTotalDeposited] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedDeposit, setSelectedDeposit] = useState<DepositHistory | null>(null);
+  const [cardDetail, setCardDetail] = useState<CardDepositDetail | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const pageNumbers = getPageNumbers(
     pageInfo?.page ?? page,
     pageInfo?.totalPages ?? 0,
@@ -151,6 +156,43 @@ export function DepositHistoryManager() {
     }
   }
 
+  async function openCardDetail(deposit: DepositHistory) {
+    if (!session || deposit.source !== "CARD") {
+      return;
+    }
+
+    setSelectedDeposit(deposit);
+    setCardDetail(null);
+    setIsDetailLoading(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `/api/admin/deposits/cards/${encodeURIComponent(deposit.id)}`,
+        { headers: authHeaders(session) },
+      );
+      const data = (await readResponseJson(response)) as CardDepositDetail | unknown;
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Không tải được chi tiết giao dịch card."));
+      }
+      setCardDetail(data as CardDepositDetail);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Không tải được chi tiết giao dịch card.",
+      );
+      setSelectedDeposit(null);
+    } finally {
+      setIsDetailLoading(false);
+    }
+  }
+
+  function closeDetail() {
+    setSelectedDeposit(null);
+    setCardDetail(null);
+    setIsDetailLoading(false);
+  }
+
   return (
     <main className="role-dashboard">
       <AdminSidebar active="deposits" />
@@ -236,6 +278,7 @@ export function DepositHistoryManager() {
                   <th>Mệnh giá</th>
                   <th>Thực nhận</th>
                   <th>Trạng thái</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,11 +307,26 @@ export function DepositHistoryManager() {
                         {deposit.reason ? <small>{deposit.reason}</small> : null}
                       </div>
                     </td>
+                    <td>
+                      {deposit.source === "CARD" ? (
+                        <button
+                          className="ghost-button h-9 px-3"
+                          disabled={isDetailLoading && selectedDeposit?.id === deposit.id}
+                          onClick={() => void openCardDetail(deposit)}
+                          type="button"
+                        >
+                          <Eye aria-hidden="true" size={15} />
+                          Chi tiết
+                        </button>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {!isLoading && deposits.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>Chưa có giao dịch nạp tiền.</td>
+                    <td colSpan={8}>Chưa có giao dịch nạp tiền.</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -321,7 +379,78 @@ export function DepositHistoryManager() {
           </div>
         </section>
       </section>
+
+      {selectedDeposit && typeof document !== "undefined"
+        ? createPortal(
+            <div className="admin-user-modal" role="presentation">
+              <button
+                aria-label="Đóng chi tiết giao dịch"
+                className="admin-user-modal-backdrop"
+                onClick={closeDetail}
+                type="button"
+              />
+              <section
+                aria-modal="true"
+                className="admin-user-modal-panel admin-order-detail-panel"
+                role="dialog"
+              >
+                <div className="admin-order-detail-header">
+                  <div className="admin-order-detail-title">
+                    <p className="section-kicker">Chi tiết nạp card</p>
+                    <h2>{selectedDeposit.transId}</h2>
+                  </div>
+                  <button
+                    aria-label="Đóng"
+                    className="admin-user-modal-close"
+                    onClick={closeDetail}
+                    type="button"
+                  >
+                    <X aria-hidden="true" size={18} />
+                  </button>
+                </div>
+
+                {isDetailLoading ? (
+                  <p className="deposit-detail-loading">Đang tải chi tiết...</p>
+                ) : cardDetail ? (
+                  <div className="admin-order-basic-detail">
+                    <section className="admin-order-detail-card">
+                      <h3>Thông tin giao dịch</h3>
+                      <div className="admin-order-compact-grid">
+                        <DetailRow label="User ID" value={cardDetail.userId} />
+                        <DetailRow label="Nhà mạng" value={cardDetail.telco} />
+                        <DetailRow label="Mệnh giá" value={formatVnd(cardDetail.declaredAmount)} />
+                        <DetailRow label="Thực nhận" value={formatVnd(cardDetail.creditedAmount)} />
+                        <DetailRow label="Trạng thái" value={statusLabel(cardDetail.status)} />
+                        <DetailRow label="Thời gian" value={formatDateTime(cardDetail.createdAt)} />
+                      </div>
+                    </section>
+                    <section className="admin-order-detail-card deposit-card-secret-card">
+                      <h3>Thông tin card</h3>
+                      <div className="admin-order-compact-notes">
+                        <DetailRow label="Serial" secret value={cardDetail.serial} />
+                        <DetailRow label="Mã thẻ" secret value={cardDetail.pin} />
+                        {cardDetail.reason ? (
+                          <DetailRow label="Ghi chú" value={cardDetail.reason} />
+                        ) : null}
+                      </div>
+                    </section>
+                  </div>
+                ) : null}
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
     </main>
+  );
+}
+
+function DetailRow({ label, secret = false, value }: { label: string; secret?: boolean; value: string }) {
+  return (
+    <div className="admin-order-compact-row">
+      <span>{label}</span>
+      <strong className={secret ? "deposit-card-secret" : undefined}>{value || "—"}</strong>
+    </div>
   );
 }
 

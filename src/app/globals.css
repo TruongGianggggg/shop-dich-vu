@@ -2008,6 +2008,27 @@ input {
   color: #b91c1c;
 }
 
+.deposit-detail-loading {
+  color: #667085;
+  font-size: 14px;
+  font-weight: 750;
+  margin: 0;
+  padding: 28px 4px 10px;
+}
+
+.deposit-card-secret-card {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.deposit-card-secret {
+  color: #111827;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
 .admin-order-metrics {
   margin-top: 18px;
 }
