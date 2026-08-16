@@ -96,7 +96,9 @@ export default async function Home() {
               <div className="reference-category-title">
                 <h2>{category.name}</h2>
                 <span />
-                {category.description ? <p>{category.description}</p> : null}
+                {category.description && category.id !== "the9p-auto-topup" ? (
+                  <p>{category.description}</p>
+                ) : null}
               </div>
 
               {category.children.length ? (
@@ -110,7 +112,11 @@ export default async function Home() {
                     <div className="reference-more-wrap">
                       <Link
                         className="reference-more-link"
-                        href={`/danh-muc/${encodeURIComponent(category.id)}`}
+                        href={`/danh-muc/${encodeURIComponent(
+                          category.id === "the9p-auto-topup"
+                            ? "auto-topup"
+                            : category.id,
+                        )}`}
                       >
                         Xem thêm dịch vụ <span>→</span>
                       </Link>

@@ -4899,8 +4899,7 @@ input {
   margin-top: 28px;
 }
 
-.reference-more-link,
-.reference-back-link {
+.reference-more-link {
   align-items: center;
   display: inline-flex;
   font-weight: 850;
@@ -4915,12 +4914,6 @@ input {
   gap: 10px;
   min-height: 44px;
   padding: 0 24px;
-}
-
-.reference-back-link {
-  color: #526079;
-  gap: 7px;
-  margin-bottom: 28px;
 }
 
 .reference-category-page .reference-main {
