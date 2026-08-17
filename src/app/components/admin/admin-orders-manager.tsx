@@ -451,22 +451,22 @@ async function readResponseJson(response: Response) {
 
 function orderStatusLabel(status: ServiceOrderStatus) {
   if (status === "PROCESSING") {
-    return "Đang xử lý";
+    return "Đang chờ xử lý";
   }
 
   if (status === "COMPLETED") {
-    return "Hoàn tất";
+    return "Thành công";
   }
 
   if (status === "FAILED") {
-    return "Thất bại";
+    return "Lỗi";
   }
 
   if (status === "CANCELED") {
     return "Đã hủy";
   }
 
-  return "Đang chờ";
+  return "Đang chờ xử lý";
 }
 
 function serviceTypeLabel(type: string) {

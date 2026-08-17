@@ -11,10 +11,10 @@ import {
 import { useAuthSession } from "./use-auth-session";
 
 const statusLabels: Record<ServiceOrder["status"], string> = {
-  PENDING: "Chờ xử lý",
-  PROCESSING: "Đang xử lý",
-  COMPLETED: "Hoàn thành",
-  FAILED: "Thất bại",
+  PENDING: "Đang chờ xử lý",
+  PROCESSING: "Đang chờ xử lý",
+  COMPLETED: "Thành công",
+  FAILED: "Lỗi",
   CANCELED: "Đã hủy",
 };
 

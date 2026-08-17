@@ -11,6 +11,27 @@ import {
 } from "@/lib/shop-api";
 import { useAuthSession } from "./use-auth-session";
 
+const NGOC_RONG_SERVERS = [
+  "1 Sao",
+  "2 Sao",
+  "3 Sao",
+  "4 Sao",
+  "5 Sao",
+  "6 Sao",
+  "7 Sao",
+  "8 Sao",
+  "9 Sao",
+  "10 Sao",
+  "Vip 1",
+  "12 Sao",
+  "Super 1",
+  "Super 2",
+  "13 Sao",
+  "Vip 2",
+  "14 Sao",
+  "Super 3",
+] as const;
+
 export function ServiceOrderForm({
   service,
   packages,
@@ -30,6 +51,7 @@ export function ServiceOrderForm({
     [packages, selectedPackageId],
   );
   const isManualService = service.type === "GAME_SERVICE";
+  const usesNgocRongServers = service.the9pServiceCode?.trim().toLowerCase() === "nr";
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -167,12 +189,21 @@ export function ServiceOrderForm({
           ) : null}
           <label className="detail-field detail-field-wide">
             <span>Server</span>
-            <input
-              maxLength={120}
-              name="server"
-              placeholder="Nhập tên hoặc số máy chủ, ví dụ: Server 1"
-              required
-            />
+            {usesNgocRongServers ? (
+              <select defaultValue="" name="server" required>
+                <option disabled value="">Chọn máy chủ</option>
+                {NGOC_RONG_SERVERS.map((server) => (
+                  <option key={server} value={server}>{server}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                maxLength={120}
+                name="server"
+                placeholder="Nhập tên hoặc số máy chủ, ví dụ: Server 1"
+                required
+              />
+            )}
           </label>
         </div>
       </section>
