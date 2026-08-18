@@ -1,5 +1,4 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import { ScrollToPageTop } from "@/app/components/scroll-to-page-top";
 import { ServiceCategoryBrowser } from "@/app/components/service-category-browser";
 import { fetchBackendJson } from "@/lib/backend";
 import { ServiceCategory } from "@/lib/shop-api";
@@ -35,7 +34,6 @@ export default async function ServiceCategoryPage({
 
   return (
     <div className="reference-storefront reference-category-page">
-      <ScrollToPageTop />
       <main className="reference-main">
         <section className="reference-category">
           <div className="reference-category-title">

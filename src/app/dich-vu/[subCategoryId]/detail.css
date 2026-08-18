@@ -174,7 +174,11 @@
   background: linear-gradient(90deg, transparent, #42a7ff, transparent);
 }
 
-.detail-order-form { display: grid; gap: 16px; }
+.detail-order-form {
+  display: grid;
+  gap: 16px;
+  scroll-margin-top: 128px;
+}
 .detail-order-panel {
   overflow: hidden;
   border: 1px solid #edf0f5;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScrollToPageTop } from "@/app/components/scroll-to-page-top";
 import { StorefrontHeader } from "@/app/components/storefront-header";
 import "./globals.css";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="vi" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <StorefrontHeader />
+        <ScrollToPageTop />
         {children}
       </body>
     </html>

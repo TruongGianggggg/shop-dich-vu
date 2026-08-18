@@ -133,7 +133,11 @@ export function ServiceOrderForm({
   }
 
   return (
-    <form className="detail-order-form" onSubmit={submit}>
+    <form
+      className="detail-order-form"
+      data-route-scroll-target
+      onSubmit={submit}
+    >
       <section className="detail-order-panel">
         <div className="detail-panel-heading">
           <span>1</span>
