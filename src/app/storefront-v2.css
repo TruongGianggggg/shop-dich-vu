@@ -418,9 +418,9 @@
 }
 
 .currency-home-category .currency-showcase-cover {
-  aspect-ratio: auto;
+  aspect-ratio: 16 / 9;
   border-radius: 13px 13px 0 0;
-  height: 210px;
+  height: auto;
   transition: filter .25s ease, transform .3s ease;
 }
 
@@ -501,7 +501,12 @@
 }
 
 .reference-service-row .reference-service-image {
+  aspect-ratio: 16 / 9;
+  background-color: #f1f4f8;
+  background-repeat: no-repeat;
+  background-size: contain;
   border-radius: 10px 10px 0 0;
+  height: auto;
   transition: filter .25s ease, transform .3s ease;
 }
 
