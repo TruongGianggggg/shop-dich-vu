@@ -14,13 +14,19 @@ import { useAuthSession } from "./use-auth-session";
 
 type DepositMethod = "bank" | "card";
 
-type CardOption = {
+type DepositQrButtonProps = {
+  className?: string;
+  initialMethod?: DepositMethod;
+  label?: string;
+};
+
+export type CardOption = {
   label: string;
   value: string;
   amounts: number[];
 };
 
-const cardOptions: CardOption[] = [
+export const cardOptions: CardOption[] = [
   { label: "Viettel", value: "VIETTEL", amounts: [10000, 20000, 30000, 50000, 100000, 200000, 300000, 500000, 1000000] },
   { label: "Vinaphone", value: "VINAPHONE", amounts: [10000, 20000, 30000, 50000, 100000, 200000, 300000, 500000] },
   { label: "Mobifone", value: "MOBIFONE", amounts: [10000, 20000, 30000, 50000, 100000, 200000, 300000, 500000] },
@@ -30,13 +36,18 @@ const cardOptions: CardOption[] = [
   { label: "Vcoin", value: "VCOIN", amounts: [10000, 20000, 50000, 100000, 200000, 300000, 500000, 1000000, 2000000, 5000000, 10000000] },
 ];
 
-export function DepositQrButton() {
+export function DepositQrButton({
+  className = "",
+  initialMethod = "bank",
+  label = "Nạp tiền",
+}: DepositQrButtonProps = {}) {
   const session = useAuthSession();
   const [isOpen, setIsOpen] = useState(false);
-  const [method, setMethod] = useState<DepositMethod>("bank");
+  const [method, setMethod] = useState<DepositMethod>(initialMethod);
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [selectedBankId, setSelectedBankId] = useState("");
   const selectedBankIdRef = useRef("");
+  const modalPanelRef = useRef<HTMLElement>(null);
   const [qrResult, setQrResult] = useState<BankQr | null>(null);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
   const [isCreatingQr, setIsCreatingQr] = useState(false);
@@ -189,12 +200,23 @@ export function DepositQrButton() {
     };
   }, [isOpen, method]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      modalPanelRef.current?.scrollTo({ top: 0 });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen, method, qrResult]);
+
   function openDeposit() {
     if (!session) {
       window.location.href = "/login";
       return;
     }
 
+    setMethod(initialMethod);
     setIsOpen(true);
     setError("");
   }
@@ -258,8 +280,8 @@ export function DepositQrButton() {
 
   return (
     <>
-      <button className="deposit-nav-button" onClick={openDeposit} type="button">
-        Nạp tiền
+      <button className={`deposit-nav-button ${className}`.trim()} onClick={openDeposit} type="button">
+        {label}
       </button>
 
       {isOpen ? (
@@ -270,7 +292,12 @@ export function DepositQrButton() {
             onClick={closeDeposit}
             type="button"
           />
-          <section aria-modal="true" className="deposit-modal-panel" role="dialog">
+          <section
+            aria-modal="true"
+            className="deposit-modal-panel"
+            ref={modalPanelRef}
+            role="dialog"
+          >
             <div className="deposit-modal-header">
               <div>
                 <p className="section-kicker">Nạp tiền</p>

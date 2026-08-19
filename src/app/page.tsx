@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
+import { MonthlyLeaderboardCard } from "@/app/components/monthly-leaderboard-card";
 import { ReferenceServiceCard } from "@/app/components/reference-service-card";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { StorefrontBannerCarousel } from "@/app/components/storefront-banner-carousel";
 import { StorefrontAnnouncement } from "@/app/components/storefront-announcement";
 import { fetchBackendJson } from "@/lib/backend";
 import {
-  formatVnd,
   GameCurrencyDisplaySettings,
   MonthlyDepositLeaderboard,
   ServiceCategory,
@@ -103,30 +103,23 @@ export default async function Home() {
               <div className="reference-category-title">
                 <h2>{category.name}</h2>
                 <span />
-                {category.description && category.id !== "the9p-auto-topup" ? (
-                  <p>{category.description}</p>
-                ) : null}
+                {category.description ? <p>{category.description}</p> : null}
               </div>
 
               {category.children.length ? (
                 <>
-                  <div className="reference-service-grid">
-                    {category.children.slice(0, 12).map((service) => (
+                  <div className="reference-service-grid reference-service-row">
+                    {category.children.map((service) => (
                       <ReferenceServiceCard service={service} key={service.id} />
                     ))}
                   </div>
-                  {category.children.length > 12 ? (
+                  {category.children.length > 4 ? (
                     <div className="reference-more-wrap">
                       <Link
                         className="reference-more-link"
-                        href={`/danh-muc/${encodeURIComponent(
-                          category.id === "the9p-auto-topup"
-                            ? "auto-topup"
-                            : category.id,
-                        )}`}
-                        scroll
+                        href={`/danh-muc/${encodeURIComponent(category.id)}`}
                       >
-                        Xem thêm dịch vụ <span>→</span>
+                        Xem tất cả <span aria-hidden="true">→</span>
                       </Link>
                     </div>
                   ) : null}
@@ -245,26 +238,7 @@ function StorefrontOverview({
         description={settings.footerDescription}
         shopName={settings.shopName}
       />
-      <div className="monthly-leaderboard">
-        <div className="monthly-leaderboard-head">
-          <strong>TOP NẠP {String(leaderboard?.month ?? new Date().getMonth() + 1).padStart(2, "0")}/{leaderboard?.year ?? new Date().getFullYear()}</strong>
-          <span>Thẻ + Bank</span>
-        </div>
-        <div className="monthly-leaderboard-list">
-          {leaderboard?.entries.length ? (
-            leaderboard.entries.map((entry) => (
-              <div className="monthly-leaderboard-row" key={`${entry.rank}-${entry.maskedUsername}`}>
-                <span className={`rank rank-${entry.rank}`}>{entry.rank}</span>
-                <strong>{entry.maskedUsername}</strong>
-                <b>{formatVnd(entry.totalAmount)}</b>
-              </div>
-            ))
-          ) : (
-            <p>Chưa có giao dịch nạp thành công trong tháng này.</p>
-          )}
-        </div>
-        <div className="monthly-leaderboard-note">Chỉ tính tiền đã cộng vào ví</div>
-      </div>
+      <MonthlyLeaderboardCard leaderboard={leaderboard} />
     </section>
   );
 }

@@ -72,38 +72,18 @@ export function StorefrontHeader() {
       <div className="reference-header">
         <ShopBrand settings={settings} />
 
-        <nav aria-label="Điều hướng chính" className="reference-nav">
-          <Link className={pathname === "/" ? "is-active" : ""} href="/">
-            <i>⌂</i> Trang chủ
+        <nav aria-label="Điều hướng chính" className="marketplace-nav">
+          <Link className={`marketplace-primary-link ${pathname === "/" ? "is-active" : ""}`} href="/">
+            Trang chủ
           </Link>
-          <Link
-            className={pathname === "/lich-su-mua" ? "is-active" : ""}
-            href="/lich-su-mua"
-          >
-            <i>⌁</i> Lịch sử mua
+          <Link className="marketplace-primary-link" href="/#dich-vu">Dịch vụ</Link>
+          <DepositQrButton className="marketplace-nav-link" label="Nạp tiền" />
+          <Link className={pathname === "/thong-bao" ? "is-active" : ""} href="/thong-bao">
+            Thông báo
           </Link>
-          <Link
-            className={pathname === "/thong-bao" ? "is-active" : ""}
-            href="/thong-bao"
-          >
-            <i>◉</i> Thông báo
-          </Link>
-          <Link href="/#dich-vu">
-            <i>▱</i> Dịch vụ khác
-          </Link>
-          <Link
-            className={pathname === "/ho-so" ? "is-active" : ""}
-            href="/ho-so"
-          >
-            <i>●</i> Hồ sơ
-          </Link>
-          <DepositQrButton />
         </nav>
 
         <div className="reference-account">
-          <button aria-label="Đổi ngôn ngữ" type="button">
-            ◎
-          </button>
           <AccountActions />
         </div>
       </div>

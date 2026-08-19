@@ -1,0 +1,595 @@
+/* Header v2 — all storefront content and forms continue using the legacy styles. */
+.reference-header-wrap {
+  --market-blue: #0878f9;
+  --market-dark: #111827;
+  background: rgba(255, 255, 255, .97);
+  border-bottom: 1px solid #e7e8ec;
+  padding: 0 24px;
+}
+
+.reference-header {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  gap: 28px;
+  grid-template-columns: minmax(150px, 220px) 1fr auto;
+  max-width: 1180px;
+  min-height: 72px;
+  padding: 10px 0;
+}
+
+.reference-header .reference-logo > span:not(.reference-logo-picture) {
+  background: var(--market-dark) !important;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: none;
+  height: 42px;
+  transform: none;
+  width: 42px;
+}
+
+.reference-header .reference-logo strong {
+  background: none;
+  color: var(--market-dark);
+  font-size: 15px;
+}
+
+.reference-header .reference-logo > .reference-logo-picture {
+  height: 48px;
+  max-width: 180px;
+}
+
+.marketplace-nav {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  justify-content: flex-end;
+}
+
+.marketplace-nav > a,
+.marketplace-nav > button.marketplace-nav-link,
+.marketplace-nav summary {
+  align-items: center;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 5px;
+  min-height: 40px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.marketplace-nav > button.marketplace-nav-link {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  text-transform: none;
+}
+
+.marketplace-nav > a:hover,
+.marketplace-nav > a.is-active,
+.marketplace-nav > button.marketplace-nav-link:hover,
+.marketplace-nav summary:hover {
+  color: var(--market-blue);
+  transform: none;
+}
+
+.marketplace-nav details { position: relative; }
+.marketplace-nav summary { list-style: none; }
+.marketplace-nav summary::-webkit-details-marker { display: none; }
+
+.marketplace-nav-menu {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(17, 24, 39, .14);
+  display: grid;
+  min-width: 210px;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+}
+
+.marketplace-nav-menu > a,
+.marketplace-nav-menu > button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: #374151;
+  display: flex;
+  font-size: 12px;
+  font-weight: 750;
+  justify-content: flex-start;
+  min-height: 39px;
+  padding: 0 11px;
+  text-decoration: none;
+  text-transform: none;
+  width: 100%;
+}
+
+.marketplace-nav-menu > a:hover,
+.marketplace-nav-menu > button:hover {
+  background: #f3f5f8;
+  color: var(--market-blue);
+  transform: none;
+}
+
+.reference-header .reference-account { gap: 8px; }
+
+.reference-header .reference-account .nav-link,
+.reference-header .reference-account .primary-button,
+.reference-header .reference-account .account-trigger {
+  border-radius: 8px;
+  min-height: 40px;
+}
+
+.reference-header .reference-account .nav-link,
+.reference-header .reference-account .primary-button {
+  font-size: 12px;
+  padding-left: 17px;
+  padding-right: 17px;
+}
+
+.reference-header .reference-account .nav-link {
+  background: #fff;
+  border-color: #e3e5e9;
+}
+
+.reference-header .reference-account .primary-button {
+  background: var(--market-blue);
+  border-color: var(--market-blue);
+}
+
+/* Keep the deposit dialog compact and prevent QR loading from shifting its scroll. */
+.deposit-modal-panel {
+  gap: 13px;
+  max-height: calc(100dvh - 32px);
+  overflow-anchor: none;
+  padding: 18px;
+  width: min(100%, 480px);
+}
+
+.deposit-modal-header h2 { font-size: 22px; }
+.deposit-form { gap: 11px; }
+
+.deposit-qr-result {
+  gap: 9px;
+  overflow-anchor: none;
+  padding: 11px;
+}
+
+.deposit-qr-result img {
+  height: 180px;
+  width: 180px;
+}
+
+.deposit-qr-result strong { font-size: 16px; }
+.deposit-qr-result span { font-size: 12px; }
+
+/* Leaderboard v2 — other storefront sections and forms retain legacy styles. */
+.monthly-leaderboard {
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(19, 82, 145, .16);
+  grid-template-rows: auto 1fr auto;
+}
+
+.monthly-leaderboard-tabs {
+  background: #0876c4;
+  color: #fff;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 50px;
+}
+
+.monthly-leaderboard-tab {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: 900;
+  gap: 8px;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.monthly-leaderboard-tab.is-active {
+  background: #3494ec;
+  position: relative;
+}
+
+.monthly-leaderboard-tab.is-active::after {
+  background: #ffd529;
+  border-radius: 999px;
+  bottom: 0;
+  content: "";
+  height: 3px;
+  left: 10%;
+  position: absolute;
+  right: 10%;
+}
+
+.monthly-leaderboard-tab:not(.is-active):hover {
+  background: rgba(255, 255, 255, .09);
+  color: #fff;
+}
+
+.monthly-leaderboard-list {
+  gap: 4px;
+  padding: 10px;
+}
+
+.monthly-leaderboard-row {
+  background: #f7f8fa;
+  border: 0;
+  border-radius: 9px;
+  grid-template-columns: 34px 1fr auto;
+  min-height: 43px;
+  padding: 0 11px;
+}
+
+.monthly-leaderboard-row:nth-child(1) { background: #fff8e8; }
+.monthly-leaderboard-row:nth-child(3) { background: #fff4eb; }
+
+.monthly-leaderboard-row .rank {
+  background: #edf2f8;
+  font-size: 13px;
+  height: 28px;
+  width: 28px;
+}
+
+.monthly-leaderboard-row .rank-1,
+.monthly-leaderboard-row .rank-2,
+.monthly-leaderboard-row .rank-3 {
+  background: transparent;
+  font-size: 22px;
+}
+
+.monthly-leaderboard-row strong {
+  color: #273449;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthly-leaderboard-row b {
+  color: #f0444b;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.monthly-leaderboard-row:first-child b { color: #c98200; }
+
+.leaderboard-card-form {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
+  padding: 11px;
+}
+
+.leaderboard-card-form-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.leaderboard-card-form label {
+  color: #475569;
+  display: grid;
+  font-size: 9px;
+  font-weight: 850;
+  gap: 4px;
+}
+
+.leaderboard-card-form input,
+.leaderboard-card-form select {
+  background: #f8fafc;
+  border: 1px solid #dce4ee;
+  border-radius: 6px;
+  color: #1f2937;
+  font: inherit;
+  font-size: 10px;
+  min-height: 34px;
+  outline: none;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+.leaderboard-card-form input:focus,
+.leaderboard-card-form select:focus {
+  border-color: #2295ed;
+  box-shadow: 0 0 0 2px rgba(34, 149, 237, .12);
+}
+
+.leaderboard-card-estimate,
+.leaderboard-card-error,
+.leaderboard-card-success {
+  border-radius: 6px;
+  font-size: 9px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 6px 8px;
+}
+
+.leaderboard-card-estimate { background: #eff7ff; color: #39719e; }
+.leaderboard-card-error { background: #fff0f0; color: #c83838; }
+.leaderboard-card-success { background: #ecfdf3; color: #168451; }
+
+.monthly-leaderboard-action {
+  border-top: 1px solid #eef2f6;
+  padding: 10px;
+}
+
+.monthly-leaderboard .leaderboard-deposit-button {
+  background: #1297ef;
+  border: 0;
+  border-radius: 6px;
+  box-shadow: 0 4px 9px rgba(18, 151, 239, .22);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 950;
+  margin: 0;
+  min-height: 38px;
+  padding: 8px 12px;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.monthly-leaderboard .leaderboard-deposit-button:hover {
+  background: #087ed1;
+  transform: none;
+}
+
+.monthly-leaderboard .leaderboard-deposit-button:disabled {
+  background: #8fc7ee;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: .72;
+}
+
+/* Compact gold/gem cards while preserving every uploaded image in full. */
+@property --storefront-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes storefront-spin-border {
+  to { --storefront-border-angle: 360deg; }
+}
+
+.currency-home-category .currency-showcase-grid {
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+.currency-home-category .currency-showcase-card {
+  --storefront-primary: #269bff;
+  --storefront-secondary: #8b5cf6;
+  animation: storefront-spin-border 4s linear infinite;
+  background: conic-gradient(
+    from var(--storefront-border-angle),
+    transparent 0%,
+    var(--storefront-primary) 20%,
+    var(--storefront-secondary) 35%,
+    transparent 50%,
+    var(--storefront-secondary) 70%,
+    var(--storefront-primary) 85%,
+    transparent 100%
+  ) border-box;
+  border: 0;
+  border-radius: 15px;
+  min-height: 0;
+  padding: 2px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.currency-home-category .currency-showcase-card:hover {
+  animation-duration: 2s;
+  background: conic-gradient(
+    from var(--storefront-border-angle),
+    var(--storefront-primary) 0%,
+    var(--storefront-secondary) 25%,
+    var(--storefront-primary) 50%,
+    var(--storefront-secondary) 75%,
+    var(--storefront-primary) 100%
+  ) border-box;
+  box-shadow: 0 8px 25px -5px rgba(99, 102, 241, .5);
+  transform: translateY(-4px);
+}
+
+.currency-home-category .currency-showcase-cover {
+  aspect-ratio: auto;
+  border-radius: 13px 13px 0 0;
+  height: 210px;
+  transition: filter .25s ease, transform .3s ease;
+}
+
+.currency-home-category .currency-showcase-cover.has-image {
+  background-color: #f1f4f8;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.currency-home-category .currency-showcase-content {
+  background: #fff;
+  border-radius: 0 0 13px 13px;
+  min-height: 142px;
+  padding: 17px 19px 18px;
+}
+
+.currency-home-category .currency-showcase-card:hover .currency-showcase-cover {
+  filter: saturate(1.06);
+  transform: scale(1.04);
+}
+
+.currency-home-category .currency-showcase-content h3 {
+  font-size: 20px;
+  min-height: 24px;
+}
+
+.currency-home-category .currency-showcase-content p {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.currency-home-category .currency-showcase-button {
+  border-radius: 9px;
+  font-size: 14px;
+  margin-top: 14px;
+  min-height: 40px;
+  padding: 8px 14px;
+}
+
+/* Each category keeps its own form and displays all cards on one horizontal row. */
+.reference-service-grid.reference-service-row {
+  grid-auto-columns: calc((100% - 42px) / 4);
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 8px 0 22px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-color: #a7c8ee transparent;
+  scrollbar-width: thin;
+  width: 100%;
+}
+
+.reference-service-row .reference-service-card {
+  --storefront-primary: #269bff;
+  --storefront-secondary: #8b5cf6;
+  animation: storefront-spin-border 4s linear infinite;
+  background: conic-gradient(
+    from var(--storefront-border-angle),
+    transparent 0%,
+    var(--storefront-primary) 20%,
+    var(--storefront-secondary) 35%,
+    transparent 50%,
+    var(--storefront-secondary) 70%,
+    var(--storefront-primary) 85%,
+    transparent 100%
+  ) border-box;
+  border: 0;
+  padding: 2px;
+  scroll-snap-align: start;
+  transform-origin: center bottom;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.reference-service-row .reference-service-image {
+  border-radius: 10px 10px 0 0;
+  transition: filter .25s ease, transform .3s ease;
+}
+
+.reference-service-row .reference-card-content {
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+}
+
+.reference-service-row .reference-service-card:hover {
+  animation-duration: 2s;
+  background: conic-gradient(
+    from var(--storefront-border-angle),
+    var(--storefront-primary) 0%,
+    var(--storefront-secondary) 25%,
+    var(--storefront-primary) 50%,
+    var(--storefront-secondary) 75%,
+    var(--storefront-primary) 100%
+  ) border-box;
+  box-shadow: 0 8px 25px -5px rgba(99, 102, 241, .5);
+  transform: translateY(-4px);
+}
+
+.reference-service-row .reference-service-card:hover .reference-service-image {
+  filter: saturate(1.08) contrast(1.02);
+  transform: scale(1.04);
+}
+
+@media (max-width: 1100px) {
+  .reference-header { grid-template-columns: auto 1fr auto; }
+  .currency-home-category .currency-showcase-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .reference-service-grid.reference-service-row {
+    grid-auto-columns: calc((100% - 28px) / 3);
+  }
+}
+
+@media (max-width: 880px) {
+  .marketplace-nav > a.marketplace-primary-link { display: none; }
+}
+
+@media (max-width: 700px) {
+  .reference-header-wrap { padding: 0 12px; }
+  .reference-header {
+    gap: 10px;
+    grid-template-columns: 1fr auto auto;
+    min-height: 64px;
+  }
+  .marketplace-nav { gap: 13px; }
+  .marketplace-nav summary { font-size: 11px; }
+  .reference-header .reference-account .nav-link { display: none; }
+  .reference-header .reference-account .primary-button {
+    min-height: 38px;
+    padding: 0 13px;
+  }
+  .currency-home-category .currency-showcase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .reference-service-grid.reference-service-row {
+    grid-auto-columns: calc((100% - 14px) / 2);
+  }
+}
+
+@media (max-width: 460px) {
+  .currency-home-category .currency-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+  .reference-service-grid.reference-service-row {
+    grid-auto-columns: min(86vw, 330px);
+  }
+}
+
+@media (max-width: 480px) {
+  .reference-header .reference-logo strong { display: none; }
+  .reference-header .reference-logo.has-custom-logo { min-width: 90px; }
+  .reference-header .reference-logo > .reference-logo-picture { max-width: 112px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .currency-home-category .currency-showcase-card,
+  .reference-service-row .reference-service-card {
+    animation: none;
+  }
+
+  .currency-home-category .currency-showcase-card,
+  .currency-home-category .currency-showcase-cover,
+  .reference-service-row .reference-service-image,
+  .reference-service-row .reference-service-card {
+    transition: none;
+  }
+}
