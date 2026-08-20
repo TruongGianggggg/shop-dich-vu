@@ -645,6 +645,21 @@
   .reference-category-title { margin-bottom: 22px; }
   .reference-category-title h2 { font-size: 28px; }
   .reference-category + .reference-category { margin-top: 58px; }
+
+  .reference-category-page .reference-main { padding-top: 22px; }
+  .reference-category-page .reference-category-title { margin-bottom: 18px; }
+
+  .reference-category-page .reference-service-grid.reference-service-row {
+    display: grid;
+    gap: 14px;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .reference-category-page .reference-service-image { aspect-ratio: 16 / 8.2; }
+  .reference-category-page .reference-card-content { min-height: 132px; }
 }
 
 @media (max-width: 370px) {

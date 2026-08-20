@@ -285,3 +285,32 @@
   .detail-panel-heading { padding: 10px 16px; }
   .detail-selected-package { align-items: flex-start; }
 }
+
+@media (max-width: 520px) {
+  .service-detail-main {
+    padding: 22px 0 48px;
+    width: calc(100% - 24px);
+  }
+
+  .detail-page-title { margin-bottom: 20px; }
+  .detail-page-title h1 {
+    font-size: clamp(23px, 7vw, 28px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .detail-order-form { gap: 12px; }
+  .detail-order-panel { border-radius: 11px; }
+  .detail-panel-heading { min-height: 50px; padding: 9px 13px; }
+  .detail-panel-heading h2 { font-size: 15px; }
+  .detail-panel-body { padding: 14px 12px; }
+  .detail-account-grid { gap: 14px; }
+  .detail-field input,
+  .detail-field select,
+  .detail-field textarea,
+  .detail-select-wrap select { font-size: 16px; }
+  .detail-confirm-box { padding: 13px 10px; }
+  .detail-total { align-items: center; flex-direction: column; gap: 4px; }
+  .detail-confirm-box button { min-width: 0; width: 100%; }
+  .detail-empty-state { padding: 34px 16px; }
+}

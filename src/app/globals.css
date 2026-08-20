@@ -6716,3 +6716,126 @@ input {
   .currency-history-body { grid-template-columns: 1fr; }
   .currency-history-body > div { border-right: 0; }
 }
+
+/* Unified mobile storefront: every customer-facing route uses the same rhythm. */
+@media (max-width: 600px) {
+  .reference-main,
+  .service-detail-main,
+  .order-history-main,
+  .currency-shop-main,
+  .profile-main {
+    width: 100%;
+  }
+
+  .reference-category-title h1,
+  .reference-category-title h2,
+  .detail-page-title h1,
+  .order-history-title h1,
+  .currency-history-title h1 {
+    font-size: clamp(25px, 8vw, 31px);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .reference-category-title p,
+  .order-history-title > span {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .reference-service-grid.reference-service-row {
+    grid-auto-columns: min(82vw, 310px);
+    padding-bottom: 14px;
+  }
+
+  .reference-service-row .reference-card-content {
+    min-height: 124px;
+    padding: 14px;
+  }
+
+  .reference-card-content h3 {
+    font-size: 16px;
+    min-height: auto;
+  }
+
+  .reference-card-content > a {
+    margin-top: 10px;
+    min-height: 42px;
+  }
+
+  .reference-footer {
+    padding-bottom: 16px;
+    padding-top: 28px;
+  }
+
+  .reference-footer-inner { gap: 28px; }
+  .reference-footer-title { margin-top: 10px; }
+  .reference-footer-about > p,
+  .reference-footer-support > p { font-size: 12px; }
+  .reference-footer-support h2 { font-size: 18px; }
+  .reference-footer-contacts { margin-top: 12px; width: 100%; }
+  .reference-footer-copyright { margin-top: 22px; }
+
+  .auth-page {
+    align-content: start;
+    gap: 18px;
+    min-height: calc(100dvh - 64px);
+    padding: 24px 12px 40px;
+  }
+
+  .auth-page > .brand-mark { margin-top: 6px; }
+  .auth-panel { gap: 18px; padding: 20px 16px; }
+  .field-label { font-size: 13px; }
+  .text-field { font-size: 16px; }
+
+  .service-detail-main,
+  .order-history-main { padding: 24px 12px 54px; }
+  .order-history-title { margin: 8px 0 22px; }
+  .order-form-section,
+  .order-checkout,
+  .order-history-login,
+  .order-history-empty { border-radius: 12px; padding: 16px 14px; }
+  .order-section-heading h2 { font-size: 17px; }
+  .order-package-option { grid-template-columns: auto minmax(0, 1fr); }
+  .order-package-option b { grid-column: 2; }
+  .order-field input,
+  .order-field textarea { font-size: 16px; }
+  .order-history-card-head { padding: 13px 14px; }
+  .order-history-card-body { gap: 12px; padding: 14px; }
+  .order-history-note { padding: 10px 14px; }
+  .order-history-pagination { gap: 10px; }
+
+  .currency-shop-main { padding: 18px 12px 48px; }
+  .currency-shop-breadcrumb { flex-wrap: wrap; }
+  .currency-shop-intro { gap: 14px; padding: 17px 15px; }
+  .currency-shop-intro-icon { height: 40px; width: 40px; }
+  .currency-shop-intro h2 { font-size: 19px; }
+  .currency-shop-description { padding: 12px; }
+  .currency-topup-heading { padding: 15px; }
+  .currency-topup-heading > span { height: 40px; width: 40px; }
+  .currency-topup-fields { gap: 14px; padding: 16px 14px; }
+  .currency-topup-fields input,
+  .currency-topup-fields select { font-size: 16px; }
+  .currency-topup-summary { padding: 14px; }
+  .currency-topup-message { margin-left: 14px; margin-right: 14px; }
+  .currency-topup-submit { margin: 16px 14px 18px; width: calc(100% - 28px); }
+
+  .currency-history-main { padding-top: 18px; }
+  .currency-history-filter { border-radius: 12px; padding: 14px; }
+  .currency-order-filter-head > div { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .currency-order-filter-actions button { min-height: 44px; width: 100%; }
+  .currency-history-card-head { align-items: flex-start; gap: 10px; }
+  .currency-history-body { padding: 12px 14px 14px; }
+  .currency-history-card .order-history-note { margin: 0 14px 12px; }
+
+  .profile-main { padding: 20px 12px 50px; }
+  .profile-hero { border-radius: 16px; gap: 16px; padding: 20px 16px; }
+  .profile-avatar-large { border-radius: 16px; font-size: 30px; height: 68px; width: 68px; }
+  .profile-identity h1 { font-size: 26px; white-space: normal; }
+  .profile-balance-card { min-height: 94px; padding: 16px; }
+  .profile-balance-card > span { height: 44px; width: 44px; }
+  .profile-info-card { border-radius: 15px; padding: 18px 15px; }
+  .profile-card-heading { margin-bottom: 16px; }
+  .profile-guest-main { min-height: calc(100dvh - 64px); padding: 24px 12px; }
+  .profile-guest-card { border-radius: 16px; padding: 32px 18px; }
+}
