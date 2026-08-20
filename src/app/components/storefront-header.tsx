@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AccountActions } from "@/app/components/account-actions";
 import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { ShopBrand } from "@/app/components/shop-brand";
+import { useAuthSession } from "@/app/components/use-auth-session";
 import { SiteSettings } from "@/lib/shop-api";
 
 const fallbackSettings: SiteSettings = {
@@ -29,8 +30,10 @@ const fallbackSettings: SiteSettings = {
 
 export function StorefrontHeader() {
   const pathname = usePathname();
+  const session = useAuthSession();
   const [settings, setSettings] = useState<SiteSettings>(fallbackSettings);
   const isAdminRoute = pathname.startsWith("/admin");
+  const isAuthRoute = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
     if (isAdminRoute) {
@@ -68,25 +71,34 @@ export function StorefrontHeader() {
   }
 
   return (
-    <header className="reference-header-wrap storefront-global-header">
-      <div className="reference-header">
-        <ShopBrand settings={settings} />
+    <>
+      <header className="reference-header-wrap storefront-global-header">
+        <div className="reference-header">
+          <ShopBrand settings={settings} />
 
-        <nav aria-label="Điều hướng chính" className="marketplace-nav">
-          <Link className={`marketplace-primary-link ${pathname === "/" ? "is-active" : ""}`} href="/">
-            Trang chủ
-          </Link>
-          <Link className="marketplace-primary-link" href="/#dich-vu">Dịch vụ</Link>
-          <DepositQrButton className="marketplace-nav-link" label="Nạp tiền" />
-          <Link className={pathname === "/thong-bao" ? "is-active" : ""} href="/thong-bao">
-            Thông báo
-          </Link>
-        </nav>
+          <nav aria-label="Điều hướng chính" className="marketplace-nav">
+            <Link className={`marketplace-primary-link ${pathname === "/" ? "is-active" : ""}`} href="/">
+              Trang chủ
+            </Link>
+            <Link className="marketplace-primary-link" href="/#dich-vu">Dịch vụ</Link>
+            <DepositQrButton className="marketplace-nav-link" label="Nạp tiền" />
+            <Link className={pathname === "/thong-bao" ? "is-active" : ""} href="/thong-bao">
+              Thông báo
+            </Link>
+          </nav>
 
-        <div className="reference-account">
-          <AccountActions />
+          <div className="reference-account">
+            <AccountActions />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {!session && !isAuthRoute ? (
+        <nav aria-label="Đăng nhập tài khoản" className="storefront-mobile-auth-dock">
+          <Link className="storefront-mobile-login" href="/login">Đăng nhập</Link>
+          <Link className="storefront-mobile-register" href="/register">Đăng ký</Link>
+        </nav>
+      ) : null}
+    </>
   );
 }
