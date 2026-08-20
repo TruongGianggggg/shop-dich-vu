@@ -581,7 +581,7 @@
   }
 
   body:has(.storefront-mobile-auth-dock) {
-    padding-bottom: calc(74px + env(safe-area-inset-bottom));
+    padding-bottom: calc(102px + env(safe-area-inset-bottom));
   }
 
   .storefront-mobile-auth-dock {
@@ -599,6 +599,16 @@
     position: fixed;
     right: 12px;
     z-index: 80;
+  }
+
+  .storefront-mobile-auth-dock > p {
+    color: #667085;
+    font-size: 12px;
+    font-weight: 750;
+    grid-column: 1 / -1;
+    line-height: 1.25;
+    margin: 1px 0 0;
+    text-align: center;
   }
 
   .storefront-mobile-auth-dock > a {

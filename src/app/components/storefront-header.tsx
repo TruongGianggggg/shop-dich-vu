@@ -95,6 +95,7 @@ export function StorefrontHeader() {
 
       {!session && !isAuthRoute ? (
         <nav aria-label="Đăng nhập tài khoản" className="storefront-mobile-auth-dock">
+          <p>Bạn đã có tài khoản chưa?</p>
           <Link className="storefront-mobile-login" href="/login">Đăng nhập</Link>
           <Link className="storefront-mobile-register" href="/register">Đăng ký</Link>
         </nav>
