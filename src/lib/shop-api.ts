@@ -23,11 +23,10 @@ export type PageResponse<T> = {
 export type DepositStatus = "PENDING" | "COMPLETED" | "FAILED";
 
 export type ServiceOrderStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "COMPLETED"
-  | "FAILED"
-  | "CANCELED";
+  | "error"
+  | "pending"
+  | "processing"
+  | "done";
 
 export type DepositHistory = {
   id: string;

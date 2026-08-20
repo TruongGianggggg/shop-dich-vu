@@ -94,12 +94,12 @@ export function AdminOrdersManager() {
 
   const metrics = useMemo(() => {
     const processingCount = orders.filter(
-      (order) => order.status === "PROCESSING",
+      (order) => order.status === "processing",
     ).length;
     const completedCount = orders.filter(
-      (order) => order.status === "COMPLETED",
+      (order) => order.status === "done",
     ).length;
-    const pendingCount = orders.filter((order) => order.status === "PENDING").length;
+    const pendingCount = orders.filter((order) => order.status === "pending").length;
     const pageRevenue = orders.reduce((total, order) => total + order.amount, 0);
 
     return [
@@ -450,23 +450,19 @@ async function readResponseJson(response: Response) {
 }
 
 function orderStatusLabel(status: ServiceOrderStatus) {
-  if (status === "PROCESSING") {
-    return "Đang chờ xử lý";
+  if (status === "processing") {
+    return "Đang xử lý";
   }
 
-  if (status === "COMPLETED") {
-    return "Thành công";
+  if (status === "done") {
+    return "Hoàn thành";
   }
 
-  if (status === "FAILED") {
+  if (status === "error") {
     return "Lỗi";
   }
 
-  if (status === "CANCELED") {
-    return "Đã hủy";
-  }
-
-  return "Đang chờ xử lý";
+  return "Chờ xử lý";
 }
 
 function serviceTypeLabel(type: string) {

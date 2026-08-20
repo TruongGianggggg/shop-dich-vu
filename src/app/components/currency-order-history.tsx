@@ -7,11 +7,10 @@ import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatVnd, GameCurrencyOrder, getApiErrorMessage, PageResponse } from "@/lib/shop-api";
 
 const statusLabels = {
-  PENDING: "Chờ xử lý",
-  PROCESSING: "Đang xử lý",
-  COMPLETED: "Hoàn thành",
-  FAILED: "Thất bại",
-  CANCELED: "Đã hủy",
+  error: "Lỗi",
+  pending: "Chờ xử lý",
+  processing: "Đang xử lý",
+  done: "Hoàn thành",
 } as const;
 
 type HistoryFilters = { requestId: string; characterName: string; serverName: string; currencyType: string; status: string };

@@ -11,11 +11,10 @@ import {
 import { useAuthSession } from "./use-auth-session";
 
 const statusLabels: Record<ServiceOrder["status"], string> = {
-  PENDING: "Đang chờ xử lý",
-  PROCESSING: "Đang chờ xử lý",
-  COMPLETED: "Thành công",
-  FAILED: "Lỗi",
-  CANCELED: "Đã hủy",
+  error: "Lỗi",
+  pending: "Chờ xử lý",
+  processing: "Đang xử lý",
+  done: "Hoàn thành",
 };
 
 export function OrderHistory() {
