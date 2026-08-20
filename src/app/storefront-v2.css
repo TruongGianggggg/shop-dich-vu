@@ -592,6 +592,18 @@
   .reference-service-grid.reference-service-row {
     grid-auto-columns: min(86vw, 330px);
   }
+
+  /* A lone card must fill the row; the narrower width is only useful as a
+     visual hint when another horizontally scrollable card follows it. */
+  .reference-service-grid.reference-service-row:has(> .reference-service-card:only-child) {
+    grid-auto-columns: minmax(0, 1fr);
+    overflow-x: hidden;
+  }
+
+  .reference-service-grid.reference-service-row:has(> .reference-service-card:only-child)
+    > .reference-service-card {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
