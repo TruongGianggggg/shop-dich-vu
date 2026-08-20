@@ -549,14 +549,29 @@
 }
 
 @media (max-width: 700px) {
-  .reference-header-wrap { padding: 0 12px; }
-  .reference-header {
-    gap: 10px;
-    grid-template-columns: 1fr auto auto;
-    min-height: 64px;
+  .reference-header-wrap {
+    padding: 0 10px;
+    width: 100%;
   }
-  .marketplace-nav { gap: 13px; }
-  .marketplace-nav summary { font-size: 11px; }
+  .reference-header {
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 64px;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+  }
+  .marketplace-nav {
+    gap: 14px;
+    min-width: 0;
+  }
+  .marketplace-nav > a,
+  .marketplace-nav > button.marketplace-nav-link,
+  .marketplace-nav summary {
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .reference-header .reference-account { display: none; }
   .reference-header .reference-account .nav-link { display: none; }
   .reference-header .reference-account .primary-button {
     min-height: 38px;
@@ -581,8 +596,67 @@
 
 @media (max-width: 480px) {
   .reference-header .reference-logo strong { display: none; }
-  .reference-header .reference-logo.has-custom-logo { min-width: 90px; }
-  .reference-header .reference-logo > .reference-logo-picture { max-width: 112px; }
+  .reference-header .reference-logo.has-custom-logo { min-width: 0; }
+  .reference-header .reference-logo > .reference-logo-picture {
+    height: 42px;
+    max-width: 104px;
+    width: 104px;
+  }
+
+  .reference-main {
+    padding: 26px 12px 64px;
+  }
+
+  .storefront-overview {
+    gap: 16px;
+    margin-bottom: 58px;
+  }
+
+  .storefront-banner {
+    border-width: 1px;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .monthly-leaderboard {
+    min-height: 252px;
+    width: 100%;
+  }
+
+  .monthly-leaderboard-tabs { min-height: 48px; }
+
+  .monthly-leaderboard-tab {
+    font-size: 11px;
+    gap: 6px;
+    padding: 0 7px;
+  }
+
+  .monthly-leaderboard-list { padding: 8px; }
+
+  .monthly-leaderboard-row {
+    gap: 7px;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    padding: 0 9px;
+  }
+
+  .monthly-leaderboard-row strong,
+  .monthly-leaderboard-row b { font-size: 11px; }
+
+  .reference-category-title { margin-bottom: 22px; }
+  .reference-category-title h2 { font-size: 28px; }
+  .reference-category + .reference-category { margin-top: 58px; }
+}
+
+@media (max-width: 370px) {
+  .reference-header-wrap { padding-left: 8px; padding-right: 8px; }
+  .reference-header { gap: 8px; }
+  .reference-header .reference-logo > .reference-logo-picture {
+    max-width: 88px;
+    width: 88px;
+  }
+  .marketplace-nav { gap: 9px; }
+  .marketplace-nav > a,
+  .marketplace-nav > button.marketplace-nav-link { font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

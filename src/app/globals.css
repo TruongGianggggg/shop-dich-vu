@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: var(--font-storefront), Arial, Helvetica, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
@@ -17,13 +17,17 @@
 }
 
 html {
+  max-width: 100%;
+  overflow-x: clip;
   scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-storefront), Arial, Helvetica, sans-serif;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 a,
@@ -4900,7 +4904,7 @@ input {
   background: linear-gradient(90deg, #139dff 8%, #5d71df 45%, #f33c45 88%);
   background-clip: text;
   color: transparent;
-  font-family: "Arial Narrow", Arial, sans-serif;
+  font-family: inherit;
   font-size: clamp(27px, 3vw, 38px);
   font-stretch: condensed;
   font-weight: 950;
@@ -4992,7 +4996,7 @@ input {
   background: linear-gradient(90deg, #139dff 8%, #5d71df 45%, #f33c45 88%);
   background-clip: text;
   color: transparent;
-  font-family: "Arial Narrow", Arial, sans-serif;
+  font-family: inherit;
   font-size: clamp(27px, 3vw, 38px);
   font-weight: 950;
   letter-spacing: -0.035em;
@@ -5106,7 +5110,7 @@ input {
 
 .reference-card-content h3 {
   color: #172139;
-  font-family: "Arial Narrow", Arial, sans-serif;
+  font-family: inherit;
   font-size: 17px;
   font-weight: 950;
   line-height: 1.22;
@@ -5134,7 +5138,7 @@ input {
   border-radius: 8px;
   color: white;
   display: flex;
-  font-family: "Arial Narrow", Arial, sans-serif;
+  font-family: inherit;
   font-size: 12px;
   font-weight: 950;
   justify-content: center;
