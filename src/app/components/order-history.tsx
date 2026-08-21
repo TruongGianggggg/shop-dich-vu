@@ -122,6 +122,7 @@ export function OrderHistory() {
       if (!normalizedQuery) return true;
       return [
         order.requestId,
+        order.serviceName,
         order.packageName,
         order.packageId,
         order.username,
@@ -231,7 +232,7 @@ export function OrderHistory() {
 
                   {isExpanded ? (
                     <div className={styles.details}>
-                      <div><small>Loại dịch vụ</small><strong>{order.type}</strong></div>
+                      <div><small>Dịch vụ đã mua</small><strong>{order.serviceName ?? serviceTypeLabel(order.type)}</strong></div>
                       <div><small>Mã gói</small><strong>{order.packageId}</strong></div>
                       <div><small>Cập nhật lúc</small><strong>{formatDate(order.updatedAt)}</strong></div>
                       <div><small>Ghi chú</small><strong>{order.note ?? "Không có ghi chú"}</strong></div>
@@ -286,4 +287,15 @@ function formatDate(value: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function serviceTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    GAME_SERVICE: "Dịch vụ game",
+    TOPUP_CAROT: "Nạp Carot",
+    TOPUP_FREE_FIRE_DIAMOND: "Nạp Kim Cương Free Fire",
+    TOPUP_LIEN_QUAN_QUAN_HUY: "Nạp Quân Huy Liên Quân",
+    TOPUP_THE9P: "Nạp game tự động",
+  };
+  return labels[type] ?? type;
 }

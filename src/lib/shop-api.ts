@@ -78,6 +78,7 @@ export type CardDepositSettings = {
 export type ServiceOrder = {
   id: string;
   subCategoryId: string;
+  serviceName: string | null;
   userId: string | null;
   type: string;
   status: ServiceOrderStatus;
