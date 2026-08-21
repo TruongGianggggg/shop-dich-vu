@@ -73,6 +73,39 @@ export default async function ServiceDetailPage({
           <h1>Dịch Vụ - {data.service.name}</h1>
           <span aria-hidden="true" />
         </div>
+        <section className="detail-service-intro">
+          <div
+            aria-label={`Ảnh ${data.service.name}`}
+            className={
+              data.service.imageUrl
+                ? "detail-service-image has-image"
+                : "detail-service-image"
+            }
+            role="img"
+            style={
+              data.service.imageUrl
+                ? {
+                    backgroundImage: `url(${JSON.stringify(
+                      data.service.imageUrl,
+                    )})`,
+                  }
+                : undefined
+            }
+          >
+            {!data.service.imageUrl ? <span aria-hidden="true">🎮</span> : null}
+          </div>
+          <div>
+            <p className="detail-service-type">
+              {data.service.type === "TOPUP_CAROT"
+                ? "Nạp Carot"
+                : "Dịch vụ game"}
+            </p>
+            <h2>{data.service.name}</h2>
+            <p className="detail-service-description">
+              {data.service.description || "Dịch vụ đang mở bán."}
+            </p>
+          </div>
+        </section>
         <ServiceOrderForm packages={data.packages} service={data.service} />
       </main>
     </div>

@@ -12,6 +12,7 @@ import {
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
+import { AutosizeTextarea } from "@/app/components/admin/autosize-textarea";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
@@ -116,6 +117,12 @@ const serviceTypes = [
   "TOPUP_FREE_FIRE_DIAMOND",
   "TOPUP_THE9P",
 ];
+
+const providerSyncedPackageTypes = new Set([
+  "TOPUP_LIEN_QUAN_QUAN_HUY",
+  "TOPUP_FREE_FIRE_DIAMOND",
+  "TOPUP_THE9P",
+]);
 
 type ServicesView = "parents" | "children";
 const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
@@ -574,9 +581,15 @@ export function AdminServicesManager({
       return;
     }
 
+    const description = categoryForm.description.trim();
+    if (!description) {
+      setError("Vui lòng nhập mô tả danh mục.");
+      return;
+    }
+
     const payload: ServiceCategoryPayload = {
       name: categoryForm.name.trim(),
-      description: categoryForm.description.trim(),
+      description,
       displayOrder: numberFromInput(categoryForm.displayOrder),
       active: categoryForm.active,
     };
@@ -659,13 +672,21 @@ export function AdminServicesManager({
       return;
     }
 
+    const description = subCategoryForm.description.trim();
+    if (!description) {
+      setError("Vui lòng nhập mô tả dịch vụ.");
+      return;
+    }
+
     const payload: ServiceSubCategoryPayload = {
       parentId: subCategoryForm.parentId,
       name: subCategoryForm.name.trim(),
-      description: subCategoryForm.description.trim(),
+      description,
       imageUrl: textOrNull(subCategoryForm.imageUrl),
       type: subCategoryForm.type,
-      the9pServiceCode: textOrNull(subCategoryForm.the9pServiceCode),
+      the9pServiceCode: providerSyncedPackageTypes.has(subCategoryForm.type)
+        ? textOrNull(subCategoryForm.the9pServiceCode)
+        : null,
       displayOrder: numberFromInput(subCategoryForm.displayOrder),
       serviceCount: numberFromInput(subCategoryForm.serviceCount),
       active: subCategoryForm.active,
@@ -695,7 +716,9 @@ export function AdminServicesManager({
       description: nextSubCategory.description,
       imageUrl: nextSubCategory.imageUrl,
       type: nextSubCategory.type,
-      the9pServiceCode: nextSubCategory.the9pServiceCode,
+      the9pServiceCode: providerSyncedPackageTypes.has(nextSubCategory.type)
+        ? nextSubCategory.the9pServiceCode
+        : null,
       displayOrder: nextSubCategory.displayOrder,
       serviceCount: nextSubCategory.serviceCount,
       active: nextSubCategory.active,
@@ -812,10 +835,16 @@ export function AdminServicesManager({
       return;
     }
 
+    const description = packageForm.description.trim();
+    if (!description) {
+      setError("Vui lòng nhập mô tả gói dịch vụ.");
+      return;
+    }
+
     const payload: ServicePackagePayload = {
       subCategoryId: packageForm.subCategoryId,
       name: packageForm.name.trim(),
-      description: packageForm.description.trim(),
+      description,
       price: numberFromInput(packageForm.price),
       originalPrice: nullableNumberFromInput(packageForm.originalPrice),
       the9pAmount: nullableNumberFromInput(packageForm.the9pAmount),
@@ -1536,7 +1565,11 @@ export function AdminServicesManager({
                   </p>
                   <p>
                     <strong>Mã nhà cung cấp</strong>
-                    <span>{selectedSubCategory?.the9pServiceCode ?? "Chưa gắn"}</span>
+                    <span>
+                      {selectedSubCategory?.type === "TOPUP_CAROT"
+                        ? "Không sử dụng"
+                        : selectedSubCategory?.the9pServiceCode ?? "Chưa gắn"}
+                    </span>
                   </p>
                 </div>
 
@@ -1544,7 +1577,7 @@ export function AdminServicesManager({
                   <div className="admin-package-list-head" aria-hidden="true">
                     <span>Gói</span>
                     <span>Giá</span>
-                    <span>Mệnh giá nhà cung cấp</span>
+                    <span>Số Carot / mệnh giá</span>
                     <span>Thứ tự</span>
                     <span>Trạng thái</span>
                     <span>Thao tác</span>
@@ -1553,7 +1586,7 @@ export function AdminServicesManager({
                     <article className="admin-package-row" key={item.id}>
                       <div className="admin-package-main">
                         <strong>{item.name}</strong>
-                        <small>{item.description ?? item.id}</small>
+                        <small>{item.description ?? "Không có mô tả"}</small>
                       </div>
                       <div className="admin-package-price">
                         <strong>{formatVnd(item.price)}</strong>
@@ -1710,11 +1743,9 @@ function CategoryFormView({
         </label>
         <label className="field-label admin-form-span-2 admin-package-description">
           Mô tả
-          <textarea
-            className="text-field admin-textarea"
-            onChange={(event) =>
-              onChange({ ...form, description: event.target.value })
-            }
+          <AutosizeTextarea
+            disabled={isSaving}
+            onValueChange={(description) => onChange({ ...form, description })}
             required
             value={form.description}
           />
@@ -1777,7 +1808,15 @@ function SubCategoryFormView({
           Loại dịch vụ
           <select
             className="role-select wide"
-            onChange={(event) => onChange({ ...form, type: event.target.value })}
+            onChange={(event) =>
+              onChange({
+                ...form,
+                type: event.target.value,
+                the9pServiceCode: providerSyncedPackageTypes.has(event.target.value)
+                  ? form.the9pServiceCode
+                  : "",
+              })
+            }
             value={form.type}
           >
             {serviceTypes.map((type) => (
@@ -1820,16 +1859,19 @@ function SubCategoryFormView({
             value={formatIntegerInput(form.serviceCount ?? "0")}
           />
         </label>
-        <label className="field-label">
-          Mã dịch vụ nhà cung cấp
-          <input
-            className="text-field"
-            onChange={(event) =>
-              onChange({ ...form, the9pServiceCode: event.target.value })
-            }
-            value={form.the9pServiceCode}
-          />
-        </label>
+        {providerSyncedPackageTypes.has(form.type) ? (
+          <label className="field-label">
+            Mã dịch vụ nhà cung cấp
+            <input
+              className="text-field"
+              onChange={(event) =>
+                onChange({ ...form, the9pServiceCode: event.target.value })
+              }
+              required
+              value={form.the9pServiceCode}
+            />
+          </label>
+        ) : null}
         <div className="field-label admin-form-span-2">
           Ảnh đại diện dịch vụ
           <div className="admin-service-image-field">
@@ -1880,11 +1922,9 @@ function SubCategoryFormView({
         </div>
         <label className="field-label admin-form-span-2">
           Mô tả
-          <textarea
-            className="text-field admin-textarea"
-            onChange={(event) =>
-              onChange({ ...form, description: event.target.value })
-            }
+          <AutosizeTextarea
+            disabled={isSaving}
+            onValueChange={(description) => onChange({ ...form, description })}
             required
             value={form.description}
           />
@@ -1921,9 +1961,10 @@ function PackageFormView({
   const selectedSubCategory = subCategories.find(
     (item) => item.id === form.subCategoryId,
   );
-  const isAutomaticTopup = selectedSubCategory
-    ? selectedSubCategory.type !== "GAME_SERVICE"
+  const isProviderSynced = selectedSubCategory
+    ? providerSyncedPackageTypes.has(selectedSubCategory.type)
     : false;
+  const isCarotTopup = selectedSubCategory?.type === "TOPUP_CAROT";
 
   return (
     <form className="admin-user-form admin-package-form" onSubmit={onSubmit}>
@@ -1979,19 +2020,24 @@ function PackageFormView({
           />
         </label>
         <label className="field-label">
-          Mệnh giá nhà cung cấp
+          {isCarotTopup
+            ? "the9p_amount (Trường nhận tool)"
+            : "Mệnh giá nhà cung cấp"}
           <input
             className="text-field"
-            disabled={isAutomaticTopup}
+            disabled={isProviderSynced}
             inputMode="numeric"
             onChange={(event) =>
               onChange({ ...form, the9pAmount: normalizeIntegerInput(event.target.value) })
             }
+            required={isCarotTopup}
             type="text"
             value={formatIntegerInput(form.the9pAmount)}
           />
-          {isAutomaticTopup ? (
+          {isProviderSynced ? (
             <small>Mệnh giá này được cố định theo nhà cung cấp.</small>
+          ) : isCarotTopup ? (
+            <small>Giá trị nội bộ để tool nhận và xử lý; không hiển thị cho khách hàng.</small>
           ) : null}
         </label>
         <label className="field-label">
@@ -2008,11 +2054,9 @@ function PackageFormView({
         </label>
         <label className="field-label admin-form-span-2">
           Mô tả
-          <textarea
-            className="text-field admin-textarea"
-            onChange={(event) =>
-              onChange({ ...form, description: event.target.value })
-            }
+          <AutosizeTextarea
+            disabled={isSaving}
+            onValueChange={(description) => onChange({ ...form, description })}
             required
             value={form.description}
           />
@@ -2119,6 +2163,7 @@ function StatusPill({ active }: { active: boolean }) {
 }
 
 function serviceTypeLabel(type: string) {
+  if (type === "TOPUP_CAROT") return "Nạp Carot";
   return type === "TOPUP_THE9P" ? "TOPUP_CARD" : type;
 }
 

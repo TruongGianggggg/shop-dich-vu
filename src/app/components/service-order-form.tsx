@@ -51,7 +51,9 @@ export function ServiceOrderForm({
     [packages, selectedPackageId],
   );
   const isManualService = service.type === "GAME_SERVICE";
-  const usesNgocRongServers = service.the9pServiceCode?.trim().toLowerCase() === "nr";
+  const isCarotTopup = service.type === "TOPUP_CAROT";
+  const usesNgocRongServers =
+    isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -86,7 +88,9 @@ export function ServiceOrderForm({
       : {
           subCategoryId: service.id,
           packageId: selectedPackage.id,
-          accountInfo: { account, server },
+          accountInfo: isCarotTopup
+            ? { username: account, server }
+            : { account, server },
           note,
         };
 
@@ -159,6 +163,11 @@ export function ServiceOrderForm({
               ))}
             </select>
           </label>
+          {selectedPackage?.description ? (
+            <p className="detail-package-description">
+              {selectedPackage.description}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -169,12 +178,16 @@ export function ServiceOrderForm({
         </div>
         <div className="detail-panel-body detail-account-grid">
           <label className="detail-field">
-            <span>Tài Khoản</span>
+            <span>{isCarotTopup ? "Username" : "Tài Khoản"}</span>
             <input
               autoComplete="off"
               maxLength={120}
               name="account"
-              placeholder="Nhập tài khoản cần xử lý"
+              placeholder={
+                isCarotTopup
+                  ? "Nhập username nhân vật cần nạp Carot"
+                  : "Nhập tài khoản cần xử lý"
+              }
               required
             />
           </label>

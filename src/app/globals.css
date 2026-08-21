@@ -5,6 +5,15 @@
   --foreground: #0f172a;
 }
 
+.detail-package-description {
+  margin-top: 14px;
+  padding: 13px 14px;
+  border: 1px solid #e7ebf2;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #596579;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -3366,7 +3375,42 @@ input {
 .admin-textarea {
   min-height: 96px;
   padding-top: 12px;
-  resize: vertical;
+  overflow-y: auto;
+  resize: none;
+}
+
+.admin-autosize-textarea {
+  position: relative;
+}
+
+.admin-autosize-textarea .admin-textarea {
+  display: block;
+  width: 100%;
+  padding-bottom: 34px;
+}
+
+.admin-textarea-counter {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.admin-textarea-progress {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #6d5dfc var(--textarea-progress),
+    #e4e7ec 0
+  );
+  mask: radial-gradient(circle, transparent 45%, #000 48%);
 }
 
 .admin-check-field {
