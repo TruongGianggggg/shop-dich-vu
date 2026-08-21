@@ -581,15 +581,9 @@ export function AdminServicesManager({
       return;
     }
 
-    const description = categoryForm.description.trim();
-    if (!description) {
-      setError("Vui lòng nhập mô tả danh mục.");
-      return;
-    }
-
     const payload: ServiceCategoryPayload = {
       name: categoryForm.name.trim(),
-      description,
+      description: categoryForm.description.trim(),
       displayOrder: numberFromInput(categoryForm.displayOrder),
       active: categoryForm.active,
     };
@@ -1742,11 +1736,10 @@ function CategoryFormView({
           />
         </label>
         <label className="field-label admin-form-span-2 admin-package-description">
-          Mô tả
+          Mô tả (không bắt buộc)
           <AutosizeTextarea
             disabled={isSaving}
             onValueChange={(description) => onChange({ ...form, description })}
-            required
             value={form.description}
           />
         </label>

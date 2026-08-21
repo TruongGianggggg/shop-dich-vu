@@ -187,7 +187,9 @@ export function AdminSiteSettingsManager() {
       if (!response.ok) {
         throw new Error(getApiErrorMessage(data, "Không lưu được cấu hình shop."));
       }
-      setForm(normalizeSiteSettings(data as SiteSettings));
+      const savedSettings = normalizeSiteSettings(data as SiteSettings);
+      setForm(savedSettings);
+      applyBrowserIdentity(savedSettings);
       setMessage("Đã lưu cấu hình giao diện shop.");
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Không lưu được cấu hình shop.");
@@ -529,6 +531,27 @@ export function AdminSiteSettingsManager() {
       </section>
     </main>
   );
+}
+
+function applyBrowserIdentity(settings: SiteSettings) {
+  document.title = settings.shopName.trim() || defaultSettings.shopName;
+
+  const iconUrl = settings.logoUrl.trim() || "/favicon.ico";
+  const iconLinks = document.querySelectorAll<HTMLLinkElement>(
+    'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]',
+  );
+
+  if (iconLinks.length === 0) {
+    const iconLink = document.createElement("link");
+    iconLink.rel = "icon";
+    iconLink.href = iconUrl;
+    document.head.appendChild(iconLink);
+    return;
+  }
+
+  iconLinks.forEach((link) => {
+    link.href = iconUrl;
+  });
 }
 
 function ImageEditor({ field, imageUrl, isBanner = false, isUploading, label, onClear, onUpload }: {

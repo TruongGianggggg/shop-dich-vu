@@ -11,6 +11,20 @@ import {
 } from "@/lib/shop-api";
 import { useAuthSession } from "./use-auth-session";
 
+type CarotBatchOrderResponse = {
+  batchId: string;
+  accountCount: number;
+  totalAmount: number;
+  orders: ServiceOrder[];
+};
+
+function parseCarotUsernames(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((username) => username.trim())
+    .filter(Boolean);
+}
+
 const NGOC_RONG_SERVERS = [
   "1 Sao",
   "2 Sao",
@@ -45,6 +59,9 @@ export function ServiceOrderForm({
   );
   const [message, setMessage] = useState("");
   const [createdOrder, setCreatedOrder] = useState<ServiceOrder | null>(null);
+  const [createdCarotBatch, setCreatedCarotBatch] =
+    useState<CarotBatchOrderResponse | null>(null);
+  const [carotUsernameInput, setCarotUsernameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedPackage = useMemo(
     () => packages.find((item) => item.id === selectedPackageId) ?? null,
@@ -52,6 +69,10 @@ export function ServiceOrderForm({
   );
   const isManualService = service.type === "GAME_SERVICE";
   const isCarotTopup = service.type === "TOPUP_CAROT";
+  const carotUsernames = useMemo(
+    () => parseCarotUsernames(carotUsernameInput),
+    [carotUsernameInput],
+  );
   const usesNgocRongServers =
     isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
@@ -61,6 +82,7 @@ export function ServiceOrderForm({
     const form = event.currentTarget;
     setMessage("");
     setCreatedOrder(null);
+    setCreatedCarotBatch(null);
 
     if (!session) {
       window.location.href = `/login?returnUrl=${encodeURIComponent(returnUrl)}`;
@@ -76,7 +98,29 @@ export function ServiceOrderForm({
     const account = String(formData.get("account") ?? "").trim();
     const server = String(formData.get("server") ?? "").trim();
     const note = String(formData.get("note") ?? "").trim();
-    const payload = isManualService
+    if (isCarotTopup) {
+      if (!carotUsernames.length || !server) {
+        setMessage("Vui lòng nhập tài khoản và chọn server dùng chung.");
+        return;
+      }
+      const uniqueUsernames = new Set(
+        carotUsernames.map((username) => username.toLowerCase()),
+      );
+      if (uniqueUsernames.size !== carotUsernames.length) {
+        setMessage("Danh sách có username bị trùng. Vui lòng kiểm tra lại.");
+        return;
+      }
+    }
+
+    const payload = isCarotTopup
+      ? {
+          subCategoryId: service.id,
+          packageId: selectedPackage.id,
+          usernames: carotUsernames,
+          server,
+          note,
+        }
+      : isManualService
       ? {
           subCategoryId: service.id,
           packageId: selectedPackage.id,
@@ -88,9 +132,7 @@ export function ServiceOrderForm({
       : {
           subCategoryId: service.id,
           packageId: selectedPackage.id,
-          accountInfo: isCarotTopup
-            ? { username: account, server }
-            : { account, server },
+          accountInfo: { account, server },
           note,
         };
 
@@ -98,7 +140,9 @@ export function ServiceOrderForm({
 
     try {
       const response = await fetch(
-        isManualService
+        isCarotTopup
+          ? "/api/service-orders/topup/carot-batch"
+          : isManualService
           ? "/api/service-orders/game-service"
           : "/api/service-orders/topup",
         {
@@ -110,14 +154,22 @@ export function ServiceOrderForm({
           body: JSON.stringify(payload),
         },
       );
-      const data = (await response.json()) as ServiceOrder | unknown;
+      const data = (await response.json()) as
+        | ServiceOrder
+        | CarotBatchOrderResponse
+        | unknown;
 
       if (!response.ok) {
         setMessage(getApiErrorMessage(data, "Không thể tạo đơn dịch vụ."));
         return;
       }
 
-      setCreatedOrder(data as ServiceOrder);
+      if (isCarotTopup) {
+        setCreatedCarotBatch(data as CarotBatchOrderResponse);
+        setCarotUsernameInput("");
+      } else {
+        setCreatedOrder(data as ServiceOrder);
+      }
       form.reset();
       setSelectedPackageId(selectedPackage.id);
     } catch {
@@ -177,20 +229,35 @@ export function ServiceOrderForm({
           <h2>Thông Tin Tài Khoản</h2>
         </div>
         <div className="detail-panel-body detail-account-grid">
-          <label className="detail-field">
-            <span>{isCarotTopup ? "Username" : "Tài Khoản"}</span>
-            <input
-              autoComplete="off"
-              maxLength={120}
-              name="account"
-              placeholder={
-                isCarotTopup
-                  ? "Nhập username nhân vật cần nạp Carot"
-                  : "Nhập tài khoản cần xử lý"
-              }
-              required
-            />
-          </label>
+          {isCarotTopup ? (
+            <label className="detail-field detail-field-wide">
+              <span>Danh sách tài khoản đăng nhập</span>
+              <textarea
+                autoComplete="off"
+                className="detail-carot-accounts-textarea"
+                name="account"
+                onChange={(event) => setCarotUsernameInput(event.target.value)}
+                placeholder={"Nhập tài khoản đăng nhập\nMỗi tài khoản một dòng"}
+                required
+                rows={8}
+                value={carotUsernameInput}
+              />
+              <small className="detail-field-helper">
+                Mỗi tài khoản một dòng — đã nhập {carotUsernames.length} tài khoản.
+              </small>
+            </label>
+          ) : (
+            <label className="detail-field">
+              <span>Tài Khoản</span>
+              <input
+                autoComplete="off"
+                maxLength={120}
+                name="account"
+                placeholder="Nhập tài khoản cần xử lý"
+                required
+              />
+            </label>
+          )}
           {isManualService ? (
             <label className="detail-field">
               <span>Mật Khẩu</span>
@@ -243,7 +310,14 @@ export function ServiceOrderForm({
           <div className="detail-confirm-box">
             <div className="detail-total">
               <span>Tổng thanh toán</span>
-              <strong>{selectedPackage ? formatVnd(selectedPackage.price) : "—"}</strong>
+              <strong>
+                {selectedPackage
+                  ? formatVnd(
+                        selectedPackage.price *
+                        (isCarotTopup ? carotUsernames.length : 1),
+                    )
+                  : "—"}
+              </strong>
             </div>
             {message ? <p className="detail-form-error">{message}</p> : null}
             {createdOrder ? (
@@ -253,12 +327,23 @@ export function ServiceOrderForm({
                 <Link href="/lich-su-mua">Xem lịch sử mua →</Link>
               </div>
             ) : null}
+            {createdCarotBatch ? (
+              <div className="detail-order-success" role="status">
+                <strong>
+                  Đã tạo thành công {createdCarotBatch.accountCount} đơn nạp Carot
+                </strong>
+                <span>Mã lô: {createdCarotBatch.batchId}</span>
+                <Link href="/lich-su-mua">Xem lịch sử mua →</Link>
+              </div>
+            ) : null}
             <button disabled={isSubmitting || !selectedPackage} type="submit">
               <span aria-hidden="true">🛒</span>
               {isSubmitting
                 ? "Đang tạo đơn..."
                 : session
-                  ? "Tạo Đơn Hàng"
+                  ? isCarotTopup && carotUsernames.length > 1
+                    ? `Tạo ${carotUsernames.length} Đơn Hàng`
+                    : "Tạo Đơn Hàng"
                   : "Đăng nhập để đặt dịch vụ"}
             </button>
           </div>

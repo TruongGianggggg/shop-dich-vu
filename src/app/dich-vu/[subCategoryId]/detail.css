@@ -275,6 +275,8 @@
 .detail-account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
 .detail-field { display: grid; gap: 8px; color: #303641; font-size: 13px; font-weight: 750; }
 .detail-field-wide { grid-column: 1 / -1; }
+.detail-field-helper { color: #778195; font-size: 12px; font-weight: 600; line-height: 1.45; }
+.detail-field .detail-carot-accounts-textarea { min-height: 190px; line-height: 1.65; white-space: pre-wrap; }
 .detail-confirm-box {
   margin-top: 14px;
   padding: 14px;

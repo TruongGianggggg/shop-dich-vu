@@ -43,7 +43,6 @@ export function AccountActions() {
             <strong>{session.username}</strong>
             <b>{isLoadingBalance && !wallet ? "..." : formatVnd(wallet?.balance ?? 0)}</b>
           </span>
-          <small>{session.role}</small>
         </span>
         <span className="account-caret">›</span>
       </button>
