@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  Clock3,
+  ReceiptText,
+  Search,
+  TriangleAlert,
+  UserRound,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   PageResponse,
   ServiceOrder,
@@ -9,6 +18,7 @@ import {
   getApiErrorMessage,
 } from "@/lib/shop-api";
 import { useAuthSession } from "./use-auth-session";
+import styles from "@/app/lich-su-mua/order-history.module.css";
 
 const statusLabels: Record<ServiceOrder["status"], string> = {
   error: "Lỗi",
@@ -16,6 +26,16 @@ const statusLabels: Record<ServiceOrder["status"], string> = {
   processing: "Đang xử lý",
   done: "Hoàn thành",
 };
+
+type StatusFilter = "all" | ServiceOrder["status"];
+
+const statusFilters: { label: string; value: StatusFilter }[] = [
+  { label: "Tất cả", value: "all" },
+  { label: "Chờ xử lý", value: "pending" },
+  { label: "Đang xử lý", value: "processing" },
+  { label: "Hoàn thành", value: "done" },
+  { label: "Lỗi", value: "error" },
+];
 
 export function OrderHistory() {
   const session = useAuthSession();
@@ -26,6 +46,9 @@ export function OrderHistory() {
   const [page, setPage] = useState(0);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [expandedOrderId, setExpandedOrderId] = useState("");
 
   useEffect(() => {
     if (!session) {
@@ -82,6 +105,31 @@ export function OrderHistory() {
     };
   }, [page, session]);
 
+  const statusCounts = useMemo(
+    () => ({
+      done: orders.filter((order) => order.status === "done").length,
+      error: orders.filter((order) => order.status === "error").length,
+      pending: orders.filter((order) => order.status === "pending").length,
+      processing: orders.filter((order) => order.status === "processing").length,
+    }),
+    [orders],
+  );
+
+  const visibleOrders = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase("vi");
+    return orders.filter((order) => {
+      if (statusFilter !== "all" && order.status !== statusFilter) return false;
+      if (!normalizedQuery) return true;
+      return [
+        order.requestId,
+        order.packageName,
+        order.packageId,
+        order.username,
+        order.server,
+      ].some((value) => value?.toLocaleLowerCase("vi").includes(normalizedQuery));
+    });
+  }, [orders, query, statusFilter]);
+
   if (!session) {
     return (
       <div className="order-history-login">
@@ -93,10 +141,24 @@ export function OrderHistory() {
   }
 
   return (
-    <div className="order-history-content">
-      <div className="order-history-summary">
-        <div><span>Tổng đơn</span><strong>{pageInfo?.totalElements ?? 0}</strong></div>
-        <div><span>Tài khoản</span><strong>{session.username}</strong></div>
+    <div className={styles.content}>
+      <div className={styles.summary}>
+        <div className={styles.summaryCard}>
+          <span className={styles.summaryIcon}><ReceiptText aria-hidden="true" size={19} /></span>
+          <div><small>Tổng đơn</small><strong>{pageInfo?.totalElements ?? 0}</strong></div>
+        </div>
+        <div className={styles.summaryCard}>
+          <span className={`${styles.summaryIcon} ${styles.success}`}><CheckCircle2 aria-hidden="true" size={19} /></span>
+          <div><small>Hoàn thành trang này</small><strong>{statusCounts.done}</strong></div>
+        </div>
+        <div className={styles.summaryCard}>
+          <span className={`${styles.summaryIcon} ${styles.warning}`}><Clock3 aria-hidden="true" size={19} /></span>
+          <div><small>Đang chờ / xử lý</small><strong>{statusCounts.pending + statusCounts.processing}</strong></div>
+        </div>
+        <div className={styles.summaryCard}>
+          <span className={`${styles.summaryIcon} ${styles.danger}`}><TriangleAlert aria-hidden="true" size={19} /></span>
+          <div><small>Lỗi trang này</small><strong>{statusCounts.error}</strong></div>
+        </div>
       </div>
 
       {error ? <p className="order-history-error">{error}</p> : null}
@@ -108,26 +170,88 @@ export function OrderHistory() {
         </div>
       ) : null}
 
-      <div className="order-history-list">
-        {orders.map((order) => (
-          <article className="order-history-card" key={order.id}>
-            <div className="order-history-card-head">
-              <div><small>Mã đơn</small><strong>{order.requestId}</strong></div>
-              <span className={`status-${order.status.toLowerCase()}`}>
-                {statusLabels[order.status]}
-              </span>
+      {orders.length ? (
+        <section className={styles.panel}>
+          <div className={styles.toolbar}>
+            <label className={styles.search}>
+              <Search aria-hidden="true" size={17} />
+              <input
+                aria-label="Tìm kiếm đơn hàng"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Tìm mã đơn, dịch vụ, tài khoản..."
+                type="search"
+                value={query}
+              />
+            </label>
+            <div aria-label="Lọc trạng thái" className={styles.filters} role="group">
+              {statusFilters.map((filter) => (
+                <button
+                  className={statusFilter === filter.value ? styles.activeFilter : ""}
+                  key={filter.value}
+                  onClick={() => setStatusFilter(filter.value)}
+                  type="button"
+                >
+                  {filter.label}
+                </button>
+              ))}
             </div>
-            <div className="order-history-card-body">
-              <div><small>Gói dịch vụ</small><strong>{order.packageName ?? order.packageId}</strong></div>
-              <div><small>Thanh toán</small><strong>{formatVnd(order.amount)}</strong></div>
-              <div><small>Tài khoản game</small><strong>{order.username ?? "—"}</strong></div>
-              <div><small>Server</small><strong>{order.server ?? "—"}</strong></div>
-              <div><small>Ngày tạo</small><strong>{formatDate(order.createdAt)}</strong></div>
+          </div>
+
+          <div className={styles.tableHead} aria-hidden="true">
+            <span>Mã đơn</span><span>Dịch vụ</span><span>Tài khoản game</span>
+            <span>Server</span><span>Thanh toán</span><span>Ngày tạo</span><span>Trạng thái</span><span />
+          </div>
+
+          <div className={styles.list}>
+            {visibleOrders.map((order) => {
+              const isExpanded = expandedOrderId === order.id;
+              return (
+                <article className={styles.order} key={order.id}>
+                  <button
+                    aria-expanded={isExpanded}
+                    className={styles.orderRow}
+                    onClick={() => setExpandedOrderId(isExpanded ? "" : order.id)}
+                    type="button"
+                  >
+                    <OrderCell label="Mã đơn" value={order.requestId} emphasize />
+                    <OrderCell label="Dịch vụ" value={order.packageName ?? order.packageId} />
+                    <OrderCell label="Tài khoản game" value={order.username ?? "—"} />
+                    <OrderCell label="Server" value={order.server ?? "—"} />
+                    <OrderCell label="Thanh toán" value={formatVnd(order.amount)} />
+                    <OrderCell label="Ngày tạo" value={formatDate(order.createdAt)} />
+                    <span className={`${styles.status} ${styles[order.status]}`}>
+                      {statusLabels[order.status]}
+                    </span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={isExpanded ? styles.chevronOpen : styles.chevron}
+                      size={17}
+                    />
+                  </button>
+
+                  {isExpanded ? (
+                    <div className={styles.details}>
+                      <div><small>Loại dịch vụ</small><strong>{order.type}</strong></div>
+                      <div><small>Mã gói</small><strong>{order.packageId}</strong></div>
+                      <div><small>Cập nhật lúc</small><strong>{formatDate(order.updatedAt)}</strong></div>
+                      <div><small>Ghi chú</small><strong>{order.note ?? "Không có ghi chú"}</strong></div>
+                      {order.externalMessage ? <p>{order.externalMessage}</p> : null}
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+
+          {!visibleOrders.length ? (
+            <div className={styles.noResults}>
+              <UserRound aria-hidden="true" size={23} />
+              <strong>Không tìm thấy đơn phù hợp</strong>
+              <span>Thử đổi từ khóa hoặc trạng thái lọc.</span>
             </div>
-            {order.note ? <p className="order-history-note">Ghi chú: {order.note}</p> : null}
-          </article>
-        ))}
-      </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {pageInfo && pageInfo.totalPages > 1 ? (
         <div className="order-history-pagination">
@@ -137,6 +261,23 @@ export function OrderHistory() {
         </div>
       ) : null}
     </div>
+  );
+}
+
+function OrderCell({
+  emphasize = false,
+  label,
+  value,
+}: {
+  emphasize?: boolean;
+  label: string;
+  value: string;
+}) {
+  return (
+    <span className={styles.cell}>
+      <small>{label}</small>
+      <strong className={emphasize ? styles.emphasize : ""} title={value}>{value}</strong>
+    </span>
   );
 }
 
