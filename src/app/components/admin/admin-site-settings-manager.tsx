@@ -88,7 +88,6 @@ export function AdminSiteSettingsManager() {
           `/api/admin/deposits/leaderboard/manual?year=${leaderboardYear}&month=${leaderboardMonth}`,
           {
             cache: "no-store",
-            headers: { Authorization: `${session!.tokenType} ${session!.token}` },
           },
         );
         const data = (await readJson(response)) as ManualMonthlyDepositEntry[] | unknown;
@@ -136,7 +135,6 @@ export function AdminSiteSettingsManager() {
       body.append("file", uploadFile);
       const response = await fetch("/api/admin/site-settings/images", {
         method: "POST",
-        headers: { Authorization: `${session.tokenType} ${session.token}` },
         body,
       });
       const data = (await readJson(response)) as unknown;
@@ -183,7 +181,6 @@ export function AdminSiteSettingsManager() {
       const response = await fetch("/api/admin/site-settings", {
         method: "PUT",
         headers: {
-          Authorization: `${session.tokenType} ${session.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
@@ -223,7 +220,6 @@ export function AdminSiteSettingsManager() {
         {
           method: editingEntryId ? "PUT" : "POST",
           headers: {
-            Authorization: `${session.tokenType} ${session.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -258,7 +254,6 @@ export function AdminSiteSettingsManager() {
         `/api/admin/deposits/leaderboard/manual/${encodeURIComponent(entry.id)}`,
         {
           method: "DELETE",
-          headers: { Authorization: `${session.tokenType} ${session.token}` },
         },
       );
       if (!response.ok) {

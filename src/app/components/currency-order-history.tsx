@@ -38,9 +38,7 @@ export function CurrencyOrderHistory() {
         Object.entries(appliedFilters).forEach(([key, value]) => {
           if (value.trim()) params.set(key, value.trim());
         });
-        const response = await fetch(`/api/currency-orders/history?${params}`, {
-          headers: { Authorization: `Bearer ${session!.token}` },
-        });
+        const response = await fetch(`/api/currency-orders/history?${params}`);
         const data = await readResponseJson(response);
         if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được lịch sử."));
         if (!data) throw new Error("Dữ liệu lịch sử trả về không hợp lệ.");

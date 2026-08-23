@@ -1,8 +1,8 @@
-import { proxyBackendResponse } from "@/lib/backend";
+import { createAuthSessionResponse } from "@/lib/auth-route";
 
 export async function POST(request: Request) {
   try {
-    return await proxyBackendResponse("/api/auth/login", request);
+    return await createAuthSessionResponse("/api/auth/login", request);
   } catch {
     return Response.json(
       { message: "Khong ket noi duoc backend. Hay kiem tra server Spring Boot." },

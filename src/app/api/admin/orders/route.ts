@@ -2,7 +2,7 @@ import { proxyBackendResponse, requireAdminRequest } from "@/lib/backend";
 
 export async function GET(request: Request) {
   try {
-    const forbidden = requireAdminRequest(request);
+    const forbidden = await requireAdminRequest(request);
 
     if (forbidden) {
       return forbidden;

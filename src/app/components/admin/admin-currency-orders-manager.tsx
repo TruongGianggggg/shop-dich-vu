@@ -33,7 +33,7 @@ export function AdminCurrencyOrdersManager() {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(`/api/admin/currency-orders?${params}`, { headers: authHeaders(session!.token) });
+        const response = await fetch(`/api/admin/currency-orders?${params}`);
         const data = await response.json();
         if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được đơn Vàng/Ngọc."));
         if (!ignore) setResult(data as PageResponse<GameCurrencyOrder>);
@@ -67,7 +67,7 @@ export function AdminCurrencyOrdersManager() {
     setError("");
     try {
       const response = await fetch(`/api/admin/currency-orders/${order.id}/status`, {
-        method: "PUT", headers: { ...authHeaders(session.token), "Content-Type": "application/json" },
+        method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus, adminNote }),
       });
       const data = await response.json();
@@ -120,5 +120,4 @@ export function AdminCurrencyOrdersManager() {
   </main>;
 }
 
-function authHeaders(token: string) { return { Authorization: `Bearer ${token}` }; }
 function formatDate(value: string) { return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(value)); }

@@ -2239,10 +2239,9 @@ function normalizeList<T>(data: unknown) {
   return [];
 }
 
-function authHeaders(session: AuthResponse) {
-  return {
-    Authorization: `${session.tokenType} ${session.token}`,
-  };
+function authHeaders(_session: AuthResponse) {
+  void _session;
+  return {};
 }
 
 async function readResponseJson(response: Response) {

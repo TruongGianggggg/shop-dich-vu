@@ -73,7 +73,8 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         !response.ok ||
         !data ||
         typeof data !== "object" ||
-        !("token" in data)
+        !("userId" in data) ||
+        !("role" in data)
       ) {
         const errorMessage =
           isLogin && response.status === 401

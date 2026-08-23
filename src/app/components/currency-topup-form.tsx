@@ -65,7 +65,6 @@ export function CurrencyTopupForm({
       const response = await fetch("/api/currency-orders", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

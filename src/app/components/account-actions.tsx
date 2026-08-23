@@ -11,8 +11,8 @@ export function AccountActions() {
   const { isLoading: isLoadingBalance, wallet } = useUserBalance();
   const [isOpen, setIsOpen] = useState(false);
 
-  function logout() {
-    clearAuthSession();
+  async function logout() {
+    await clearAuthSession();
     window.location.href = "/";
   }
 

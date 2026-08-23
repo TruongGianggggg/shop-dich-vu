@@ -57,7 +57,6 @@ export function OrderHistory() {
       return;
     }
 
-    const activeSession = session;
     let ignore = false;
 
     async function loadOrders() {
@@ -67,7 +66,7 @@ export function OrderHistory() {
       try {
         const response = await fetch(
           `/api/service-orders/history?page=${page}&size=10`,
-          { headers: { Authorization: `Bearer ${activeSession.token}` } },
+          { cache: "no-store" },
         );
         const data = (await response.json()) as
           | PageResponse<ServiceOrder>

@@ -248,7 +248,6 @@ export function DepositQrButton({
       const response = await fetch("/api/deposits/cards", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

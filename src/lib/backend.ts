@@ -1,5 +1,8 @@
 import "server-only";
 
+import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth-cookie";
+import { AuthResponse, UserRole } from "@/lib/shop-api";
+
 const backendBaseUrl =
   process.env.SHOP_GAME_API_URL ??
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -34,7 +37,7 @@ export async function proxyBackendResponse(
 ) {
   const headers = new Headers();
   const contentType = request.headers.get("Content-Type");
-  const authorization = request.headers.get("Authorization");
+  const token = getRequestAuthToken(request);
 
   headers.set("Accept", "application/json");
 
@@ -42,8 +45,8 @@ export async function proxyBackendResponse(
     headers.set("Content-Type", contentType);
   }
 
-  if (authorization) {
-    headers.set("Authorization", authorization);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
   const method = request.method.toUpperCase();
@@ -76,44 +79,55 @@ export async function proxyBackendJson(path: string, request: Request) {
   return proxyBackendResponse(path, request);
 }
 
-export function requireAdminRequest(request: Request) {
-  if (getJwtRole(request) === "ADMIN") {
+export async function requireAdminRequest(request: Request) {
+  const session = await getAuthenticatedBackendSession(request);
+
+  if (session?.role === "ADMIN") {
     return null;
   }
 
   return Response.json(
     { message: "Admin permission is required." },
-    { status: 403 },
+    { status: session ? 403 : 401 },
   );
 }
 
-function getJwtRole(request: Request) {
-  const authorization = request.headers.get("Authorization");
-  const token = authorization?.replace(/^Bearer\s+/i, "");
+export async function getAuthenticatedBackendSession(request: Request) {
+  const token = getRequestAuthToken(request);
 
   if (!token) {
     return null;
   }
 
-  const [, payload] = token.split(".");
-
-  if (!payload) {
-    return null;
-  }
-
   try {
-    const decoded = decodeBase64Url(payload);
-    const data = JSON.parse(decoded) as { role?: unknown };
+    const response = await fetch(getBackendUrl("/api/auth/me"), {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
 
-    return typeof data.role === "string" ? data.role : null;
+    if (!response.ok) return null;
+    const session = (await response.json()) as AuthResponse;
+    return isUserRole(session.role) ? session : null;
   } catch {
     return null;
   }
 }
 
-function decodeBase64Url(value: string) {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+export function getRequestAuthToken(request: Request) {
+  const cookieHeader = request.headers.get("Cookie") ?? "";
+  const cookieToken = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${AUTH_TOKEN_COOKIE_NAME}=`))
+    ?.slice(AUTH_TOKEN_COOKIE_NAME.length + 1);
 
-  return Buffer.from(padded, "base64").toString("utf8");
+  if (cookieToken) return decodeURIComponent(cookieToken);
+
+  return request.headers
+    .get("Authorization")
+    ?.replace(/^Bearer\s+/i, "") || null;
+}
+
+function isUserRole(value: unknown): value is UserRole {
+  return value === "USER" || value === "COLLABORATOR" || value === "ADMIN";
 }

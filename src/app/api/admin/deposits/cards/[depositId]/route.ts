@@ -5,7 +5,7 @@ export async function GET(
   context: { params: Promise<{ depositId: string }> },
 ) {
   try {
-    const forbidden = requireAdminRequest(request);
+    const forbidden = await requireAdminRequest(request);
     if (forbidden) {
       return forbidden;
     }

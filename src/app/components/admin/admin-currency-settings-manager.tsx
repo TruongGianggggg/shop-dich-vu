@@ -686,8 +686,9 @@ function CurrencyFormBlock({
   );
 }
 
-function authHeaders(session: AuthResponse) {
-  return { Authorization: `Bearer ${session.token}` };
+function authHeaders(_session: AuthResponse) {
+  void _session;
+  return {};
 }
 
 function nextAvailableToolIndex(configs: GameServerCurrencyConfig[]) {

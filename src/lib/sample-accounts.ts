@@ -44,8 +44,6 @@ export function findSampleAccount(login: string, password: string) {
 
 export function createSampleAuthResponse(account: SampleAccount): AuthResponse {
   return {
-    token: `sample-token-${account.role.toLowerCase()}`,
-    tokenType: "Bearer",
     expiresIn: 86400,
     userId: `sample-${account.username}`,
     username: account.username,

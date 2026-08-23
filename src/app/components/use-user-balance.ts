@@ -33,9 +33,6 @@ export function useUserBalance() {
           `/api/wallet/${encodeURIComponent(activeSession.userId)}`,
           {
             cache: "no-store",
-            headers: {
-              Authorization: `${activeSession.tokenType} ${activeSession.token}`,
-            },
           },
         );
         const data = (await readResponseJson(response)) as UserBalance | unknown;

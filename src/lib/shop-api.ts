@@ -1,8 +1,6 @@
 export type UserRole = "USER" | "COLLABORATOR" | "ADMIN";
 
 export type AuthResponse = {
-  token: string;
-  tokenType: string;
   expiresIn: number;
   userId: string;
   username: string;

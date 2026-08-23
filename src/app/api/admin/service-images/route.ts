@@ -1,12 +1,12 @@
-import { getBackendUrl } from "@/lib/backend";
+import { getBackendUrl, getRequestAuthToken } from "@/lib/backend";
 
 export async function POST(request: Request) {
   try {
-    const authorization = request.headers.get("Authorization");
+    const token = getRequestAuthToken(request);
     const contentType = request.headers.get("Content-Type");
     const headers = new Headers({ Accept: "application/json" });
 
-    if (authorization) headers.set("Authorization", authorization);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
     if (contentType) headers.set("Content-Type", contentType);
 
     const response = await fetch(getBackendUrl("/api/admin/service-images"), {

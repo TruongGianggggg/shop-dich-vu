@@ -5,7 +5,7 @@ export async function PUT(
   context: RouteContext<"/api/admin/currency-orders/[orderId]/status">,
 ) {
   try {
-    const forbidden = requireAdminRequest(request);
+    const forbidden = await requireAdminRequest(request);
     if (forbidden) return forbidden;
     const { orderId } = await context.params;
     return await proxyBackendResponse(
