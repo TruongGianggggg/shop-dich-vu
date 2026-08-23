@@ -2,19 +2,28 @@
 
 import {
   Bold,
+  BetweenHorizontalEnd,
+  BetweenVerticalEnd,
+  Columns3,
   Heading2,
   Italic,
   Link as LinkIcon,
   List,
   ListOrdered,
+  Merge,
   Quote,
   Redo2,
+  Rows3,
+  Split,
   Strikethrough,
+  Table2,
+  Trash2,
   Undo2,
   Unlink,
 } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { TableKit } from "@tiptap/extension-table";
 import { useEffect } from "react";
 
 const MAX_HTML_LENGTH = 3000;
@@ -36,6 +45,9 @@ export function RichTextEditor({ disabled = false, onChange, value }: RichTextEd
           HTMLAttributes: { rel: "noopener noreferrer nofollow" },
           openOnClick: false,
         },
+      }),
+      TableKit.configure({
+        table: { resizable: true },
       }),
     ],
     content: value || "",
@@ -84,6 +96,15 @@ export function RichTextEditor({ disabled = false, onChange, value }: RichTextEd
         <span className="rich-text-toolbar-divider" />
         <ToolbarButton active={editor.isActive("link")} label="Thêm liên kết" onClick={editLink}><LinkIcon size={17} /></ToolbarButton>
         <ToolbarButton label="Bỏ liên kết" onClick={() => editor.chain().focus().extendMarkRange("link").unsetLink().run()}><Unlink size={17} /></ToolbarButton>
+        <span className="rich-text-toolbar-divider" />
+        <ToolbarButton label="Tạo bảng 3 × 3" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().addRowAfter()} label="Thêm hàng bên dưới" onClick={() => editor.chain().focus().addRowAfter().run()}><BetweenHorizontalEnd size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().deleteRow()} label="Xóa hàng hiện tại" onClick={() => editor.chain().focus().deleteRow().run()}><Rows3 size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().addColumnAfter()} label="Thêm cột bên phải" onClick={() => editor.chain().focus().addColumnAfter().run()}><BetweenVerticalEnd size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().deleteColumn()} label="Xóa cột hiện tại" onClick={() => editor.chain().focus().deleteColumn().run()}><Columns3 size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().mergeCells()} label="Gộp các ô đã chọn" onClick={() => editor.chain().focus().mergeCells().run()}><Merge size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().splitCell()} label="Tách ô" onClick={() => editor.chain().focus().splitCell().run()}><Split size={17} /></ToolbarButton>
+        <ToolbarButton disabled={!editor.can().deleteTable()} label="Xóa bảng" onClick={() => editor.chain().focus().deleteTable().run()}><Trash2 size={17} /></ToolbarButton>
         <span className="rich-text-toolbar-spacer" />
         <ToolbarButton disabled={!editor.can().chain().focus().undo().run()} label="Hoàn tác" onClick={() => editor.chain().focus().undo().run()}><Undo2 size={17} /></ToolbarButton>
         <ToolbarButton disabled={!editor.can().chain().focus().redo().run()} label="Làm lại" onClick={() => editor.chain().focus().redo().run()}><Redo2 size={17} /></ToolbarButton>

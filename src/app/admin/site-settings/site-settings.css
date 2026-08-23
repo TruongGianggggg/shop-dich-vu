@@ -416,6 +416,36 @@
 .rich-text-editor .tiptap ol { margin: 8px 0; padding-left: 24px; }
 .rich-text-editor .tiptap blockquote { border-left: 3px solid #93b4eb; color: #5b6780; margin: 12px 0; padding-left: 13px; }
 .rich-text-editor .tiptap a { color: #2563eb; text-decoration: underline; }
+.rich-text-editor .tableWrapper { margin: 14px 0; overflow-x: auto; }
+.rich-text-editor .tiptap table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+.rich-text-editor .tiptap th,
+.rich-text-editor .tiptap td {
+  border: 1px solid #cfd7e5;
+  min-width: 90px;
+  padding: 9px 10px;
+  position: relative;
+  vertical-align: top;
+}
+.rich-text-editor .tiptap th { background: #eef4ff; color: #25324a; font-weight: 800; }
+.rich-text-editor .tiptap th p,
+.rich-text-editor .tiptap td p { margin: 0; }
+.rich-text-editor .tiptap .selectedCell::after {
+  background: rgba(37, 99, 235, .13);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.rich-text-editor .tiptap .column-resize-handle {
+  background: #3b82f6;
+  bottom: -1px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: -1px;
+  width: 3px;
+}
+.rich-text-editor .tiptap.resize-cursor { cursor: col-resize; }
 
 .rich-text-counter {
   border-top: 1px solid #eef1f5;

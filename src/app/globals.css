@@ -6235,6 +6235,7 @@ input {
   line-height: 1.75;
   margin: 22px 0 28px;
   overflow-wrap: anywhere;
+  overflow-x: auto;
   text-align: left;
 }
 
@@ -6249,6 +6250,24 @@ input {
 .storefront-announcement-content ol { margin: 10px 0; padding-left: 24px; }
 .storefront-announcement-content blockquote { border-left: 3px solid #9ab9eb; color: #64748b; margin: 12px 0; padding-left: 13px; }
 .storefront-announcement-content a { color: #2563eb; text-decoration: underline; }
+.storefront-announcement-content table {
+  border-collapse: collapse;
+  display: table;
+  margin: 14px 0;
+  min-width: 100%;
+  width: max-content;
+}
+.storefront-announcement-content th,
+.storefront-announcement-content td {
+  border: 1px solid #d5dce8;
+  min-width: 110px;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.storefront-announcement-content th { background: #eef4ff; color: #25324a; font-weight: 800; }
+.storefront-announcement-content th p,
+.storefront-announcement-content td p { margin: 0; }
 
 .storefront-announcement-confirm {
   background: linear-gradient(135deg, #168eff, #526ff0);

@@ -42,8 +42,8 @@ export function StorefrontAnnouncement({
   const normalizedContent = content?.trim() || "";
   const getSanitizedContent = useCallback(
     () => DOMPurify.sanitize(normalizedContent, {
-      ALLOWED_ATTR: ["href", "rel", "target"],
-      ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "s", "h2", "h3", "ul", "ol", "li", "blockquote", "a"],
+      ALLOWED_ATTR: ["colspan", "href", "rel", "rowspan", "target"],
+      ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "s", "h2", "h3", "ul", "ol", "li", "blockquote", "a", "table", "thead", "tbody", "tfoot", "tr", "th", "td"],
     }),
     [normalizedContent],
   );
