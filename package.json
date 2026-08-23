@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tiptap/react": "^3.30.2",
+    "@tiptap/starter-kit": "^3.30.2",
+    "dompurify": "^3.4.14",
     "lucide-react": "^1.21.0",
     "next": "16.2.7",
     "react": "19.2.4",

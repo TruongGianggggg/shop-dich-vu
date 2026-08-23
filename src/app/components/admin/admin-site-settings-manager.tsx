@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, ImageUp, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
+import { RichTextEditor } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import { prepareLogoForUpload } from "@/lib/logo-background";
@@ -171,6 +172,10 @@ export function AdminSiteSettingsManager() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!session) return;
+    if (form.announcementContent.length > 3000) {
+      setError("Nội dung thông báo không được vượt quá 3.000 ký tự HTML.");
+      return;
+    }
     setIsSaving(true);
     setError("");
     setMessage("");
@@ -360,16 +365,14 @@ export function AdminSiteSettingsManager() {
                   value={form.announcementTitle}
                 />
               </label>
-              <label>
+              <div className="php-announcement-editor-field">
                 <span>Nội dung thông báo</span>
-                <textarea
-                  className="php-form-control php-announcement-content"
-                  maxLength={3000}
-                  onChange={(event) => setForm({ ...form, announcementContent: event.target.value })}
-                  placeholder="Nhập nội dung cần thông báo tới khách hàng..."
+                <RichTextEditor
+                  disabled={isLoading || isSaving}
+                  onChange={(announcementContent) => setForm({ ...form, announcementContent })}
                   value={form.announcementContent}
                 />
-              </label>
+              </div>
               <small>Mỗi lần sửa tiêu đề hoặc nội dung, thông báo sẽ hiện lại với khách đã đóng bản cũ.</small>
             </div>
             <div className="php-footer-section">

@@ -319,9 +319,115 @@
   width: 18px;
 }
 
-.php-announcement-content {
-  min-height: 130px;
-  resize: vertical;
+.php-announcement-editor-field {
+  color: #374151;
+  display: grid;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 8px;
+}
+
+.rich-text-editor {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 7px;
+  color: #202939;
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.rich-text-editor:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+}
+
+.rich-text-editor.is-disabled {
+  background: #f8fafc;
+  opacity: .72;
+}
+
+.rich-text-editor-loading {
+  min-height: 190px;
+  padding: 18px;
+}
+
+.rich-text-toolbar {
+  align-items: center;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5eaf1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+}
+
+.rich-text-toolbar button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #526078;
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.rich-text-toolbar button:hover:not(:disabled),
+.rich-text-toolbar button.is-active {
+  background: #e6efff;
+  color: #2563eb;
+}
+
+.rich-text-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+
+.rich-text-toolbar-divider {
+  background: #dfe5ee;
+  height: 22px;
+  margin: 0 3px;
+  width: 1px;
+}
+
+.rich-text-toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.rich-text-editor .tiptap {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.65;
+  min-height: 180px;
+  outline: none;
+  padding: 15px 17px;
+}
+
+.rich-text-editor .tiptap > :first-child { margin-top: 0; }
+.rich-text-editor .tiptap > :last-child { margin-bottom: 0; }
+.rich-text-editor .tiptap p { margin: 0 0 10px; }
+.rich-text-editor .tiptap h2,
+.rich-text-editor .tiptap h3 { font-weight: 800; line-height: 1.35; margin: 16px 0 9px; }
+.rich-text-editor .tiptap h2 { font-size: 20px; }
+.rich-text-editor .tiptap h3 { font-size: 17px; }
+.rich-text-editor .tiptap ul,
+.rich-text-editor .tiptap ol { margin: 8px 0; padding-left: 24px; }
+.rich-text-editor .tiptap blockquote { border-left: 3px solid #93b4eb; color: #5b6780; margin: 12px 0; padding-left: 13px; }
+.rich-text-editor .tiptap a { color: #2563eb; text-decoration: underline; }
+
+.rich-text-counter {
+  border-top: 1px solid #eef1f5;
+  color: #8993a4;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 10px;
+  text-align: right;
+}
+
+.rich-text-counter.is-over-limit {
+  color: #dc2626;
 }
 
 .site-banner-preview-actions button.is-danger {

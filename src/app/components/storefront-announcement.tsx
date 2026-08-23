@@ -1,11 +1,16 @@
 "use client";
 
 import { Bell, X } from "lucide-react";
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import DOMPurify from "dompurify";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "storefront-announcement-dismissed";
 const STORAGE_EVENT = "storefront-announcement-change";
 let memoryDismissedVersion: string | null = null;
+
+function subscribeToBrowserSnapshot() {
+  return () => undefined;
+}
 
 function subscribeToDismissal(callback: () => void) {
   window.addEventListener(STORAGE_EVENT, callback);
@@ -35,6 +40,18 @@ export function StorefrontAnnouncement({
 }) {
   const normalizedTitle = title?.trim() || "Thông báo mới";
   const normalizedContent = content?.trim() || "";
+  const getSanitizedContent = useCallback(
+    () => DOMPurify.sanitize(normalizedContent, {
+      ALLOWED_ATTR: ["href", "rel", "target"],
+      ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "s", "h2", "h3", "ul", "ol", "li", "blockquote", "a"],
+    }),
+    [normalizedContent],
+  );
+  const sanitizedContent = useSyncExternalStore(
+    subscribeToBrowserSnapshot,
+    getSanitizedContent,
+    () => "",
+  );
   const version = useMemo(
     () => JSON.stringify([normalizedTitle, normalizedContent]),
     [normalizedContent, normalizedTitle],
@@ -44,7 +61,7 @@ export function StorefrontAnnouncement({
     getDismissedVersion,
     () => null,
   );
-  const isOpen = enabled && Boolean(normalizedContent) && dismissedVersion !== version;
+  const isOpen = enabled && Boolean(sanitizedContent) && dismissedVersion !== version;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -103,7 +120,10 @@ export function StorefrontAnnouncement({
           <h2>{normalizedTitle}</h2>
           <Bell aria-hidden="true" size={20} />
         </div>
-        <p>{normalizedContent}</p>
+        <div
+          className="storefront-announcement-content"
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+        />
         <button className="storefront-announcement-confirm" onClick={dismiss} type="button">
           Đã hiểu
         </button>
