@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Coins, Gem } from "lucide-react";
 import { CurrencyTopupForm } from "@/app/components/currency-topup-form";
+import { SafeRichText } from "@/app/components/safe-rich-text";
 import { fetchBackendJson } from "@/lib/backend";
 import { GameCurrencyDisplaySettings, GameCurrencyType, GameServerCurrencyConfig } from "@/lib/shop-api";
 
@@ -31,9 +32,11 @@ export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCu
             </div>
             <div className="currency-shop-description">
               <strong>Thông tin</strong>
-              <p className={description ? "" : "is-empty"}>
-                {description || `Chưa cập nhật mô tả cho trang Nạp ${currencyName}.`}
-              </p>
+              {description ? (
+                <SafeRichText className="currency-shop-description-content" html={description} />
+              ) : (
+                <p className="is-empty">Chưa cập nhật mô tả cho trang Nạp {currencyName}.</p>
+              )}
             </div>
           </div>
           <CurrencyTopupForm configs={configs} currencyType={currencyType} />

@@ -30,11 +30,17 @@ const MAX_HTML_LENGTH = 3000;
 
 type RichTextEditorProps = {
   disabled?: boolean;
+  maxHtmlLength?: number;
   onChange: (value: string) => void;
   value: string;
 };
 
-export function RichTextEditor({ disabled = false, onChange, value }: RichTextEditorProps) {
+export function RichTextEditor({
+  disabled = false,
+  maxHtmlLength = MAX_HTML_LENGTH,
+  onChange,
+  value,
+}: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     editable: !disabled,
@@ -110,8 +116,8 @@ export function RichTextEditor({ disabled = false, onChange, value }: RichTextEd
         <ToolbarButton disabled={!editor.can().chain().focus().redo().run()} label="Làm lại" onClick={() => editor.chain().focus().redo().run()}><Redo2 size={17} /></ToolbarButton>
       </div>
       <EditorContent editor={editor} />
-      <div className={`rich-text-counter${htmlLength > MAX_HTML_LENGTH ? " is-over-limit" : ""}`}>
-        {htmlLength.toLocaleString("vi-VN")}/{MAX_HTML_LENGTH.toLocaleString("vi-VN")} ký tự HTML
+      <div className={`rich-text-counter${htmlLength > maxHtmlLength ? " is-over-limit" : ""}`}>
+        {htmlLength.toLocaleString("vi-VN")}/{maxHtmlLength.toLocaleString("vi-VN")} ký tự HTML
       </div>
     </div>
   );

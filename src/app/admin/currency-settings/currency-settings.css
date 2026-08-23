@@ -81,14 +81,20 @@
 
 .currency-main-description-field {
   border-top: 1px solid #eef2f7;
+  display: grid;
   gap: 8px;
   padding: 0 14px 14px;
 }
 
-.currency-main-description-field textarea {
-  line-height: 1.55;
-  min-height: 96px;
-  resize: vertical;
+.currency-main-description-field > span {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 750;
+  padding-top: 12px;
+}
+
+.currency-main-description-field .rich-text-editor .tiptap {
+  min-height: 130px;
 }
 
 .currency-service-picker {

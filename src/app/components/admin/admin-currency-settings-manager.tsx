@@ -15,6 +15,7 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
+import { RichTextEditor } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import {
   formatIntegerInput,
@@ -188,6 +189,10 @@ export function AdminCurrencySettingsManager() {
 
   async function saveDisplaySettings() {
     if (!session) return;
+    if (displayForm.goldDescription.length > 2000 || displayForm.gemDescription.length > 2000) {
+      setError("Mỗi phần mô tả chỉ được tối đa 2.000 ký tự HTML.");
+      return;
+    }
     setIsDisplaySaving(true);
     setError("");
     setMessage("");
@@ -372,7 +377,12 @@ export function AdminCurrencySettingsManager() {
             </div>
             <button
               className="primary-button h-11 px-5"
-              disabled={isDisplaySaving || Boolean(uploadingCurrency)}
+              disabled={
+                isDisplaySaving
+                || Boolean(uploadingCurrency)
+                || displayForm.goldDescription.length > 2000
+                || displayForm.gemDescription.length > 2000
+              }
               onClick={saveDisplaySettings}
               type="button"
             >
@@ -564,17 +574,15 @@ function CurrencyImageEditor({
           {imageUrl ? <button className="danger-button h-9 px-3" onClick={() => onChange("")} type="button"><Trash2 size={15} /> Xóa ảnh</button> : null}
         </div>
       </div>
-      <label className="field-label currency-main-description-field">
-        Mô tả trang Nạp {isGold ? "Vàng" : "Ngọc"}
-        <textarea
-          className="text-field"
-          maxLength={2000}
-          onChange={(event) => onDescriptionChange(event.target.value)}
-          placeholder={`Nhập mô tả chung hiển thị ở trang Nạp ${isGold ? "Vàng" : "Ngọc"}`}
-          rows={4}
+      <div className="field-label currency-main-description-field">
+        <span>Mô tả trang Nạp {isGold ? "Vàng" : "Ngọc"}</span>
+        <RichTextEditor
+          disabled={isUploading}
+          maxHtmlLength={2000}
+          onChange={onDescriptionChange}
           value={description}
         />
-      </label>
+      </div>
     </article>
   );
 }
