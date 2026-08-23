@@ -24,6 +24,7 @@ export type DepositStatus = "PENDING" | "COMPLETED" | "FAILED";
 
 export type ServiceOrderStatus =
   | "error"
+  | "refund_error"
   | "pending"
   | "processing"
   | "done";

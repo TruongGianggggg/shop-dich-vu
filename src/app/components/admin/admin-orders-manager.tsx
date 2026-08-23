@@ -462,6 +462,10 @@ function orderStatusLabel(status: ServiceOrderStatus) {
     return "Lỗi";
   }
 
+  if (status === "refund_error") {
+    return "Lỗi hoàn tiền";
+  }
+
   return "Chờ xử lý";
 }
 

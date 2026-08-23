@@ -2124,7 +2124,9 @@ input {
 }
 
 .admin-order-status-pill.failed,
-.admin-order-status-pill.canceled {
+.admin-order-status-pill.canceled,
+.admin-order-status-pill.error,
+.admin-order-status-pill.refund_error {
   background: #fee2e2;
   border: 1px solid #fca5a5;
   color: #b91c1c;
@@ -6044,6 +6046,9 @@ input {
 
 .status-pending { background: #fff6df; color: #a76b00; }
 .status-processing { background: #e7f5ff; color: #1674b8; }
+.status-done { background: #e7fff3; color: #07824e; }
+.status-error,
+.status-refund_error { background: #fff0f1; color: #c13d49; }
 .status-completed { background: #e7fff3; color: #07824e; }
 .status-failed,
 .status-canceled { background: #fff0f1; color: #c13d49; }

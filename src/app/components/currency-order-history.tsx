@@ -9,6 +9,7 @@ import { formatVnd, GameCurrencyOrder, getApiErrorMessage, PageResponse } from "
 
 const statusLabels = {
   error: "Lỗi",
+  refund_error: "Lỗi hoàn tiền",
   pending: "Chờ xử lý",
   processing: "Đang xử lý",
   done: "Hoàn thành",

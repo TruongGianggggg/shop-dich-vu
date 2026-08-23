@@ -222,6 +222,7 @@
 .status.processing { background: #e7f5ff; color: #1674b8; }
 .status.done { background: #e7fff3; color: #07824e; }
 .status.error { background: #fff0f1; color: #c13d49; }
+.status.refund_error { background: #fff0f1; color: #a61b2b; }
 
 .chevron,
 .chevronOpen {

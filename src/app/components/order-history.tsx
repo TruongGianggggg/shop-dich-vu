@@ -22,6 +22,7 @@ import styles from "@/app/lich-su-mua/order-history.module.css";
 
 const statusLabels: Record<ServiceOrder["status"], string> = {
   error: "Lỗi",
+  refund_error: "Lỗi hoàn tiền",
   pending: "Chờ xử lý",
   processing: "Đang xử lý",
   done: "Hoàn thành",
@@ -35,6 +36,7 @@ const statusFilters: { label: string; value: StatusFilter }[] = [
   { label: "Đang xử lý", value: "processing" },
   { label: "Hoàn thành", value: "done" },
   { label: "Lỗi", value: "error" },
+  { label: "Lỗi hoàn tiền", value: "refund_error" },
 ];
 
 export function OrderHistory() {
@@ -109,6 +111,7 @@ export function OrderHistory() {
     () => ({
       done: orders.filter((order) => order.status === "done").length,
       error: orders.filter((order) => order.status === "error").length,
+      refundError: orders.filter((order) => order.status === "refund_error").length,
       pending: orders.filter((order) => order.status === "pending").length,
       processing: orders.filter((order) => order.status === "processing").length,
     }),
@@ -158,7 +161,7 @@ export function OrderHistory() {
         </div>
         <div className={styles.summaryCard}>
           <span className={`${styles.summaryIcon} ${styles.danger}`}><TriangleAlert aria-hidden="true" size={19} /></span>
-          <div><small>Lỗi trang này</small><strong>{statusCounts.error}</strong></div>
+          <div><small>Lỗi trang này</small><strong>{statusCounts.error + statusCounts.refundError}</strong></div>
         </div>
       </div>
 
