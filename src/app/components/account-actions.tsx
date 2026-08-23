@@ -68,7 +68,7 @@ export function AccountActions() {
           />
           <AccountMenuLink
             href="/lich-su-vang-ngoc"
-            label="Lịch sử Vàng & Ngọc"
+            label="Lịch sử Thỏi vàng & Ngọc"
             onClick={() => setIsOpen(false)}
           />
           <div className="account-section">

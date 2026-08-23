@@ -290,6 +290,7 @@ export type GameServerCurrencyConfig = {
   gemAmount: number;
   gemPrice: number;
   displayOrder: number;
+  toolServerIndex: number;
   active: boolean;
 };
 
@@ -313,6 +314,7 @@ export type GameCurrencyOrder = {
   username: string;
   serverConfigId: string;
   serverName: string;
+  toolServerIndex: number;
   characterName: string;
   currencyType: GameCurrencyType;
   status: ServiceOrderStatus;

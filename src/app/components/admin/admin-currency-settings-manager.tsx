@@ -40,6 +40,7 @@ type ServerForm = {
   gemAmount: string;
   gemPrice: string;
   displayOrder: string;
+  toolServerIndex: string;
   active: boolean;
 };
 
@@ -52,6 +53,7 @@ const emptyForm: ServerForm = {
   gemAmount: "0",
   gemPrice: "0",
   displayOrder: "0",
+  toolServerIndex: "1",
   active: true,
 };
 
@@ -147,6 +149,7 @@ export function AdminCurrencySettingsManager() {
       gemAmount: currency === "gem" ? "100" : "0",
       gemPrice: currency === "gem" ? "10000" : "0",
       displayOrder: String(configs.length),
+      toolServerIndex: String(nextAvailableToolIndex(configs)),
     });
     setMessage("");
     setError("");
@@ -221,6 +224,7 @@ export function AdminCurrencySettingsManager() {
       gemAmount: String(config.gemAmount),
       gemPrice: String(config.gemPrice),
       displayOrder: String(config.displayOrder),
+      toolServerIndex: String(config.toolServerIndex),
       active: config.active,
     });
     setMessage("");
@@ -247,8 +251,10 @@ export function AdminCurrencySettingsManager() {
       (form.goldEnabled && (!isPositiveIntegerInput(form.goldAmount) || !isPositiveIntegerInput(form.goldPrice)))
       || (form.gemEnabled && (!isPositiveIntegerInput(form.gemAmount) || !isPositiveIntegerInput(form.gemPrice)))
       || !isNonNegativeIntegerInput(form.displayOrder)
+      || !isPositiveIntegerInput(form.toolServerIndex)
+      || Number(form.toolServerIndex) > 21
     ) {
-      setError("Số lượng, giá bán phải lớn hơn 0 và thứ tự hiển thị không được âm.");
+      setError("Số lượng và giá bán phải lớn hơn 0; index tool phải từ 1 đến 21.");
       return;
     }
 
@@ -261,6 +267,7 @@ export function AdminCurrencySettingsManager() {
       gemAmount: form.gemEnabled ? Number(form.gemAmount) : 0,
       gemPrice: form.gemEnabled ? Number(form.gemPrice) : 0,
       displayOrder: Number(form.displayOrder),
+      toolServerIndex: Number(form.toolServerIndex),
       active: form.active,
     };
 
@@ -472,6 +479,20 @@ export function AdminCurrencySettingsManager() {
                         value={formatIntegerInput(form.displayOrder)}
                       />
                     </label>
+                    <label className="field-label">
+                      Index server dành cho tool
+                      <input
+                        className="text-field"
+                        inputMode="numeric"
+                        max="21"
+                        min="1"
+                        onChange={(event) => setForm({ ...form, toolServerIndex: normalizeIntegerInput(event.target.value) })}
+                        required
+                        type="number"
+                        value={form.toolServerIndex}
+                      />
+                      <small>Giá trị duy nhất từ 1 đến 21, đúng với server trong game.</small>
+                    </label>
                     <label className="admin-check-field currency-active-field">
                       <input
                         checked={form.active}
@@ -598,7 +619,7 @@ function CurrencyPanel({
                 <span><Server size={17} /></span>
                 <div>
                   <strong>{config.name}</strong>
-                  <small>{config.active ? "Đang hoạt động" : "Đang tắt"}</small>
+                  <small>{config.active ? "Đang hoạt động" : "Đang tắt"} · Tool #{config.toolServerIndex}</small>
                 </div>
               </div>
               <div className="currency-rate">
@@ -659,6 +680,14 @@ function CurrencyFormBlock({
 
 function authHeaders(session: AuthResponse) {
   return { Authorization: `Bearer ${session.token}` };
+}
+
+function nextAvailableToolIndex(configs: GameServerCurrencyConfig[]) {
+  const usedIndexes = new Set(configs.map((config) => config.toolServerIndex));
+  for (let index = 1; index <= 21; index += 1) {
+    if (!usedIndexes.has(index)) return index;
+  }
+  return 21;
 }
 
 async function readResponseJson(response: Response) {

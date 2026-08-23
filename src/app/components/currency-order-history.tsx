@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Coins, Gem, Search, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { formatReceivedCurrency } from "@/lib/game-currency";
 import { formatVnd, GameCurrencyOrder, getApiErrorMessage, PageResponse } from "@/lib/shop-api";
 
 const statusLabels = {
@@ -67,7 +68,7 @@ export function CurrencyOrderHistory() {
 
   if (!session) return (
     <div className="order-history-login">
-      <strong>Đăng nhập để xem lịch sử Vàng & Ngọc</strong>
+      <strong>Đăng nhập để xem lịch sử Thỏi vàng & Ngọc</strong>
       <p>Các đơn của bạn sẽ được hiển thị tại đây.</p>
       <Link href="/login?returnUrl=%2Flich-su-vang-ngoc">Đăng nhập</Link>
     </div>
@@ -89,7 +90,7 @@ export function CurrencyOrderHistory() {
       </section>
       {error ? <p className="order-history-error">{error}</p> : null}
       {loading ? <p className="order-history-loading">Đang tải đơn hàng...</p> : null}
-      {!loading && !orders.length && !error ? <div className="order-history-empty"><strong>Bạn chưa có đơn Vàng/Ngọc</strong><Link href="/">Mua ngay →</Link></div> : null}
+      {!loading && !orders.length && !error ? <div className="order-history-empty"><strong>Bạn chưa có đơn Thỏi vàng/Ngọc</strong><Link href="/">Mua ngay →</Link></div> : null}
       <div className="order-history-list">
         {orders.map((order) => (
           <article className={`order-history-card currency-history-card ${order.currencyType.toLowerCase()}`} key={order.id}>
@@ -101,11 +102,11 @@ export function CurrencyOrderHistory() {
               <span className={`status-${order.status.toLowerCase()}`}>{statusLabels[order.status]}</span>
             </div>
             <div className="order-history-card-body currency-history-body">
-              <div><small>Loại</small><strong className={`currency-history-type-text ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? "Vàng" : "Ngọc"}</strong></div>
+              <div><small>Loại</small><strong className={`currency-history-type-text ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? "Thỏi vàng" : "Ngọc"}</strong></div>
               <div><small>Nhân vật</small><strong>{order.characterName}</strong></div>
               <div><small>Server</small><strong>{order.serverName}</strong></div>
               <div><small>Thanh toán</small><strong>{formatVnd(order.paymentAmount)}</strong></div>
-              <div><small>Thực nhận</small><strong className="currency-history-received">{order.receivedAmount.toLocaleString("vi-VN")}</strong></div>
+              <div><small>Thực nhận</small><strong className="currency-history-received">{formatReceivedCurrency(order.receivedAmount, order.currencyType)}</strong></div>
               <div><small>Ngày tạo</small><strong>{formatDate(order.createdAt)}</strong></div>
             </div>
             {order.adminNote ? <p className="order-history-note">Ghi chú: {order.adminNote}</p> : null}

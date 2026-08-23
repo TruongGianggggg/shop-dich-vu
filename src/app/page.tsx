@@ -182,7 +182,7 @@ function CurrencyTopupSection({
   return (
     <section className="reference-category currency-home-category">
       <div className="reference-category-title">
-        <h2>Nạp Vàng và Ngọc</h2>
+        <h2>Nạp Thỏi vàng và Ngọc</h2>
         <span />
       </div>
       <div className="currency-showcase-grid">
@@ -194,8 +194,8 @@ function CurrencyTopupSection({
             {!displaySettings.goldImageUrl ? <Coins size={58} /> : null}
           </div>
           <div className="currency-showcase-content">
-            <h3>NẠP VÀNG</h3>
-            <p>NẠP VÀNG NRO</p>
+            <h3>NẠP THỎI VÀNG</h3>
+            <p>NẠP THỎI VÀNG NRO</p>
             <strong className="currency-showcase-button">Nạp ngay</strong>
           </div>
         </Link>
