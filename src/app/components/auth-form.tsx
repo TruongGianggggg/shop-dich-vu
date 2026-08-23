@@ -111,24 +111,32 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
     }
   }
 
-  if (isLogin) {
-    return (
-      <>
-        {toast ? (
-          <div className={`login-slide-toast is-${toast.type}`} role="status">
-            {toast.message}
-          </div>
-        ) : null}
-        <form className="login-popup" onSubmit={submit}>
-          <Link className="login-popup-close" href={closeHref}>
-            Đóng
-          </Link>
-          <div className="login-popup-heading">
-            <h1>Đăng nhập</h1>
-            <p>Vui lòng đăng nhập để tiếp tục</p>
-          </div>
+  const authSwitchHref = `${isLogin ? "/register" : "/login"}${
+    returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""
+  }`;
 
-          <div className="login-popup-fields">
+  return (
+    <>
+      {toast ? (
+        <div className={`login-slide-toast is-${toast.type}`} role="status">
+          {toast.message}
+        </div>
+      ) : null}
+      <form className="login-popup" onSubmit={submit}>
+        <Link className="login-popup-close" href={closeHref}>
+          Đóng
+        </Link>
+        <div className="login-popup-heading">
+          <h1>{isLogin ? "Đăng nhập" : "Đăng ký"}</h1>
+          <p>
+            {isLogin
+              ? "Vui lòng đăng nhập để tiếp tục"
+              : "Tạo tài khoản để sử dụng dịch vụ"}
+          </p>
+        </div>
+
+        <div className="login-popup-fields">
+          {isLogin ? (
             <label>
               <span>Tài khoản</span>
               <input
@@ -138,92 +146,42 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
                 required
               />
             </label>
-            <label>
-              <span>Mật khẩu</span>
-              <input
-                autoComplete="current-password"
-                maxLength={72}
-                minLength={6}
-                name="password"
-                placeholder="Nhập mật khẩu của bạn"
-                required
-                type="password"
-              />
-            </label>
-          </div>
-
-          <button className="login-popup-submit" disabled={isSubmitting}>
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
-          </button>
-
-          <div className="login-popup-register">
-            <span>Bạn chưa có tài khoản?</span>
-            <Link href="/register">Đăng ký ngay</Link>
-          </div>
-        </form>
-      </>
-    );
-  }
-
-  return (
-    <form className="auth-panel" onSubmit={submit}>
-      <div>
-        <p className="section-kicker">Tai khoan</p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-950">
-          {isLogin ? "Dang nhap shop" : "Tao tai khoan moi"}
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          {isLogin
-            ? "Dung username hoac email de vao dung khu vuc theo role."
-            : "Tai khoan moi se mac dinh la user theo API backend hien tai."}
-        </p>
-      </div>
-
-      <div className="grid gap-4">
-        {isLogin ? (
-          <label className="field-label">
-            Username hoac email
-            <input
-              className="text-field"
-              name="login"
-              placeholder="ten_dang_nhap"
-              required
-            />
-          </label>
-        ) : (
-          <>
-            <label className="field-label">
-              Username
-              <input
-                className="text-field"
-                maxLength={32}
-                minLength={3}
-                name="username"
-                placeholder="ten_dang_nhap"
-                required
-              />
-            </label>
-            <label className="field-label">
-              Email
-              <input
-                className="text-field"
-                name="email"
-                placeholder="email@example.com"
-                required
-                type="email"
-              />
-            </label>
+          ) : (
+            <>
+              <label>
+                <span>Tên tài khoản</span>
+                <input
+                  autoComplete="username"
+                  maxLength={32}
+                  minLength={3}
+                  name="username"
+                  placeholder="Nhập tên tài khoản"
+                  required
+                />
+              </label>
+              <label>
+                <span>Email</span>
+                <input
+                  autoComplete="email"
+                  name="email"
+                  placeholder="Nhập địa chỉ email"
+                  required
+                  type="email"
+                />
+              </label>
           </>
         )}
 
-        <label className="field-label">
-          Mat khau
+        <label>
+          <span>Mật khẩu</span>
           <input
-            className="text-field"
+            autoComplete={isLogin ? "current-password" : "new-password"}
             maxLength={72}
             minLength={6}
             name="password"
-            placeholder="Nhap mat khau"
+            placeholder={
+              isLogin ? "Nhập mật khẩu của bạn" : "Tạo mật khẩu từ 6 ký tự"
+            }
             required
             type="password"
           />
@@ -231,24 +189,28 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
       </div>
 
       {message ? (
-        <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <p className="login-popup-error" role="alert">
           {message}
         </p>
       ) : null}
 
-      <button className="primary-button h-12 w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Dang xu ly..." : isLogin ? "Dang nhap" : "Dang ky"}
+      <button className="login-popup-submit" disabled={isSubmitting}>
+        {isSubmitting
+          ? isLogin
+            ? "Đang đăng nhập..."
+            : "Đang đăng ký..."
+          : isLogin
+            ? "Đăng nhập"
+            : "Đăng ký"}
       </button>
 
-      <p className="text-center text-sm text-slate-600">
-        {isLogin ? "Chua co tai khoan?" : "Da co tai khoan?"}{" "}
-        <Link
-          className="font-semibold text-emerald-700"
-          href={isLogin ? "/register" : "/login"}
-        >
-          {isLogin ? "Dang ky" : "Dang nhap"}
+      <div className="login-popup-register">
+        <span>{isLogin ? "Bạn chưa có tài khoản?" : "Bạn đã có tài khoản?"}</span>
+        <Link href={authSwitchHref}>
+          {isLogin ? "Đăng ký ngay" : "Đăng nhập ngay"}
         </Link>
-      </p>
-    </form>
+      </div>
+      </form>
+    </>
   );
 }

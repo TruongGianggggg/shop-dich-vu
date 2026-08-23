@@ -110,6 +110,17 @@
 }
 .login-popup-submit:disabled { cursor: wait; opacity: 0.68; }
 
+.login-popup-error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 9px;
+  color: #be123c;
+  font-size: 13px;
+  font-weight: 700;
+  margin: -7px 0 0;
+  padding: 10px 12px;
+}
+
 .login-popup-register {
   align-items: center;
   border-top: 1px solid #edf0f4;
