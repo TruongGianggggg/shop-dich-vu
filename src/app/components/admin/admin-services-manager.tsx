@@ -401,7 +401,7 @@ export function AdminServicesManager({
     setMessage("");
 
     try {
-      const response = await fetch("/api/the9p/recharge-products", {
+      const response = await fetch("/api/admin/the9p/recharge-products", {
         headers: authHeaders(session),
       });
       const data = await readResponseJson(response);
@@ -461,7 +461,7 @@ export function AdminServicesManager({
     setMessage("");
 
     try {
-      const response = await fetch("/api/the9p/sync-packages", {
+      const response = await fetch("/api/admin/the9p/sync-packages", {
         method: "POST",
         headers: authHeaders(session),
       });
@@ -2205,7 +2205,7 @@ function getAdminServiceErrorMessage(
 }
 
 function serviceCategoryPath(categoryId = "") {
-  const basePath = "/api/service-categories";
+  const basePath = "/api/admin/service-categories";
   return categoryId
     ? `${basePath}/${encodeURIComponent(categoryId)}`
     : basePath;
@@ -2219,7 +2219,7 @@ function serviceSubCategoryPath(parentId: string, subCategoryId = "") {
 }
 
 function servicePackagePath(subCategoryId: string, packageId = "") {
-  const basePath = `/api/service-sub-categories/${encodeURIComponent(
+  const basePath = `/api/admin/service-sub-categories/${encodeURIComponent(
     subCategoryId,
   )}/packages`;
   return packageId

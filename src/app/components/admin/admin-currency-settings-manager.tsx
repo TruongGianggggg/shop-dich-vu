@@ -91,8 +91,8 @@ export function AdminCurrencySettingsManager() {
       setError("");
       try {
         const [response, settingsResponse] = await Promise.all([
-          fetch("/api/currency-servers", { headers: authHeaders(activeSession) }),
-          fetch("/api/currency-settings", { headers: authHeaders(activeSession) }),
+          fetch("/api/admin/currency-servers", { headers: authHeaders(activeSession) }),
+          fetch("/api/admin/currency-settings", { headers: authHeaders(activeSession) }),
         ]);
         const data = await readResponseJson(response);
         const settingsData = await readResponseJson(settingsResponse);
@@ -197,7 +197,7 @@ export function AdminCurrencySettingsManager() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch("/api/currency-settings", {
+      const response = await fetch("/api/admin/currency-settings", {
         method: "PUT",
         headers: {
           ...authHeaders(session),
@@ -281,8 +281,8 @@ export function AdminCurrencySettingsManager() {
     try {
       const response = await fetch(
         editingId
-          ? `/api/currency-servers/${editingId}`
-          : "/api/currency-servers",
+          ? `/api/admin/currency-servers/${editingId}`
+          : "/api/admin/currency-servers",
         {
           method: editingId ? "PUT" : "POST",
           headers: {
@@ -318,7 +318,7 @@ export function AdminCurrencySettingsManager() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch(`/api/currency-servers/${config.id}`, {
+      const response = await fetch(`/api/admin/currency-servers/${config.id}`, {
         method: "DELETE",
         headers: authHeaders(session),
       });
