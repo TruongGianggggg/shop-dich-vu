@@ -7,6 +7,7 @@ const LEGACY_AUTH_COOKIE_NAME = "shop_game_auth";
 const LEGACY_ACTIVITY_STORAGE_KEY = `${AUTH_STORAGE_KEY}:last-activity`;
 let memorySession: AuthResponse | null = null;
 let refreshPromise: Promise<AuthResponse | null> | null = null;
+let sessionRevision = 0;
 const subscribers = new Set<() => void>();
 
 function notifySubscribers() {
@@ -38,18 +39,28 @@ function isAuthResponse(value: unknown): value is AuthResponse {
   );
 }
 
+async function fetchAuthSession() {
+  const response = await fetch("/api/auth/me", { cache: "no-store" });
+  const data = response.ok ? await response.json() : null;
+  return isAuthResponse(data) ? data : null;
+}
+
 export function refreshAuthSession() {
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = fetch("/api/auth/me", { cache: "no-store" })
-    .then(async (response) => {
-      const data = response.ok ? await response.json() : null;
-      memorySession = isAuthResponse(data) ? data : null;
+  const revision = sessionRevision;
+  refreshPromise = fetchAuthSession()
+    .then((session) => {
+      // A login/logout may have happened while this request was in flight.
+      // Never let that stale response overwrite the newer session state.
+      if (revision !== sessionRevision) return memorySession;
+      memorySession = session;
       clearLegacyClientSession();
       notifySubscribers();
       return memorySession;
     })
     .catch(() => {
+      if (revision !== sessionRevision) return memorySession;
       memorySession = null;
       notifySubscribers();
       return null;
@@ -59,6 +70,24 @@ export function refreshAuthSession() {
     });
 
   return refreshPromise;
+}
+
+export async function verifyAuthSession() {
+  const revision = ++sessionRevision;
+
+  try {
+    const session = await fetchAuthSession();
+    if (revision !== sessionRevision) return memorySession;
+    memorySession = session;
+    clearLegacyClientSession();
+    notifySubscribers();
+    return session;
+  } catch {
+    if (revision !== sessionRevision) return memorySession;
+    memorySession = null;
+    notifySubscribers();
+    return null;
+  }
 }
 
 function subscribe(callback: () => void) {
@@ -71,6 +100,7 @@ function subscribe(callback: () => void) {
 }
 
 export function saveAuthSession(session: AuthResponse) {
+  sessionRevision += 1;
   memorySession = session;
   clearLegacyClientSession();
   notifySubscribers();
@@ -78,6 +108,7 @@ export function saveAuthSession(session: AuthResponse) {
 }
 
 export async function clearAuthSession() {
+  sessionRevision += 1;
   memorySession = null;
   clearLegacyClientSession();
   notifySubscribers();

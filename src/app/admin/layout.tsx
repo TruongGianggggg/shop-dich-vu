@@ -16,7 +16,9 @@ export default async function AdminLayout({
     session = await fetchBackendJson<AuthResponse>("/api/auth/me", {
       headers: { Authorization: `Bearer ${token}` },
     });
-  } catch {}
+  } catch (error) {
+    console.error("Admin session verification failed", error);
+  }
 
   if (!session) redirect("/login");
   if (session.role !== "ADMIN") redirect("/");

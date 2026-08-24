@@ -8,7 +8,7 @@ import {
   getApiErrorMessage,
   getRoleDestination,
 } from "@/lib/shop-api";
-import { saveAuthSession } from "./use-auth-session";
+import { saveAuthSession, verifyAuthSession } from "./use-auth-session";
 
 type AuthMode = "login" | "register";
 
@@ -91,16 +91,27 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
       const authData = data as AuthResponse;
 
       saveAuthSession(authData);
+      const verifiedSession = await verifyAuthSession();
+      if (!verifiedSession) {
+        const verificationError =
+          "Đăng nhập thành công nhưng không tạo được phiên đăng nhập. Vui lòng thử lại.";
+        if (isLogin) {
+          showToast({ message: verificationError, type: "error" });
+        } else {
+          setMessage(verificationError);
+        }
+        return;
+      }
+
       if (isLogin) {
         showToast({ message: "Đăng nhập thành công.", type: "success" });
         await new Promise((resolve) => setTimeout(resolve, 850));
       }
-      router.push(
-        authData.role === "USER" && returnUrl
+      router.replace(
+        verifiedSession.role === "USER" && returnUrl
           ? returnUrl
-          : getRoleDestination(authData.role),
+          : getRoleDestination(verifiedSession.role),
       );
-      router.refresh();
     } catch {
       const errorMessage =
         "Không kết nối được hệ thống. Vui lòng thử lại sau.";
