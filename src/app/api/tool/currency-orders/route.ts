@@ -6,6 +6,7 @@ export async function GET(request: Request) {
     return await proxyBackendResponse(
       `/api/tool/currency-orders${url.search}`,
       request,
+      { accept: "text/plain" },
     );
   } catch {
     return new Response("Tool backend is unavailable", {

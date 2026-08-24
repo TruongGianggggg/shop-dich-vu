@@ -33,13 +33,13 @@ export async function fetchBackendJson<T>(path: string, init?: RequestInit) {
 export async function proxyBackendResponse(
   path: string,
   request: Request,
-  options?: { body?: string },
+  options?: { accept?: string; body?: string },
 ) {
   const headers = new Headers();
   const contentType = request.headers.get("Content-Type");
   const token = getRequestAuthToken(request);
 
-  headers.set("Accept", "application/json");
+  headers.set("Accept", options?.accept ?? "application/json");
 
   if (contentType) {
     headers.set("Content-Type", contentType);
