@@ -28,6 +28,8 @@ const defaultSettings: SiteSettings = {
   footerZaloUrl: "",
 };
 
+const MAX_FOOTER_DESCRIPTION_LENGTH = 1000;
+
 type ImageField = "logoUrl" | "bannerUrls";
 
 export function AdminSiteSettingsManager() {
@@ -172,6 +174,13 @@ export function AdminSiteSettingsManager() {
     if (!session) return;
     if (form.announcementContent.length > 3000) {
       setError("Nội dung thông báo không được vượt quá 3.000 ký tự HTML.");
+      return;
+    }
+    if (
+      form.footerDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH ||
+      form.footerSupportDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH
+    ) {
+      setError("Mỗi nội dung mô tả footer không được vượt quá 1.000 ký tự HTML.");
       return;
     }
     setIsSaving(true);
@@ -380,10 +389,15 @@ export function AdminSiteSettingsManager() {
                 <span>Dòng bản quyền</span>
                 <input className="php-form-control" maxLength={300} onChange={(event) => setForm({ ...form, footerCopyright: event.target.value })} required value={form.footerCopyright} />
               </label>
-              <label className="php-footer-wide">
+              <div className="php-footer-wide php-footer-rich-text-field">
                 <span>Nội dung giới thiệu shop</span>
-                <textarea className="php-form-control" maxLength={1000} onChange={(event) => setForm({ ...form, footerDescription: event.target.value })} required value={form.footerDescription} />
-              </label>
+                <RichTextEditor
+                  disabled={isLoading || isSaving}
+                  maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  onChange={(footerDescription) => setForm({ ...form, footerDescription })}
+                  value={form.footerDescription}
+                />
+              </div>
               <label>
                 <span>Tiêu đề hỗ trợ</span>
                 <input className="php-form-control" maxLength={200} onChange={(event) => setForm({ ...form, footerSupportTitle: event.target.value })} required value={form.footerSupportTitle} />
@@ -392,10 +406,15 @@ export function AdminSiteSettingsManager() {
                 <span>Số điện thoại</span>
                 <input className="php-form-control" maxLength={40} onChange={(event) => setForm({ ...form, footerPhone: event.target.value })} placeholder="Ví dụ: 0966645030" value={form.footerPhone} />
               </label>
-              <label className="php-footer-wide">
+              <div className="php-footer-wide php-footer-rich-text-field">
                 <span>Nội dung liên hệ hỗ trợ</span>
-                <textarea className="php-form-control" maxLength={1000} onChange={(event) => setForm({ ...form, footerSupportDescription: event.target.value })} required value={form.footerSupportDescription} />
-              </label>
+                <RichTextEditor
+                  disabled={isLoading || isSaving}
+                  maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  onChange={(footerSupportDescription) => setForm({ ...form, footerSupportDescription })}
+                  value={form.footerSupportDescription}
+                />
+              </div>
               <label>
                 <span>Email hỗ trợ</span>
                 <input className="php-form-control" maxLength={200} onChange={(event) => setForm({ ...form, footerEmail: event.target.value })} placeholder="support@example.com" type="email" value={form.footerEmail} />

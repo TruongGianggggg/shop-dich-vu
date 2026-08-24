@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SafeRichText } from "@/app/components/safe-rich-text";
 import { ServiceOrderForm } from "@/app/components/service-order-form";
 import { fetchBackendJson } from "@/lib/backend";
 import {
@@ -101,9 +102,10 @@ export default async function ServiceDetailPage({
                 : "Dịch vụ game"}
             </p>
             <h2>{data.service.name}</h2>
-            <p className="detail-service-description">
-              {data.service.description || "Dịch vụ đang mở bán."}
-            </p>
+            <SafeRichText
+              className="detail-service-description"
+              html={data.service.description || "Dịch vụ đang mở bán."}
+            />
           </div>
         </section>
         <ServiceOrderForm packages={data.packages} service={data.service} />

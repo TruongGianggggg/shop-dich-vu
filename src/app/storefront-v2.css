@@ -574,6 +574,63 @@
     min-height: 36px;
   }
   .reference-header .reference-account { display: none; }
+  .reference-header:has(.account-menu-wrap) .marketplace-nav { display: none; }
+  .reference-header .reference-account:has(.account-menu-wrap) {
+    display: flex;
+    min-width: 0;
+  }
+  .reference-header .account-menu-wrap,
+  .reference-header .account-trigger {
+    min-width: 0;
+  }
+  .reference-header .account-trigger {
+    gap: 7px;
+    max-width: min(250px, calc(100vw - 130px));
+    padding: 5px 8px 5px 6px;
+  }
+  .reference-header .account-trigger-copy {
+    display: grid;
+    min-width: 0;
+  }
+  .reference-header .account-trigger-name-row {
+    gap: 6px;
+    min-width: 0;
+  }
+  .reference-header .account-trigger-copy strong {
+    font-size: 12px;
+    max-width: 82px;
+  }
+  .reference-header .account-trigger-name-row b {
+    font-size: 11px;
+  }
+  .reference-header .account-avatar {
+    flex: 0 0 auto;
+    height: 34px;
+    width: 34px;
+  }
+  .reference-header .account-caret {
+    flex: 0 0 auto;
+  }
+  .account-mobile-actions {
+    display: grid;
+  }
+  .account-mobile-actions .account-mobile-deposit {
+    border-radius: 6px;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 650;
+    gap: 8px;
+    justify-content: flex-start;
+    min-height: 34px;
+    padding: 7px 4px;
+    text-transform: none;
+    width: 100%;
+  }
+  .account-mobile-actions .account-mobile-deposit:hover {
+    background: #f8fafc;
+    color: #047857;
+    transform: none;
+  }
   .reference-header .reference-account .nav-link { display: none; }
   .reference-header .reference-account .primary-button {
     min-height: 38px;
@@ -740,6 +797,8 @@
   .marketplace-nav { gap: 9px; }
   .marketplace-nav > a,
   .marketplace-nav > button.marketplace-nav-link { font-size: 10px; }
+  .reference-header .account-trigger-copy { display: none; }
+  .reference-header .account-trigger { max-width: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
 import { MonthlyLeaderboardCard } from "@/app/components/monthly-leaderboard-card";
 import { ReferenceServiceCard } from "@/app/components/reference-service-card";
+import { SafeRichText } from "@/app/components/safe-rich-text";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { StorefrontBannerCarousel } from "@/app/components/storefront-banner-carousel";
 import { StorefrontAnnouncement } from "@/app/components/storefront-announcement";
@@ -13,6 +14,7 @@ import {
   SiteSettings,
 } from "@/lib/shop-api";
 import { getPublicSiteSettings } from "@/lib/site-settings";
+import { richTextToPlainText } from "@/lib/rich-text";
 
 async function getCategories(): Promise<{
   categories: ServiceCategory[];
@@ -103,7 +105,12 @@ export default async function Home() {
               <div className="reference-category-title">
                 <h2>{category.name}</h2>
                 <span />
-                {category.description ? <p>{category.description}</p> : null}
+                {category.description ? (
+                  <SafeRichText
+                    className="reference-category-description"
+                    html={category.description}
+                  />
+                ) : null}
               </div>
 
               {category.children.length ? (
@@ -139,11 +146,17 @@ export default async function Home() {
           <section className="reference-footer-about">
             <ShopBrand settings={siteSettings} />
             <strong className="reference-footer-title">{siteSettings.footerTitle}</strong>
-            <p>{siteSettings.footerDescription}</p>
+            <SafeRichText
+              className="reference-footer-description"
+              html={siteSettings.footerDescription}
+            />
           </section>
           <section className="reference-footer-support">
             <h2>{siteSettings.footerSupportTitle}</h2>
-            <p>{siteSettings.footerSupportDescription}</p>
+            <SafeRichText
+              className="reference-footer-description"
+              html={siteSettings.footerSupportDescription}
+            />
             <div className="reference-footer-contacts">
               {siteSettings.footerFacebookUrl ? (
                 <a href={siteSettings.footerFacebookUrl} rel="noreferrer" target="_blank">
@@ -235,7 +248,7 @@ function StorefrontOverview({
     <section className="storefront-overview" aria-label="Banner và top nạp tháng">
       <StorefrontBannerCarousel
         bannerUrls={bannerUrls}
-        description={settings.footerDescription}
+        description={richTextToPlainText(settings.footerDescription)}
         shopName={settings.shopName}
       />
       <MonthlyLeaderboardCard leaderboard={leaderboard} />

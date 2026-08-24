@@ -21,5 +21,10 @@ export function SafeRichText({ className, html }: { className?: string; html: st
     () => "",
   );
 
-  return <div className={className} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+  return (
+    <div
+      className={["safe-rich-text", className].filter(Boolean).join(" ")}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+    />
+  );
 }

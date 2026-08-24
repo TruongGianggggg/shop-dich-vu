@@ -12,9 +12,10 @@ import {
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
-import { AutosizeTextarea } from "@/app/components/admin/autosize-textarea";
+import { RichTextEditor } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
+import { richTextToPlainText } from "@/lib/rich-text";
 import {
   AuthResponse,
   formatVnd,
@@ -127,6 +128,7 @@ const providerSyncedPackageTypes = new Set([
 type ServicesView = "parents" | "children";
 const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
 const ADMIN_TABLE_PAGE_SIZE = 10;
+const MAX_SERVICE_DESCRIPTION_LENGTH = 5000;
 
 export function AdminServicesManager({
   view = "parents",
@@ -581,6 +583,11 @@ export function AdminServicesManager({
       return;
     }
 
+    if (categoryForm.description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
+      setError("Mô tả danh mục không được vượt quá 5.000 ký tự HTML.");
+      return;
+    }
+
     const payload: ServiceCategoryPayload = {
       name: categoryForm.name.trim(),
       description: categoryForm.description.trim(),
@@ -669,6 +676,10 @@ export function AdminServicesManager({
     const description = subCategoryForm.description.trim();
     if (!description) {
       setError("Vui lòng nhập mô tả dịch vụ.");
+      return;
+    }
+    if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
+      setError("Mô tả dịch vụ không được vượt quá 5.000 ký tự HTML.");
       return;
     }
 
@@ -832,6 +843,10 @@ export function AdminServicesManager({
     const description = packageForm.description.trim();
     if (!description) {
       setError("Vui lòng nhập mô tả gói dịch vụ.");
+      return;
+    }
+    if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
+      setError("Mô tả gói dịch vụ không được vượt quá 5.000 ký tự HTML.");
       return;
     }
 
@@ -1347,7 +1362,9 @@ export function AdminServicesManager({
                         <td>
                           <div className="admin-child-name-cell">
                             <strong>{child.name}</strong>
-                            <small>{child.description ?? "Chưa có mô tả"}</small>
+                            <small>
+                              {richTextToPlainText(child.description) || "Chưa có mô tả"}
+                            </small>
                           </div>
                         </td>
                         <td>
@@ -1580,7 +1597,9 @@ export function AdminServicesManager({
                     <article className="admin-package-row" key={item.id}>
                       <div className="admin-package-main">
                         <strong>{item.name}</strong>
-                        <small>{item.description ?? "Không có mô tả"}</small>
+                        <small>
+                          {richTextToPlainText(item.description) || "Không có mô tả"}
+                        </small>
                       </div>
                       <div className="admin-package-price">
                         <strong>{formatVnd(item.price)}</strong>
@@ -1735,14 +1754,15 @@ function CategoryFormView({
             value={formatIntegerInput(form.displayOrder)}
           />
         </label>
-        <label className="field-label admin-form-span-2 admin-package-description">
-          Mô tả (không bắt buộc)
-          <AutosizeTextarea
+        <div className="field-label admin-form-span-2 admin-package-description">
+          <span>Mô tả (không bắt buộc)</span>
+          <RichTextEditor
             disabled={isSaving}
-            onValueChange={(description) => onChange({ ...form, description })}
+            maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
-        </label>
+        </div>
         <label className="admin-check-field">
           <input
             checked={form.active}
@@ -1913,15 +1933,15 @@ function SubCategoryFormView({
             </div>
           </div>
         </div>
-        <label className="field-label admin-form-span-2">
-          Mô tả
-          <AutosizeTextarea
+        <div className="field-label admin-form-span-2 admin-package-description">
+          <span>Mô tả</span>
+          <RichTextEditor
             disabled={isSaving}
-            onValueChange={(description) => onChange({ ...form, description })}
-            required
+            maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
-        </label>
+        </div>
         <label className="admin-check-field">
           <input
             checked={form.active}
@@ -2045,15 +2065,15 @@ function PackageFormView({
             value={formatIntegerInput(form.displayOrder)}
           />
         </label>
-        <label className="field-label admin-form-span-2">
-          Mô tả
-          <AutosizeTextarea
+        <div className="field-label admin-form-span-2 admin-package-description">
+          <span>Mô tả</span>
+          <RichTextEditor
             disabled={isSaving}
-            onValueChange={(description) => onChange({ ...form, description })}
-            required
+            maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
-        </label>
+        </div>
         <label className="admin-check-field">
           <input
             checked={form.active}

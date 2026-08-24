@@ -18,6 +18,7 @@ type DepositQrButtonProps = {
   className?: string;
   initialMethod?: DepositMethod;
   label?: string;
+  onOpen?: () => void;
 };
 
 export type CardOption = {
@@ -40,6 +41,7 @@ export function DepositQrButton({
   className = "",
   initialMethod = "bank",
   label = "Nạp tiền",
+  onOpen,
 }: DepositQrButtonProps = {}) {
   const session = useAuthSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -216,6 +218,7 @@ export function DepositQrButton({
       return;
     }
 
+    onOpen?.();
     setMethod(initialMethod);
     setIsOpen(true);
     setError("");

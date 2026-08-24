@@ -1,5 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { ServiceCategoryBrowser } from "@/app/components/service-category-browser";
+import { SafeRichText } from "@/app/components/safe-rich-text";
 import { fetchBackendJson } from "@/lib/backend";
 import { ServiceCategory } from "@/lib/shop-api";
 
@@ -39,6 +40,12 @@ export default async function ServiceCategoryPage({
           <div className="reference-category-title">
             <h1>{category.name}</h1>
             <span />
+            {category.description ? (
+              <SafeRichText
+                className="reference-category-description"
+                html={category.description}
+              />
+            ) : null}
           </div>
           <ServiceCategoryBrowser
             categoryName={category.name}

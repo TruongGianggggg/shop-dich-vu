@@ -9,6 +9,7 @@ import {
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
+import { SafeRichText } from "./safe-rich-text";
 import { useAuthSession } from "./use-auth-session";
 
 type CarotBatchOrderResponse = {
@@ -215,9 +216,10 @@ export function ServiceOrderForm({
             </select>
           </label>
           {selectedPackage?.description ? (
-            <p className="detail-package-description">
-              {selectedPackage.description}
-            </p>
+            <SafeRichText
+              className="detail-package-description"
+              html={selectedPackage.description}
+            />
           ) : null}
         </div>
       </section>
