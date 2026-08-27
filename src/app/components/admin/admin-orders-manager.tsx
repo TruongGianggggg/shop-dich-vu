@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, RefreshCw, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, Search, X } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
@@ -10,11 +10,29 @@ import {
   formatVnd,
   getApiErrorMessage,
   PageResponse,
+  ServiceCategory,
   ServiceOrder,
   ServiceOrderStatus,
+  ServiceSubCategory,
 } from "@/lib/shop-api";
 
 const pageSizeOptions = [10, 20, 50] as const;
+type OrderFilters = {
+  orderCode: string;
+  customer: string;
+  fromDate: string;
+  toDate: string;
+  status: "" | ServiceOrderStatus;
+  subCategoryId: string;
+};
+const emptyFilters: OrderFilters = {
+  orderCode: "",
+  customer: "",
+  fromDate: "",
+  toDate: "",
+  status: "",
+  subCategoryId: "",
+};
 
 export function AdminOrdersManager() {
   const session = useAuthSession();
@@ -24,6 +42,9 @@ export function AdminOrdersManager() {
   );
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(10);
+  const [filters, setFilters] = useState<OrderFilters>(emptyFilters);
+  const [appliedFilters, setAppliedFilters] = useState<OrderFilters>(emptyFilters);
+  const [services, setServices] = useState<ServiceSubCategory[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -49,6 +70,11 @@ export function AdminOrdersManager() {
         const params = new URLSearchParams({
           page: String(page),
           size: String(pageSize),
+        });
+        Object.entries(appliedFilters).forEach(([key, value]) => {
+          if (value.trim()) {
+            params.set(key, value.trim());
+          }
         });
         const response = await fetch(`/api/service-orders/history?${params}`, {
           headers: authHeaders(activeSession),
@@ -90,7 +116,42 @@ export function AdminOrdersManager() {
     return () => {
       ignore = true;
     };
-  }, [page, pageSize, refreshKey, session]);
+  }, [appliedFilters, page, pageSize, refreshKey, session]);
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    let ignore = false;
+
+    async function loadServices() {
+      try {
+        const response = await fetch("/api/admin/service-sub-categories");
+        const data = (await readResponseJson(response)) as ServiceCategory[] | unknown;
+
+        if (!response.ok || !Array.isArray(data)) {
+          return;
+        }
+
+        if (!ignore) {
+          setServices(
+            (data as ServiceCategory[])
+              .flatMap((category) => category.children)
+              .sort((left, right) => left.name.localeCompare(right.name, "vi")),
+          );
+        }
+      } catch {
+        // Danh sách đơn vẫn dùng được nếu bộ chọn dịch vụ chưa tải được.
+      }
+    }
+
+    loadServices();
+
+    return () => {
+      ignore = true;
+    };
+  }, [session]);
 
   const metrics = useMemo(() => {
     const processingCount = orders.filter(
@@ -139,6 +200,22 @@ export function AdminOrdersManager() {
     }
   }
 
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPage(0);
+    setAppliedFilters({
+      ...filters,
+      orderCode: filters.orderCode.trim(),
+      customer: filters.customer.trim(),
+    });
+  }
+
+  function clearFilters() {
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPage(0);
+  }
+
   return (
     <main className="role-dashboard">
       <AdminSidebar active="orders" />
@@ -173,6 +250,118 @@ export function AdminOrdersManager() {
               <span>{metric.trend}</span>
             </article>
           ))}
+        </section>
+
+        <section className="role-panel currency-order-filter-panel admin-order-filter-panel">
+          <div className="currency-order-filter-head">
+            <div>
+              <strong>Tìm kiếm đơn hàng</strong>
+              <span>
+                {(pageInfo?.totalElements ?? 0).toLocaleString("vi-VN")} kết quả
+              </span>
+            </div>
+          </div>
+          <form className="currency-order-filter-grid" onSubmit={submitSearch}>
+            <label>
+              <span>Mã đơn</span>
+              <input
+                className="text-field"
+                maxLength={80}
+                onChange={(event) =>
+                  setFilters({ ...filters, orderCode: event.target.value.toUpperCase() })
+                }
+                placeholder="Nhập mã đơn"
+                value={filters.orderCode}
+              />
+            </label>
+            <label>
+              <span>Khách hàng</span>
+              <input
+                className="text-field"
+                maxLength={120}
+                onChange={(event) =>
+                  setFilters({ ...filters, customer: event.target.value })
+                }
+                placeholder="Username, email hoặc tài khoản game"
+                value={filters.customer}
+              />
+            </label>
+            <label>
+              <span>Trạng thái</span>
+              <select
+                className="role-select wide"
+                onChange={(event) =>
+                  setFilters({
+                    ...filters,
+                    status: event.target.value as OrderFilters["status"],
+                  })
+                }
+                value={filters.status}
+              >
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending">Chờ xử lý</option>
+                <option value="processing">Đang xử lý</option>
+                <option value="done">Hoàn thành</option>
+                <option value="error">Lỗi</option>
+                <option value="refund_error">Lỗi hoàn tiền</option>
+              </select>
+            </label>
+            <label>
+              <span>Dịch vụ</span>
+              <select
+                className="role-select wide"
+                onChange={(event) =>
+                  setFilters({ ...filters, subCategoryId: event.target.value })
+                }
+                value={filters.subCategoryId}
+              >
+                <option value="">Tất cả dịch vụ</option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Từ ngày</span>
+              <input
+                className="text-field"
+                onChange={(event) =>
+                  setFilters({ ...filters, fromDate: event.target.value })
+                }
+                type="date"
+                value={filters.fromDate}
+              />
+            </label>
+            <label>
+              <span>Đến ngày</span>
+              <input
+                className="text-field"
+                min={filters.fromDate || undefined}
+                onChange={(event) =>
+                  setFilters({ ...filters, toDate: event.target.value })
+                }
+                type="date"
+                value={filters.toDate}
+              />
+            </label>
+            <div className="currency-order-filter-actions">
+              <button className="primary-button h-11 px-5" disabled={isLoading} type="submit">
+                <Search aria-hidden="true" size={16} />
+                Tìm kiếm
+              </button>
+              <button
+                className="ghost-button h-11 px-4"
+                disabled={isLoading}
+                onClick={clearFilters}
+                type="button"
+              >
+                <X aria-hidden="true" size={16} />
+                Xóa lọc
+              </button>
+            </div>
+          </form>
         </section>
 
         <section className="role-panel admin-users-toolbar admin-order-toolbar">
