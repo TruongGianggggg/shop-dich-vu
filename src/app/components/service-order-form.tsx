@@ -45,6 +45,7 @@ const NGOC_RONG_SERVERS = [
   "Vip 2",
   "14 Sao",
   "Super 3",
+  "15 Sao",
 ] as const;
 
 export function ServiceOrderForm({
