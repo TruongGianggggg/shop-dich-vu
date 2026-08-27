@@ -50,7 +50,14 @@ async function getCurrencySettings(): Promise<GameCurrencyDisplaySettings> {
   try {
     return await fetchBackendJson<GameCurrencyDisplaySettings>("/api/currency-settings");
   } catch {
-    return { goldImageUrl: "", gemImageUrl: "", goldDescription: "", gemDescription: "" };
+    return {
+      goldImageUrl: "",
+      gemImageUrl: "",
+      goldDescription: "",
+      gemDescription: "",
+      goldServiceCount: 0,
+      gemServiceCount: 0,
+    };
   }
 }
 

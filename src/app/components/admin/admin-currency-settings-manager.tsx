@@ -63,6 +63,8 @@ const emptyDisplaySettings: GameCurrencyDisplaySettings = {
   gemImageUrl: "",
   goldDescription: "",
   gemDescription: "",
+  goldServiceCount: 0,
+  gemServiceCount: 0,
 };
 
 export function AdminCurrencySettingsManager() {
@@ -203,7 +205,12 @@ export function AdminCurrencySettingsManager() {
           ...authHeaders(session),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(displayForm),
+        body: JSON.stringify({
+          goldImageUrl: displayForm.goldImageUrl,
+          gemImageUrl: displayForm.gemImageUrl,
+          goldDescription: displayForm.goldDescription,
+          gemDescription: displayForm.gemDescription,
+        }),
       });
       const data = await readResponseJson(response);
       if (!response.ok) {
@@ -714,5 +721,13 @@ function normalizeDisplaySettings(value: unknown): GameCurrencyDisplaySettings {
     gemImageUrl: data.gemImageUrl ?? "",
     goldDescription: data.goldDescription ?? "",
     gemDescription: data.gemDescription ?? "",
+    goldServiceCount:
+      typeof data.goldServiceCount === "number" && Number.isFinite(data.goldServiceCount)
+        ? data.goldServiceCount
+        : 0,
+    gemServiceCount:
+      typeof data.gemServiceCount === "number" && Number.isFinite(data.gemServiceCount)
+        ? data.gemServiceCount
+        : 0,
   };
 }

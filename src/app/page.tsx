@@ -56,7 +56,14 @@ async function getCurrencyDisplaySettings() {
       "/api/currency-settings",
     );
   } catch {
-    return { goldImageUrl: "", gemImageUrl: "", goldDescription: "", gemDescription: "" };
+    return {
+      goldImageUrl: "",
+      gemImageUrl: "",
+      goldDescription: "",
+      gemDescription: "",
+      goldServiceCount: 0,
+      gemServiceCount: 0,
+    };
   }
 }
 
@@ -209,6 +216,9 @@ function CurrencyTopupSection({
           <div className="currency-showcase-content">
             <h3>NẠP THỎI VÀNG</h3>
             <p>NẠP THỎI VÀNG NRO</p>
+            <span className="currency-showcase-count">
+              {(displaySettings.goldServiceCount ?? 0).toLocaleString("vi-VN")} lượt đã phục vụ
+            </span>
             <strong className="currency-showcase-button">Nạp ngay</strong>
           </div>
         </Link>
@@ -222,6 +232,9 @@ function CurrencyTopupSection({
           <div className="currency-showcase-content">
             <h3>NẠP NGỌC</h3>
             <p>NẠP NGỌC NRO</p>
+            <span className="currency-showcase-count">
+              {(displaySettings.gemServiceCount ?? 0).toLocaleString("vi-VN")} lượt đã phục vụ
+            </span>
             <strong className="currency-showcase-button">Nạp ngay</strong>
           </div>
         </Link>

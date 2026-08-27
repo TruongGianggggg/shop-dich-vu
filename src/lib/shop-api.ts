@@ -305,6 +305,8 @@ export type GameCurrencyDisplaySettings = {
   gemImageUrl: string;
   goldDescription: string;
   gemDescription: string;
+  goldServiceCount: number;
+  gemServiceCount: number;
 };
 
 export type GameCurrencyOrder = {
