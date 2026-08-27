@@ -2273,6 +2273,20 @@ input {
   margin-top: 18px;
 }
 
+.admin-order-filter-footer {
+  align-items: center;
+  border-top: 1px solid #eaecf0;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.admin-order-filter-footer > strong {
+  color: #155eef;
+  font-size: 15px;
+}
+
 .admin-orders-table {
   min-width: 1240px;
 }
@@ -7064,6 +7078,7 @@ input {
   .currency-order-filter-grid.currency-user-filter-grid,
   .currency-history-filter .currency-user-filter-grid { grid-template-columns: 1fr; }
   .currency-order-filter-actions { flex-direction: column; }
+  .admin-order-filter-footer { align-items: flex-start; flex-direction: column; gap: 12px; }
   .currency-history-body { grid-template-columns: 1fr; }
   .currency-history-body > div { border-right: 0; }
 }

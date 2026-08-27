@@ -362,30 +362,26 @@ export function AdminOrdersManager() {
               </button>
             </div>
           </form>
-        </section>
-
-        <section className="role-panel admin-users-toolbar admin-order-toolbar">
-          <div className="admin-users-summary">
+          <div className="admin-order-filter-footer">
             <strong>
               {(pageInfo?.totalElements ?? 0).toLocaleString("vi-VN")} đơn hàng
             </strong>
-            <span>Chỉ tài khoản ADMIN được xem trong trang quản lý</span>
+            <label className="field-label deposit-history-size">
+              Số dòng
+              <select
+                className="role-select"
+                disabled={isLoading}
+                onChange={(event) => changePageSize(event.target.value)}
+                value={pageSize}
+              >
+                {pageSizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-          <label className="field-label deposit-history-size">
-            Số dòng
-            <select
-              className="role-select"
-              disabled={isLoading}
-              onChange={(event) => changePageSize(event.target.value)}
-              value={pageSize}
-            >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
         </section>
 
         {error ? <p className="admin-users-message error">{error}</p> : null}
@@ -419,7 +415,6 @@ export function AdminOrdersManager() {
                     <td>{formatDateTime(order.createdAt)}</td>
                     <td className="admin-order-code-cell">
                       <strong>{order.requestId}</strong>
-                      <small>{order.id}</small>
                     </td>
                     <td>
                       <strong>{order.packageName ?? order.type}</strong>
@@ -427,7 +422,6 @@ export function AdminOrdersManager() {
                     </td>
                     <td>
                       <strong>{order.username || "Không có"}</strong>
-                      <small>{order.userId ?? "Không có userId"}</small>
                     </td>
                     <td>
                       <strong>{formatVnd(order.amount)}</strong>
