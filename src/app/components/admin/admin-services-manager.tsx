@@ -114,6 +114,8 @@ const emptyPackageForm: PackageForm = {
 const serviceTypes = [
   "GAME_SERVICE",
   "TOPUP_CAROT",
+  "TOPUP_GOLD",
+  "TOPUP_GEM",
   "TOPUP_LIEN_QUAN_QUAN_HUY",
   "TOPUP_FREE_FIRE_DIAMOND",
   "TOPUP_THE9P",
@@ -124,6 +126,8 @@ const providerSyncedPackageTypes = new Set([
   "TOPUP_FREE_FIRE_DIAMOND",
   "TOPUP_THE9P",
 ]);
+
+const currencyServiceTypes = new Set(["TOPUP_GOLD", "TOPUP_GEM"]);
 
 type ServicesView = "parents" | "children";
 const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
@@ -1429,11 +1433,19 @@ export function AdminServicesManager({
                           <div className="admin-child-actions">
                             <button
                               className="admin-child-packages-button"
-                              onClick={() => openPackages(child.id)}
+                              onClick={() =>
+                                currencyServiceTypes.has(child.type)
+                                  ? openEditSubCategory(child)
+                                  : openPackages(child.id)
+                              }
                               type="button"
                             >
-                              <List aria-hidden="true" size={15} />
-                              Xem gói
+                              {currencyServiceTypes.has(child.type) ? (
+                                <Pencil aria-hidden="true" size={15} />
+                              ) : (
+                                <List aria-hidden="true" size={15} />
+                              )}
+                              {currencyServiceTypes.has(child.type) ? "Cấu hình" : "Xem gói"}
                             </button>
                             <button
                               aria-label={`Sửa ${child.name}`}
@@ -1993,7 +2005,7 @@ function PackageFormView({
             value={form.subCategoryId}
           >
             <option value="">Chọn dịch vụ</option>
-            {subCategories.map((item) => (
+            {subCategories.filter((item) => !currencyServiceTypes.has(item.type)).map((item) => (
               <option key={item.id} value={item.id}>
                 {item.categoryName} / {item.name}
               </option>
@@ -2177,6 +2189,8 @@ function StatusPill({ active }: { active: boolean }) {
 
 function serviceTypeLabel(type: string) {
   if (type === "TOPUP_CAROT") return "Nạp Carot";
+  if (type === "TOPUP_GOLD") return "Nạp Thỏi Vàng";
+  if (type === "TOPUP_GEM") return "Nạp Ngọc";
   return type === "TOPUP_THE9P" ? "TOPUP_CARD" : type;
 }
 

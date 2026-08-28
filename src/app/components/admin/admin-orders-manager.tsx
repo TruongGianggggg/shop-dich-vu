@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, RefreshCw, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, Save, Search, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
@@ -49,6 +49,10 @@ export function AdminOrdersManager() {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [detailOrder, setDetailOrder] = useState<ServiceOrder | null>(null);
+  const [statusForm, setStatusForm] = useState<ServiceOrderStatus | "">("");
+  const [adminNote, setAdminNote] = useState("");
+  const [statusError, setStatusError] = useState("");
+  const [isStatusSaving, setIsStatusSaving] = useState(false);
   const pageNumbers = getPageNumbers(
     pageInfo?.page ?? page,
     pageInfo?.totalPages ?? 0,
@@ -214,6 +218,60 @@ export function AdminOrdersManager() {
     setFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
     setPage(0);
+  }
+
+  function openOrderDetail(order: ServiceOrder) {
+    const nextStatuses = availableStatuses(order.status);
+    setDetailOrder(order);
+    setStatusForm(nextStatuses[0] ?? "");
+    setAdminNote(order.adminNote ?? "");
+    setStatusError("");
+  }
+
+  function closeOrderDetail() {
+    if (isStatusSaving) return;
+    setDetailOrder(null);
+    setStatusError("");
+  }
+
+  async function updateOrderStatus(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!detailOrder || !statusForm) return;
+
+    setIsStatusSaving(true);
+    setStatusError("");
+    try {
+      const response = await fetch(
+        `/api/admin/orders/${encodeURIComponent(detailOrder.id)}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: statusForm, adminNote: adminNote.trim() }),
+        },
+      );
+      const data = (await readResponseJson(response)) as ServiceOrder | unknown;
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Không cập nhật được trạng thái đơn."));
+      }
+
+      const updatedOrder = data as ServiceOrder;
+      setOrders((current) =>
+        current.map((order) => order.id === updatedOrder.id ? updatedOrder : order),
+      );
+      setDetailOrder(updatedOrder);
+      const nextStatuses = availableStatuses(updatedOrder.status);
+      setStatusForm(nextStatuses[0] ?? "");
+      setAdminNote(updatedOrder.adminNote ?? "");
+      setRefreshKey((current) => current + 1);
+    } catch (exception) {
+      setStatusError(
+        exception instanceof Error
+          ? exception.message
+          : "Không cập nhật được trạng thái đơn.",
+      );
+    } finally {
+      setIsStatusSaving(false);
+    }
   }
 
   return (
@@ -454,7 +512,7 @@ export function AdminOrdersManager() {
                     <td>
                       <button
                         className="ghost-button h-9 px-3"
-                        onClick={() => setDetailOrder(order)}
+                        onClick={() => openOrderDetail(order)}
                         type="button"
                       >
                         <Eye aria-hidden="true" size={15} />
@@ -524,7 +582,7 @@ export function AdminOrdersManager() {
           <button
             aria-label="Đóng chi tiết đơn hàng"
             className="admin-user-modal-backdrop"
-            onClick={() => setDetailOrder(null)}
+            onClick={closeOrderDetail}
             type="button"
           />
           <section
@@ -546,7 +604,7 @@ export function AdminOrdersManager() {
                 <button
                   aria-label="Đóng chi tiết"
                   className="admin-user-modal-close"
-                  onClick={() => setDetailOrder(null)}
+                  onClick={closeOrderDetail}
                   type="button"
                 >
                   <X aria-hidden="true" size={18} />
@@ -593,6 +651,64 @@ export function AdminOrdersManager() {
                   <CompactRow label="Ghi chú admin" value={detailOrder.adminNote || "Không có"} />
                   <CompactRow label="Thông báo ngoài" value={detailOrder.externalMessage || "Không có"} />
                 </div>
+              </section>
+
+              <section className="admin-order-detail-card admin-order-status-editor">
+                <h3>Cập nhật trạng thái</h3>
+                {availableStatuses(detailOrder.status).length > 0 ? (
+                  <form onSubmit={updateOrderStatus}>
+                    <label className="field-label">
+                      Trạng thái mới
+                      <select
+                        className="role-select wide"
+                        disabled={isStatusSaving}
+                        onChange={(event) =>
+                          setStatusForm(event.target.value as ServiceOrderStatus)
+                        }
+                        value={statusForm}
+                      >
+                        {availableStatuses(detailOrder.status).map((status) => (
+                          <option key={status} value={status}>
+                            {orderStatusLabel(status)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field-label">
+                      Ghi chú admin
+                      <textarea
+                        className="text-field admin-order-status-note"
+                        disabled={isStatusSaving}
+                        maxLength={500}
+                        onChange={(event) => setAdminNote(event.target.value)}
+                        placeholder="Nhập lý do hoặc kết quả xử lý"
+                        value={adminNote}
+                      />
+                    </label>
+                    {statusForm === "refund_error" ? (
+                      <p className="admin-order-refund-warning">
+                        Trạng thái này sẽ hoàn tiền vào ví khách hàng nếu đơn chưa được hoàn.
+                      </p>
+                    ) : null}
+                    {statusError ? (
+                      <p className="admin-users-message error">{statusError}</p>
+                    ) : null}
+                    <div className="admin-order-status-actions">
+                      <button
+                        className="primary-button h-11 px-5"
+                        disabled={isStatusSaving || !statusForm}
+                        type="submit"
+                      >
+                        <Save aria-hidden="true" size={16} />
+                        {isStatusSaving ? "Đang lưu..." : "Lưu trạng thái"}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="admin-order-terminal-message">
+                    Đơn đã ở trạng thái kết thúc và không thể cập nhật thêm.
+                  </p>
+                )}
               </section>
             </div>
           </section>
@@ -649,6 +765,19 @@ function orderStatusLabel(status: ServiceOrderStatus) {
   }
 
   return "Chờ xử lý";
+}
+
+function availableStatuses(status: ServiceOrderStatus): ServiceOrderStatus[] {
+  if (status === "pending") {
+    return ["processing", "done", "error", "refund_error"];
+  }
+  if (status === "processing") {
+    return ["done", "error", "refund_error"];
+  }
+  if (status === "error") {
+    return ["refund_error"];
+  }
+  return [];
 }
 
 function serviceTypeLabel(type: string) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Coins, Gem, Mail, MessageCircle, Phone } from "lucide-react";
+import { Mail, MessageCircle, Phone } from "lucide-react";
 import { MonthlyLeaderboardCard } from "@/app/components/monthly-leaderboard-card";
 import { ReferenceServiceCard } from "@/app/components/reference-service-card";
 import { SafeRichText } from "@/app/components/safe-rich-text";
@@ -80,6 +80,10 @@ export default async function Home() {
       getMonthlyLeaderboard(),
       getCurrencyDisplaySettings(),
     ]);
+  const storefrontCategories = applyCurrencyDisplaySettings(
+    categories,
+    currencyDisplaySettings,
+  );
 
   return (
     <div className="reference-storefront">
@@ -94,20 +98,18 @@ export default async function Home() {
           settings={siteSettings}
         />
 
-        <CurrencyTopupSection displaySettings={currencyDisplaySettings} />
-
         {hasApiError ? (
           <StoreState
             title="Không thể tải dữ liệu cửa hàng"
             description="API shop-game hiện chưa phản hồi. Vui lòng kiểm tra backend rồi tải lại trang."
           />
-        ) : categories.length === 0 ? (
+        ) : storefrontCategories.length === 0 ? (
           <StoreState
             title="Cửa hàng chưa có dịch vụ"
             description="Hãy thêm và bật danh mục trong trang quản trị. Trang chủ không sử dụng dữ liệu mẫu."
           />
         ) : (
-          categories.map((category) => (
+          storefrontCategories.map((category) => (
             <section className="reference-category" key={category.id}>
               <div className="reference-category-title">
                 <h2>{category.name}</h2>
@@ -194,53 +196,32 @@ export default async function Home() {
   );
 }
 
-function CurrencyTopupSection({
-  displaySettings,
-}: {
-  displaySettings: GameCurrencyDisplaySettings;
-}) {
-  return (
-    <section className="reference-category currency-home-category">
-      <div className="reference-category-title">
-        <h2>Nạp Thỏi vàng và Ngọc</h2>
-        <span />
-      </div>
-      <div className="currency-showcase-grid">
-        <Link className="currency-showcase-card gold" href="/nap-vang">
-          <div
-            className={displaySettings.goldImageUrl ? "currency-showcase-cover has-image" : "currency-showcase-cover"}
-            style={displaySettings.goldImageUrl ? { backgroundImage: `url(${JSON.stringify(displaySettings.goldImageUrl)})` } : undefined}
-          >
-            {!displaySettings.goldImageUrl ? <Coins size={58} /> : null}
-          </div>
-          <div className="currency-showcase-content">
-            <h3>NẠP THỎI VÀNG</h3>
-            <p>NẠP THỎI VÀNG NRO</p>
-            <span className="currency-showcase-count">
-              {(displaySettings.goldServiceCount ?? 0).toLocaleString("vi-VN")} lượt đã phục vụ
-            </span>
-            <strong className="currency-showcase-button">Nạp ngay</strong>
-          </div>
-        </Link>
-        <Link className="currency-showcase-card gem" href="/nap-ngoc">
-          <div
-            className={displaySettings.gemImageUrl ? "currency-showcase-cover has-image" : "currency-showcase-cover"}
-            style={displaySettings.gemImageUrl ? { backgroundImage: `url(${JSON.stringify(displaySettings.gemImageUrl)})` } : undefined}
-          >
-            {!displaySettings.gemImageUrl ? <Gem size={58} /> : null}
-          </div>
-          <div className="currency-showcase-content">
-            <h3>NẠP NGỌC</h3>
-            <p>NẠP NGỌC NRO</p>
-            <span className="currency-showcase-count">
-              {(displaySettings.gemServiceCount ?? 0).toLocaleString("vi-VN")} lượt đã phục vụ
-            </span>
-            <strong className="currency-showcase-button">Nạp ngay</strong>
-          </div>
-        </Link>
-      </div>
-    </section>
-  );
+function applyCurrencyDisplaySettings(
+  categories: ServiceCategory[],
+  settings: GameCurrencyDisplaySettings,
+) {
+  return categories.map((category) => ({
+    ...category,
+    children: category.children.map((service) => {
+      if (service.type === "TOPUP_GOLD") {
+        return {
+          ...service,
+          imageUrl: service.imageUrl || settings.goldImageUrl || null,
+          description: service.description || settings.goldDescription || null,
+          serviceCount: Math.max(service.serviceCount, settings.goldServiceCount ?? 0),
+        };
+      }
+      if (service.type === "TOPUP_GEM") {
+        return {
+          ...service,
+          imageUrl: service.imageUrl || settings.gemImageUrl || null,
+          description: service.description || settings.gemDescription || null,
+          serviceCount: Math.max(service.serviceCount, settings.gemServiceCount ?? 0),
+        };
+      }
+      return service;
+    }),
+  }));
 }
 
 function StorefrontOverview({

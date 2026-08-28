@@ -3,15 +3,23 @@ import { Coins, Gem } from "lucide-react";
 import { CurrencyTopupForm } from "@/app/components/currency-topup-form";
 import { SafeRichText } from "@/app/components/safe-rich-text";
 import { fetchBackendJson } from "@/lib/backend";
-import { GameCurrencyDisplaySettings, GameCurrencyType, GameServerCurrencyConfig } from "@/lib/shop-api";
+import {
+  GameCurrencyDisplaySettings,
+  GameCurrencyType,
+  GameServerCurrencyConfig,
+  ServiceCategory,
+  ServiceSubCategory,
+} from "@/lib/shop-api";
 
 export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCurrencyType }) {
-  const [configs, currencySettings] = await Promise.all([
+  const [configs, currencySettings, serviceMetadata] = await Promise.all([
     getConfigs(currencyType),
     getCurrencySettings(),
+    getCurrencyServiceMetadata(currencyType),
   ]);
   const isGold = currencyType === "GOLD";
-  const description = isGold ? currencySettings.goldDescription : currencySettings.gemDescription;
+  const legacyDescription = isGold ? currencySettings.goldDescription : currencySettings.gemDescription;
+  const description = serviceMetadata?.description || legacyDescription;
   const currencyName = isGold ? "Thỏi vàng" : "Ngọc";
   const currencyNameUpper = isGold ? "THỎI VÀNG" : "NGỌC";
   const Icon = isGold ? Coins : Gem;
@@ -71,5 +79,21 @@ async function getConfigs(currencyType: GameCurrencyType) {
     );
   } catch {
     return [];
+  }
+}
+
+async function getCurrencyServiceMetadata(
+  currencyType: GameCurrencyType,
+): Promise<ServiceSubCategory | null> {
+  try {
+    const categories = await fetchBackendJson<ServiceCategory[]>(
+      "/api/service-categories",
+    );
+    const serviceType = currencyType === "GOLD" ? "TOPUP_GOLD" : "TOPUP_GEM";
+    return categories
+      .flatMap((category) => category.children)
+      .find((service) => service.active && service.type === serviceType) ?? null;
+  } catch {
+    return null;
   }
 }

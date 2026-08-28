@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SafeRichText } from "@/app/components/safe-rich-text";
 import { ServiceOrderForm } from "@/app/components/service-order-form";
 import { fetchBackendJson } from "@/lib/backend";
@@ -65,6 +66,13 @@ export default async function ServiceDetailPage({
         <Link href="/">Quay lại trang chủ</Link>
       </main>
     );
+  }
+
+  if (data.service.type === "TOPUP_GOLD") {
+    redirect("/nap-vang");
+  }
+  if (data.service.type === "TOPUP_GEM") {
+    redirect("/nap-ngoc");
   }
 
   return (

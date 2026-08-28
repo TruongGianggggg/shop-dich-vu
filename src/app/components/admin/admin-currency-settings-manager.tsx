@@ -3,19 +3,16 @@
 import {
   Coins,
   Gem,
-  ImageIcon,
   Pencil,
   Plus,
   RefreshCw,
   Server,
   Trash2,
-  Upload,
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
-import { RichTextEditor } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import {
   formatIntegerInput,
@@ -25,7 +22,6 @@ import {
 } from "@/lib/integer-input";
 import {
   AuthResponse,
-  GameCurrencyDisplaySettings,
   GameServerCurrencyConfig,
   GameServerCurrencyConfigPayload,
   formatVnd,
@@ -58,27 +54,14 @@ const emptyForm: ServerForm = {
   active: true,
 };
 
-const emptyDisplaySettings: GameCurrencyDisplaySettings = {
-  goldImageUrl: "",
-  gemImageUrl: "",
-  goldDescription: "",
-  gemDescription: "",
-  goldServiceCount: 0,
-  gemServiceCount: 0,
-};
-
 export function AdminCurrencySettingsManager() {
   const session = useAuthSession();
   const [configs, setConfigs] = useState<GameServerCurrencyConfig[]>([]);
-  const [displayForm, setDisplayForm] =
-    useState<GameCurrencyDisplaySettings>(emptyDisplaySettings);
   const [form, setForm] = useState<ServerForm>(emptyForm);
   const [editingId, setEditingId] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDisplaySaving, setIsDisplaySaving] = useState(false);
-  const [uploadingCurrency, setUploadingCurrency] = useState<"gold" | "gem" | "">("");
   const [updatingId, setUpdatingId] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -92,26 +75,18 @@ export function AdminCurrencySettingsManager() {
       setIsLoading(true);
       setError("");
       try {
-        const [response, settingsResponse] = await Promise.all([
-          fetch("/api/admin/currency-servers", { headers: authHeaders(activeSession) }),
-          fetch("/api/admin/currency-settings", { headers: authHeaders(activeSession) }),
-        ]);
+        const response = await fetch("/api/admin/currency-servers", {
+          headers: authHeaders(activeSession),
+        });
         const data = await readResponseJson(response);
-        const settingsData = await readResponseJson(settingsResponse);
 
         if (!response.ok) {
           throw new Error(
             getApiErrorMessage(data, "Không tải được cấu hình server."),
           );
         }
-        if (!settingsResponse.ok) {
-          throw new Error(
-            getApiErrorMessage(settingsData, "Không tải được ảnh hiển thị."),
-          );
-        }
         if (!ignore) {
           setConfigs(data as GameServerCurrencyConfig[]);
-          setDisplayForm(normalizeDisplaySettings(settingsData));
         }
       } catch (exception) {
         if (!ignore) {
@@ -157,72 +132,6 @@ export function AdminCurrencySettingsManager() {
     setMessage("");
     setError("");
     setIsModalOpen(true);
-  }
-
-  async function uploadDisplayImage(currency: "gold" | "gem", file: File) {
-    if (!session) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    setUploadingCurrency(currency);
-    setError("");
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/service-images", {
-        method: "POST",
-        headers: authHeaders(session),
-        body: formData,
-      });
-      const data = await readResponseJson(response);
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "Không tải được ảnh lên."));
-      }
-      const imageUrl = (data as { imageUrl: string }).imageUrl;
-      setDisplayForm((current) => ({
-        ...current,
-        [currency === "gold" ? "goldImageUrl" : "gemImageUrl"]: imageUrl,
-      }));
-      setMessage("Đã tải ảnh lên. Bấm “Lưu ảnh hiển thị” để áp dụng.");
-    } catch (exception) {
-      setError(exception instanceof Error ? exception.message : "Không tải được ảnh lên.");
-    } finally {
-      setUploadingCurrency("");
-    }
-  }
-
-  async function saveDisplaySettings() {
-    if (!session) return;
-    if (displayForm.goldDescription.length > 2000 || displayForm.gemDescription.length > 2000) {
-      setError("Mỗi phần mô tả chỉ được tối đa 2.000 ký tự HTML.");
-      return;
-    }
-    setIsDisplaySaving(true);
-    setError("");
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/currency-settings", {
-        method: "PUT",
-        headers: {
-          ...authHeaders(session),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          goldImageUrl: displayForm.goldImageUrl,
-          gemImageUrl: displayForm.gemImageUrl,
-          goldDescription: displayForm.goldDescription,
-          gemDescription: displayForm.gemDescription,
-        }),
-      });
-      const data = await readResponseJson(response);
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "Không lưu được ảnh hiển thị."));
-      }
-      setDisplayForm(normalizeDisplaySettings(data));
-      setMessage("Đã lưu ảnh hiển thị Nạp Vàng và Nạp Ngọc.");
-    } catch (exception) {
-      setError(exception instanceof Error ? exception.message : "Không lưu được ảnh hiển thị.");
-    } finally {
-      setIsDisplaySaving(false);
-    }
   }
 
   function openEdit(config: GameServerCurrencyConfig) {
@@ -375,55 +284,12 @@ export function AdminCurrencySettingsManager() {
           </div>
         </header>
 
-        <section className="role-panel currency-images-panel">
-          <div className="currency-images-head">
-            <div>
-              <p className="section-kicker">Ảnh ngoài trang chủ</p>
-              <h2>Ảnh Nạp Vàng và Nạp Ngọc</h2>
-              <span>Nên dùng ảnh ngang tỷ lệ khoảng 2:1 như mẫu bạn gửi.</span>
-            </div>
-            <button
-              className="primary-button h-11 px-5"
-              disabled={
-                isDisplaySaving
-                || Boolean(uploadingCurrency)
-                || displayForm.goldDescription.length > 2000
-                || displayForm.gemDescription.length > 2000
-              }
-              onClick={saveDisplaySettings}
-              type="button"
-            >
-              {isDisplaySaving ? "Đang lưu..." : "Lưu nội dung hiển thị"}
-            </button>
-          </div>
-          <div className="currency-image-grid">
-            <CurrencyImageEditor
-              currency="gold"
-              description={displayForm.goldDescription}
-              imageUrl={displayForm.goldImageUrl}
-              isUploading={uploadingCurrency === "gold"}
-              onChange={(imageUrl) => setDisplayForm((current) => ({ ...current, goldImageUrl: imageUrl }))}
-              onDescriptionChange={(description) => setDisplayForm((current) => ({ ...current, goldDescription: description }))}
-              onUpload={(file) => uploadDisplayImage("gold", file)}
-            />
-            <CurrencyImageEditor
-              currency="gem"
-              description={displayForm.gemDescription}
-              imageUrl={displayForm.gemImageUrl}
-              isUploading={uploadingCurrency === "gem"}
-              onChange={(imageUrl) => setDisplayForm((current) => ({ ...current, gemImageUrl: imageUrl }))}
-              onDescriptionChange={(description) => setDisplayForm((current) => ({ ...current, gemDescription: description }))}
-              onUpload={(file) => uploadDisplayImage("gem", file)}
-            />
-          </div>
-        </section>
-
         <section className="role-panel currency-service-picker">
           <div>
             <strong>Danh sách server Vàng &amp; Ngọc</strong>
             <span>{configs.length} server · {configs.filter((item) => item.active).length} đang hoạt động</span>
           </div>
-          <p>Danh sách này hoạt động độc lập, không gắn với danh mục hay gói dịch vụ.</p>
+          <p>Vị trí, tên, ảnh và mô tả được quản lý tại Danh mục cha / Danh mục con.</p>
         </section>
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
@@ -533,64 +399,6 @@ export function AdminCurrencySettingsManager() {
           )
         : null}
     </main>
-  );
-}
-
-function CurrencyImageEditor({
-  currency,
-  description,
-  imageUrl,
-  isUploading,
-  onChange,
-  onDescriptionChange,
-  onUpload,
-}: {
-  currency: "gold" | "gem";
-  description: string;
-  imageUrl: string;
-  isUploading: boolean;
-  onChange: (imageUrl: string) => void;
-  onDescriptionChange: (description: string) => void;
-  onUpload: (file: File) => void;
-}) {
-  const isGold = currency === "gold";
-  return (
-    <article className={`currency-image-editor ${currency}`}>
-      <div
-        className={imageUrl ? "currency-image-preview has-image" : "currency-image-preview"}
-        style={imageUrl ? { backgroundImage: `url(${JSON.stringify(imageUrl)})` } : undefined}
-      >
-        {!imageUrl ? <><ImageIcon size={30} /><span>Chưa có ảnh</span></> : null}
-      </div>
-      <div className="currency-image-editor-body">
-        <div><strong>Ảnh Nạp {isGold ? "Vàng" : "Ngọc"}</strong><span>JPG, PNG hoặc WEBP · tối đa theo giới hạn hệ thống</span></div>
-        <div className="currency-image-actions">
-          <label className="ghost-button h-9 px-3">
-            <Upload size={15} /> {isUploading ? "Đang tải..." : "Chọn ảnh"}
-            <input
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              disabled={isUploading}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) onUpload(file);
-                event.target.value = "";
-              }}
-              type="file"
-            />
-          </label>
-          {imageUrl ? <button className="danger-button h-9 px-3" onClick={() => onChange("")} type="button"><Trash2 size={15} /> Xóa ảnh</button> : null}
-        </div>
-      </div>
-      <div className="field-label currency-main-description-field">
-        <span>Mô tả trang Nạp {isGold ? "Vàng" : "Ngọc"}</span>
-        <RichTextEditor
-          disabled={isUploading}
-          maxHtmlLength={2000}
-          onChange={onDescriptionChange}
-          value={description}
-        />
-      </div>
-    </article>
   );
 }
 
@@ -710,24 +518,4 @@ async function readResponseJson(response: Response) {
   const text = await response.text();
   if (!text) return null;
   try { return JSON.parse(text) as unknown; } catch { return { message: text }; }
-}
-
-function normalizeDisplaySettings(value: unknown): GameCurrencyDisplaySettings {
-  const data = value && typeof value === "object"
-    ? value as Partial<GameCurrencyDisplaySettings>
-    : {};
-  return {
-    goldImageUrl: data.goldImageUrl ?? "",
-    gemImageUrl: data.gemImageUrl ?? "",
-    goldDescription: data.goldDescription ?? "",
-    gemDescription: data.gemDescription ?? "",
-    goldServiceCount:
-      typeof data.goldServiceCount === "number" && Number.isFinite(data.goldServiceCount)
-        ? data.goldServiceCount
-        : 0,
-    gemServiceCount:
-      typeof data.gemServiceCount === "number" && Number.isFinite(data.gemServiceCount)
-        ? data.gemServiceCount
-        : 0,
-  };
 }

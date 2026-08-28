@@ -2565,6 +2565,39 @@ input {
   font-weight: 900;
 }
 
+.admin-order-status-editor form {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-order-status-note {
+  min-height: 88px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.admin-order-refund-warning {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 8px;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 750;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.admin-order-terminal-message {
+  color: #667085;
+  font-size: 13px;
+  margin: 0;
+}
+
+.admin-order-status-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .admin-order-compact-row strong {
   color: #111827;
   font-size: 13px;

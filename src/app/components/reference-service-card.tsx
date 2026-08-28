@@ -2,6 +2,10 @@ import Link from "next/link";
 import { ServiceSubCategory } from "@/lib/shop-api";
 
 export function ReferenceServiceCard({ service }: { service: ServiceSubCategory }) {
+  const href = serviceHref(service);
+  const actionLabel = service.type === "TOPUP_GOLD" || service.type === "TOPUP_GEM"
+    ? "Nạp ngay"
+    : "Xem Tất Cả";
   return (
     <article className="reference-service-card">
       <div
@@ -23,10 +27,16 @@ export function ReferenceServiceCard({ service }: { service: ServiceSubCategory 
         <h3>{service.name}</h3>
         <strong className="reference-ready">Sẵn Sàng</strong>
         <p>{service.serviceCount.toLocaleString("vi-VN")} lượt đã phục vụ</p>
-        <Link href={`/dich-vu/${encodeURIComponent(service.id)}`}>
-          Xem Tất Cả <span>→</span>
+        <Link href={href}>
+          {actionLabel} <span>→</span>
         </Link>
       </div>
     </article>
   );
+}
+
+function serviceHref(service: ServiceSubCategory) {
+  if (service.type === "TOPUP_GOLD") return "/nap-vang";
+  if (service.type === "TOPUP_GEM") return "/nap-ngoc";
+  return `/dich-vu/${encodeURIComponent(service.id)}`;
 }
