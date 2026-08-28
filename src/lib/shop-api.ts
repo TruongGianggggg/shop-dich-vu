@@ -204,6 +204,9 @@ export type AdminUser = {
   totalDeposited: number;
   collaboratorBalance: number;
   collaboratorTotalEarned: number;
+  failedLoginAttempts: number;
+  loginLockedUntil: string | null;
+  loginPermanentlyLocked: boolean;
   createdAt: string;
 };
 

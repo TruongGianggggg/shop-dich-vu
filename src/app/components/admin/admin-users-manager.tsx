@@ -3,6 +3,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  LockOpen,
   Pencil,
   Plus,
   RefreshCw,
@@ -362,6 +363,44 @@ export function AdminUsersManager() {
     }
   }
 
+  async function unlockLogin(user: AdminUser) {
+    if (!session) {
+      return;
+    }
+
+    setUpdatingUserId(user.id);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/unlock`, {
+        method: "PUT",
+        headers: authHeaders(session),
+      });
+      const data = (await readResponseJson(response)) as AdminUser | null | unknown;
+
+      if (!response.ok) {
+        throw new Error(
+          getApiErrorMessage(data, "Không mở khóa được tài khoản."),
+        );
+      }
+
+      const updatedUser = data as AdminUser;
+      setUsers((current) =>
+        current.map((item) => (item.id === user.id ? updatedUser : item)),
+      );
+      setMessage(`Đã mở khóa đăng nhập cho ${user.username}.`);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : "Không mở khóa được tài khoản.",
+      );
+    } finally {
+      setUpdatingUserId("");
+    }
+  }
+
   return (
     <main className="role-dashboard">
       <AdminSidebar active="users" />
@@ -476,7 +515,22 @@ export function AdminUsersManager() {
                   <tr key={user.id}>
                     <td>{page * pageSize + index + 1}</td>
                     <td>
-                      <strong>{user.username}</strong>
+                      <div className="admin-user-identity">
+                        <strong>{user.username}</strong>
+                        {user.loginPermanentlyLocked ? (
+                          <small className="admin-user-lock-status is-permanent">
+                            Khóa vĩnh viễn
+                          </small>
+                        ) : isLoginLocked(user.loginLockedUntil) ? (
+                          <small className="admin-user-lock-status">
+                            Khóa đến {formatDate(user.loginLockedUntil!)}
+                          </small>
+                        ) : user.failedLoginAttempts > 0 ? (
+                          <small className="admin-user-login-warning">
+                            Sai {user.failedLoginAttempts} lần
+                          </small>
+                        ) : null}
+                      </div>
                     </td>
                     <td><code className="admin-user-deposit-code">{user.depositCode}</code></td>
                     <td>{user.email}</td>
@@ -505,6 +559,19 @@ export function AdminUsersManager() {
                     <td>{formatDate(user.createdAt)}</td>
                     <td>
                       <div className="admin-users-actions">
+                        {user.loginPermanentlyLocked ||
+                        isLoginLocked(user.loginLockedUntil) ||
+                        user.failedLoginAttempts > 0 ? (
+                          <button
+                            className="ghost-button h-9 px-3"
+                            disabled={updatingUserId === user.id}
+                            onClick={() => unlockLogin(user)}
+                            type="button"
+                          >
+                            <LockOpen aria-hidden="true" size={15} />
+                            Mở khóa
+                          </button>
+                        ) : null}
                         <button
                           className="ghost-button h-9 px-3"
                           onClick={() => startEdit(user)}
@@ -721,4 +788,8 @@ function formatDate(value: string) {
   } catch {
     return value;
   }
+}
+
+function isLoginLocked(value: string | null) {
+  return Boolean(value && new Date(value).getTime() > Date.now());
 }

@@ -83,8 +83,13 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
                 data,
                 "Không thể xử lý yêu cầu đăng nhập.",
               );
-        if (isLogin) showToast({ message: errorMessage, type: "error" });
-        else setMessage(errorMessage);
+        if (isLogin) {
+          if (response.status === 423) {
+            setMessage(errorMessage);
+          } else {
+            showToast({ message: errorMessage, type: "error" });
+          }
+        } else setMessage(errorMessage);
         return;
       }
 

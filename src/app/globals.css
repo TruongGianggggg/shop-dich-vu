@@ -2020,6 +2020,39 @@ input {
   min-height: 44px;
 }
 
+.admin-user-identity {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.admin-user-lock-status,
+.admin-user-login-warning {
+  border-radius: 999px;
+  display: inline-flex !important;
+  font-size: 10px !important;
+  line-height: 1.2;
+  padding: 4px 7px;
+}
+
+.admin-user-lock-status {
+  background: #fff7ed;
+  color: #c2410c !important;
+}
+
+.admin-user-lock-status.is-permanent {
+  background: #fff1f2;
+  color: #be123c !important;
+}
+
+.admin-user-login-warning {
+  background: #fffbeb;
+  color: #a16207 !important;
+}
+
 .admin-user-deposit-code {
   background: #f2f6ff;
   border: 1px solid #dfe9ff;
