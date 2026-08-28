@@ -85,6 +85,11 @@ export function StorefrontHeader() {
             <Link className={pathname === "/thong-bao" ? "is-active" : ""} href="/thong-bao">
               Thông báo
             </Link>
+            {session?.role === "COLLABORATOR" ? (
+              <Link className={pathname.startsWith("/cong-tac-vien") ? "is-active" : ""} href="/cong-tac-vien">
+                Quản lý CTV
+              </Link>
+            ) : null}
           </nav>
 
           <div className="reference-account">

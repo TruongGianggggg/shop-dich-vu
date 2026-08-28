@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   BadgeDollarSign,
+  BriefcaseBusiness,
   History,
   Mail,
   RefreshCw,
@@ -117,6 +118,9 @@ export function ProfileOverview() {
           <div className="profile-quick-actions">
             <DepositQrButton />
             <Link href="/lich-su-mua"><History size={18} />Lịch sử mua</Link>
+            {session.role === "COLLABORATOR" ? (
+              <Link href="/cong-tac-vien"><BriefcaseBusiness size={18} />Quản lý công việc</Link>
+            ) : null}
             {session.role === "ADMIN" ? (
               <Link href="/admin"><ShieldCheck size={18} />Admin Panel</Link>
             ) : null}

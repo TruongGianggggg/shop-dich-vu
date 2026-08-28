@@ -369,6 +369,10 @@ export function getRoleDestination(role: UserRole) {
     return "/admin";
   }
 
+  if (role === "COLLABORATOR") {
+    return "/cong-tac-vien";
+  }
+
   return "/";
 }
 

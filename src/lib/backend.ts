@@ -92,6 +92,19 @@ export async function requireAdminRequest(request: Request) {
   );
 }
 
+export async function requireCollaboratorRequest(request: Request) {
+  const session = await getAuthenticatedBackendSession(request);
+
+  if (session?.role === "COLLABORATOR") {
+    return null;
+  }
+
+  return Response.json(
+    { message: "Collaborator permission is required." },
+    { status: session ? 403 : 401 },
+  );
+}
+
 export async function getAuthenticatedBackendSession(request: Request) {
   const token = getRequestAuthToken(request);
 
