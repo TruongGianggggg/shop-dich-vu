@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, ListChecks, RefreshCw, Search, TimerReset, X } from "lucide-react";
+import { CheckCircle2, Eye, ListChecks, RefreshCw, Save, Search, TimerReset, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
@@ -156,7 +156,45 @@ export function AdminActiveOrdersManager() {
       </section>
 
       {selectedOrder && typeof document !== "undefined" ? createPortal(
-        <div className="admin-user-modal" role="presentation"><button aria-label="Đóng" className="admin-user-modal-backdrop" onClick={() => !saving && setSelectedOrder(null)} type="button" /><section aria-modal="true" className="admin-user-modal-panel admin-order-detail-panel active-order-detail-modal" role="dialog"><div className="admin-order-detail-header"><div className="admin-order-detail-title"><p className="section-kicker">Chi tiết đơn đang mở</p><h2>{selectedOrder.requestId}</h2></div><button className="admin-user-modal-close" disabled={saving} onClick={() => setSelectedOrder(null)} type="button"><X size={18} /></button></div><div className="active-order-detail-grid"><Detail label="Dịch vụ" value={selectedOrder.serviceName} /><Detail label="Khách hàng" value={selectedOrder.customerUsername || "Không có"} /><Detail label="Tài khoản nhận" value={selectedOrder.accountName || "Không có"} /><Detail label="Server" value={selectedOrder.serverName || "Không có"} /><Detail label="Thanh toán" value={formatVnd(selectedOrder.paymentAmount)} /><Detail label="Thực nhận" value={selectedOrder.receivedAmount == null ? "Theo gói dịch vụ" : selectedOrder.receivedAmount.toLocaleString("vi-VN")} /><Detail label="Tạo lúc" value={formatDate(selectedOrder.createdAt)} /><Detail label="Trạng thái" value={statusLabels[selectedOrder.status]} /></div><form className="active-order-status-form" onSubmit={updateStatus}><label><span>Chuyển trạng thái</span><select className="role-select wide" value={nextStatus} onChange={(event) => setNextStatus(event.target.value as ServiceOrderStatus)}>{selectedOrder.status === "pending" ? <option value="processing">Đang xử lý</option> : null}<option value="done">Hoàn thành</option><option value="error">Lỗi</option><option value="refund_error">Lỗi hoàn tiền</option></select></label><label><span>Ghi chú admin</span><textarea className="text-field" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} /></label><div><button className="ghost-button" disabled={saving} onClick={() => setSelectedOrder(null)} type="button">Hủy</button><button className="primary-button" disabled={saving} type="submit">{saving ? "Đang lưu..." : "Cập nhật trạng thái"}</button></div></form></section></div>, document.body) : null}
+        <div className="admin-user-modal active-order-modal-shell" role="presentation">
+          <button aria-label="Đóng" className="admin-user-modal-backdrop" onClick={() => !saving && setSelectedOrder(null)} type="button" />
+          <section aria-labelledby="active-order-modal-title" aria-modal="true" className="admin-user-modal-panel admin-order-detail-panel active-order-detail-modal" role="dialog">
+            <div className="admin-order-detail-header active-order-detail-header">
+              <div className="admin-order-detail-title">
+                <p className="section-kicker">Chi tiết đơn đang mở</p>
+                <div className="active-order-detail-heading">
+                  <h2 id="active-order-modal-title">{selectedOrder.requestId}</h2>
+                  <span className={`admin-order-status-pill ${selectedOrder.status}`}>{statusLabels[selectedOrder.status]}</span>
+                </div>
+              </div>
+              <button aria-label="Đóng" className="admin-user-modal-close" disabled={saving} onClick={() => setSelectedOrder(null)} type="button"><X size={19} /></button>
+            </div>
+
+            <div className="active-order-detail-body">
+              <div className="active-order-detail-grid">
+                <Detail label="Dịch vụ" value={selectedOrder.serviceName} />
+                <Detail label="Khách hàng" value={selectedOrder.customerUsername || "Không có"} />
+                <Detail label="Tài khoản nhận" value={selectedOrder.accountName || "Không có"} />
+                <Detail label="Server" value={selectedOrder.serverName || "Không có"} />
+                <Detail label="Thanh toán" value={formatVnd(selectedOrder.paymentAmount)} />
+                <Detail label="Thực nhận" value={selectedOrder.receivedAmount == null ? "Theo gói dịch vụ" : selectedOrder.receivedAmount.toLocaleString("vi-VN")} />
+                <Detail label="Tạo lúc" value={formatDate(selectedOrder.createdAt)} />
+                <Detail label="Loại đơn" value={selectedOrder.kind === "CURRENCY" ? "Thỏi vàng / Ngọc" : "Dịch vụ game / Carot"} />
+              </div>
+
+              <form className="active-order-status-form" onSubmit={updateStatus}>
+                <div className="active-order-form-heading"><span><CheckCircle2 size={18} /></span><div><strong>Cập nhật trạng thái</strong><small>Chọn kết quả xử lý phù hợp cho đơn này.</small></div></div>
+                <label><span>Trạng thái mới</span><select className="role-select wide" disabled={saving} value={nextStatus} onChange={(event) => setNextStatus(event.target.value as ServiceOrderStatus)}>{selectedOrder.status === "pending" ? <option value="processing">Đang xử lý</option> : null}<option value="done">Hoàn thành</option><option value="error">Lỗi</option><option value="refund_error">Lỗi hoàn tiền</option></select></label>
+                <label><span>Ghi chú admin</span><textarea className="text-field" disabled={saving} maxLength={500} placeholder="Nhập ghi chú hoặc kết quả xử lý (không bắt buộc)" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} /></label>
+                {error ? <p className="admin-users-message error active-order-modal-error">{error}</p> : null}
+                <div className="active-order-modal-actions">
+                  <button className="ghost-button active-order-cancel-button" disabled={saving} onClick={() => setSelectedOrder(null)} type="button">Hủy</button>
+                  <button className="primary-button active-order-save-button" disabled={saving} type="submit"><Save size={17} />{saving ? "Đang cập nhật..." : "Cập nhật trạng thái"}</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>, document.body) : null}
     </main>
   );
 }

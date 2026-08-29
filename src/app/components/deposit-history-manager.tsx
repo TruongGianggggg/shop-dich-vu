@@ -251,7 +251,7 @@ export function DepositHistoryManager() {
             <label className="field-label">
               Từ khóa
               <input
-                className="role-input"
+                className="text-field deposit-history-input"
                 onChange={(event) => setDraftFilters((current) => ({ ...current, keyword: event.target.value }))}
                 placeholder="Mã giao dịch, username, email..."
                 value={draftFilters.keyword}
@@ -276,11 +276,11 @@ export function DepositHistoryManager() {
             </label>
             <label className="field-label">
               Từ ngày
-              <input className="role-input" type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, fromDate: event.target.value }))} value={draftFilters.fromDate} />
+              <input className="text-field deposit-history-input" type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, fromDate: event.target.value }))} value={draftFilters.fromDate} />
             </label>
             <label className="field-label">
               Đến ngày
-              <input className="role-input" type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, toDate: event.target.value }))} value={draftFilters.toDate} />
+              <input className="text-field deposit-history-input" min={draftFilters.fromDate || undefined} type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, toDate: event.target.value }))} value={draftFilters.toDate} />
             </label>
             <div className="deposit-history-filter-actions">
               <button className="primary-button h-11 px-5" disabled={isLoading} type="submit"><Search size={16} />Tìm kiếm</button>
@@ -325,6 +325,17 @@ export function DepositHistoryManager() {
 
           <div className="role-table-wrap">
             <table className="role-table admin-users-table deposit-history-table">
+              <colgroup>
+                <col className="deposit-col-time" />
+                <col className="deposit-col-code" />
+                <col className="deposit-col-customer" />
+                <col className="deposit-col-source" />
+                <col className="deposit-col-provider" />
+                <col className="deposit-col-amount" />
+                <col className="deposit-col-credited" />
+                <col className="deposit-col-status" />
+                <col className="deposit-col-action" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Thời gian</th>
