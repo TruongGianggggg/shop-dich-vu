@@ -1,13 +1,10 @@
 import { RoleGate } from "@/app/components/role-gate";
-import {
-  RoleDashboard,
-  adminDashboardData,
-} from "@/app/components/role-dashboard";
+import { AdminDashboard } from "@/app/components/admin/admin-dashboard";
 
 export default function AdminPage() {
   return (
     <RoleGate allowedRoles={["ADMIN"]}>
-      <RoleDashboard {...adminDashboardData} />
+      <AdminDashboard />
     </RoleGate>
   );
 }

@@ -51,6 +51,45 @@ export type AdminActiveOrderPage = PageResponse<AdminActiveOrder> & {
   processingCount: number;
 };
 
+export type DashboardDay = {
+  date: string;
+  revenue: number;
+  completedOrders: number;
+  activeOrders: number;
+  failedOrders: number;
+};
+
+export type DashboardRecentOrder = {
+  id: string;
+  code: string;
+  title: string;
+  owner: string;
+  status: ServiceOrderStatus;
+  amount: number;
+  createdAt: string;
+};
+
+export type DashboardServiceState = "UP" | "DOWN";
+
+export type AdminDashboardSummary = {
+  revenueToday: number | null;
+  revenueChangePercent: number | null;
+  activeOrders: number | null;
+  pendingOrders: number | null;
+  totalUsers: number | null;
+  newUsersToday: number | null;
+  failedOrders: number | null;
+  last7Days: DashboardDay[];
+  recentOrders: DashboardRecentOrder[];
+  services: {
+    auth: DashboardServiceState;
+    service: DashboardServiceState;
+    wallet: DashboardServiceState;
+  };
+  warnings: string[];
+  generatedAt: string;
+};
+
 export type DepositHistory = {
   id: string;
   transId: string;
