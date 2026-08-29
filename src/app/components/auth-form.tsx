@@ -8,7 +8,10 @@ import {
   getApiErrorMessage,
   getRoleDestination,
 } from "@/lib/shop-api";
+import { TurnstileWidget } from "./turnstile-widget";
 import { saveAuthSession, verifyAuthSession } from "./use-auth-session";
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAAEhecQe6XQz_6kOV";
 
 type AuthMode = "login" | "register";
 
@@ -28,6 +31,8 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
   const [message, setMessage] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLogin = mode === "login";
 
@@ -46,6 +51,14 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+
+    if (!turnstileToken) {
+      const captchaMessage = "Vui lòng xác nhận bạn không phải người máy.";
+      if (isLogin) showToast({ message: captchaMessage, type: "error" });
+      else setMessage(captchaMessage);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
@@ -54,11 +67,13 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         ? {
             login: String(formData.get("login") ?? ""),
             password: String(formData.get("password") ?? ""),
+            turnstileToken,
           }
         : {
             username: String(formData.get("username") ?? ""),
             email: String(formData.get("email") ?? ""),
             password: String(formData.get("password") ?? ""),
+            turnstileToken,
           };
 
     try {
@@ -90,6 +105,7 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
             showToast({ message: errorMessage, type: "error" });
           }
         } else setMessage(errorMessage);
+        setTurnstileResetKey((value) => value + 1);
         return;
       }
 
@@ -105,6 +121,7 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         } else {
           setMessage(verificationError);
         }
+        setTurnstileResetKey((value) => value + 1);
         return;
       }
 
@@ -122,6 +139,7 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         "Không kết nối được hệ thống. Vui lòng thử lại sau.";
       if (isLogin) showToast({ message: errorMessage, type: "error" });
       else setMessage(errorMessage);
+      setTurnstileResetKey((value) => value + 1);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,6 +220,13 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
             type="password"
           />
         </label>
+
+        <TurnstileWidget
+          action={mode}
+          onTokenChange={setTurnstileToken}
+          resetKey={turnstileResetKey}
+          siteKey={TURNSTILE_SITE_KEY}
+        />
       </div>
 
       {message ? (

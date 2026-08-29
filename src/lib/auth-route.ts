@@ -22,10 +22,16 @@ export async function createAuthSessionResponse(
   );
   appendClientRequestHeaders(headers, request);
 
+  const rawBody = await request.text();
+  const { body, turnstileToken } = extractTurnstileToken(rawBody);
+  if (turnstileToken) {
+    headers.set("X-Turnstile-Token", turnstileToken);
+  }
+
   const backendResponse = await fetch(getBackendUrl(backendPath), {
     method: "POST",
     headers,
-    body: await request.text(),
+    body,
     cache: "no-store",
   });
   const responseText = await backendResponse.text();
@@ -62,4 +68,18 @@ export async function createAuthSessionResponse(
   });
   response.cookies.delete("shop_game_auth");
   return response;
+}
+
+function extractTurnstileToken(rawBody: string) {
+  try {
+    const payload = JSON.parse(rawBody) as Record<string, unknown>;
+    const turnstileToken =
+      typeof payload.turnstileToken === "string"
+        ? payload.turnstileToken.trim()
+        : "";
+    delete payload.turnstileToken;
+    return { body: JSON.stringify(payload), turnstileToken };
+  } catch {
+    return { body: rawBody, turnstileToken: "" };
+  }
 }

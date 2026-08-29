@@ -70,6 +70,12 @@
 }
 
 .login-popup-fields { display: grid; gap: 15px; }
+.login-turnstile {
+  display: flex;
+  justify-content: center;
+  min-height: 65px;
+  overflow: hidden;
+}
 .login-popup-fields label { display: grid; gap: 7px; }
 .login-popup-fields label > span {
   color: #30384a;
