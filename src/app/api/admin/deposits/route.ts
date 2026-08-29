@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     return await proxyBackendResponse(
-      `/api/service-orders/history/deposits${url.search}`,
+      `/api/admin/deposits${url.search}`,
       request,
     );
   } catch {

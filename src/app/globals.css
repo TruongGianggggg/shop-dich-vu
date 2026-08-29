@@ -2240,6 +2240,62 @@ input {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.deposit-history-filter {
+  display: grid;
+  gap: 18px;
+}
+
+.deposit-history-filter-title {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.deposit-history-filter-title strong {
+  color: #101828;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.deposit-history-filter-title span {
+  color: #98a2b3;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.deposit-history-filter-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.deposit-history-filter-actions {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.deposit-history-filter-actions .primary-button,
+.deposit-history-filter-actions .secondary-button {
+  min-height: 46px;
+}
+
+.deposit-history-filter-footer {
+  align-items: center;
+  border-top: 1px solid #eef2f6;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+}
+
+.deposit-history-filter-footer strong {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 900;
+}
+
 .deposit-history-summary {
   justify-items: start;
 }
@@ -2255,26 +2311,27 @@ input {
 }
 
 .deposit-history-table {
-  min-width: 1120px;
+  min-width: 1280px;
 }
 
-.deposit-history-table td:nth-child(6) {
+.deposit-history-table td:nth-child(7) {
   display: table-cell;
 }
 
-.deposit-history-table td:nth-child(3),
-.deposit-history-table td:nth-child(7) {
+.deposit-history-table td:nth-child(4),
+.deposit-history-table td:nth-child(8) {
   white-space: nowrap;
 }
 
 .deposit-transaction-cell,
+.deposit-customer-cell,
 .deposit-status-stack {
   display: grid;
   gap: 6px;
 }
 
 .deposit-history-table .deposit-status-cell,
-.deposit-history-table td:nth-child(6) {
+.deposit-history-table td:nth-child(7) {
   display: table-cell;
   vertical-align: middle;
 }
@@ -2283,7 +2340,8 @@ input {
   justify-items: start;
 }
 
-.deposit-transaction-cell strong {
+.deposit-transaction-cell strong,
+.deposit-customer-cell strong {
   color: #111827;
   font-size: 14px;
   font-weight: 900;
@@ -2292,6 +2350,7 @@ input {
 }
 
 .deposit-transaction-cell small,
+.deposit-customer-cell small,
 .deposit-status-stack small {
   color: #667085;
   display: block;
@@ -2300,6 +2359,29 @@ input {
   line-height: 1.35;
   max-width: 260px;
   overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .deposit-history-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .deposit-history-filter-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deposit-history-filter-actions .primary-button,
+  .deposit-history-filter-actions .secondary-button {
+    flex: 1 1 140px;
+  }
+
+  .deposit-history-filter-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .deposit-source-pill,

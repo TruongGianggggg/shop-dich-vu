@@ -55,6 +55,8 @@ export type DepositHistory = {
   id: string;
   transId: string;
   userId: string;
+  customerUsername: string | null;
+  customerEmail: string | null;
   source: "CARD" | "BANK";
   provider: string;
   rawAmount: number;
@@ -63,6 +65,14 @@ export type DepositHistory = {
   reason: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type AdminDepositPage = PageResponse<DepositHistory> & {
+  totalTransactions: number;
+  completedTransactions: number;
+  bankTransactions: number;
+  cardTransactions: number;
+  totalCreditedAmount: number;
 };
 
 export type CardDepositDetail = {

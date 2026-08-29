@@ -1,35 +1,49 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Eye, RefreshCw, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, Search, X } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AuthResponse,
+  AdminDepositPage,
   CardDepositDetail,
   DepositHistory,
   DepositStatus,
   formatVnd,
   getApiErrorMessage,
-  PageResponse,
-  UserBalance,
 } from "@/lib/shop-api";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
 
 const pageSizeOptions = [10, 20, 50] as const;
 
+type DepositFilters = {
+  keyword: string;
+  source: "" | "BANK" | "CARD";
+  status: "" | DepositStatus;
+  fromDate: string;
+  toDate: string;
+};
+
+const emptyFilters: DepositFilters = {
+  keyword: "",
+  source: "",
+  status: "",
+  fromDate: "",
+  toDate: "",
+};
+
 export function DepositHistoryManager() {
   const session = useAuthSession();
   const [deposits, setDeposits] = useState<DepositHistory[]>([]);
-  const [pageInfo, setPageInfo] = useState<PageResponse<DepositHistory> | null>(
-    null,
-  );
+  const [pageInfo, setPageInfo] = useState<AdminDepositPage | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(10);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [totalDeposited, setTotalDeposited] = useState<number | null>(null);
+  const [draftFilters, setDraftFilters] = useState<DepositFilters>(emptyFilters);
+  const [filters, setFilters] = useState<DepositFilters>(emptyFilters);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedDeposit, setSelectedDeposit] = useState<DepositHistory | null>(null);
   const [cardDetail, setCardDetail] = useState<CardDepositDetail | null>(null);
@@ -56,16 +70,15 @@ export function DepositHistoryManager() {
           page: String(page),
           size: String(pageSize),
         });
+        if (filters.keyword) params.set("keyword", filters.keyword);
+        if (filters.source) params.set("source", filters.source);
+        if (filters.status) params.set("status", filters.status);
+        if (filters.fromDate) params.set("fromDate", filters.fromDate);
+        if (filters.toDate) params.set("toDate", filters.toDate);
         const headers = authHeaders(activeSession);
-        const [response, walletResponse] = await Promise.all([
-          fetch(`/api/admin/deposits?${params}`, { headers }),
-          fetch(`/api/wallet/${activeSession.userId}`, { headers }),
-        ]);
+        const response = await fetch(`/api/admin/deposits?${params}`, { headers });
         const data = (await readResponseJson(response)) as
-          | PageResponse<DepositHistory>
-          | unknown;
-        const walletData = (await readResponseJson(walletResponse)) as
-          | UserBalance
+          | AdminDepositPage
           | unknown;
 
         if (!response.ok) {
@@ -74,24 +87,15 @@ export function DepositHistoryManager() {
           );
         }
 
-        if (!walletResponse.ok) {
-          throw new Error(
-            getApiErrorMessage(walletData, "Khong tai duoc tong tien da nap."),
-          );
-        }
-
         if (!ignore) {
-          const pageData = data as PageResponse<DepositHistory>;
-          const wallet = walletData as UserBalance;
+          const pageData = data as AdminDepositPage;
           setDeposits(pageData.content);
           setPageInfo(pageData);
-          setTotalDeposited(wallet.totalDeposited);
         }
       } catch (exception) {
         if (!ignore) {
           setDeposits([]);
           setPageInfo(null);
-          setTotalDeposited(null);
           setError(
             exception instanceof Error
               ? exception.message
@@ -110,42 +114,48 @@ export function DepositHistoryManager() {
     return () => {
       ignore = true;
     };
-  }, [page, pageSize, refreshKey, session]);
+  }, [filters, page, pageSize, refreshKey, session]);
 
   const metrics = useMemo(() => {
-    const bankCount = deposits.filter((item) => item.source === "BANK").length;
-    const cardCount = deposits.filter((item) => item.source === "CARD").length;
-    const completedCount = deposits.filter(
-      (item) => item.status === "COMPLETED",
-    ).length;
-
     return [
       {
         label: "Tổng giao dịch",
-        value: String(pageInfo?.totalElements ?? deposits.length),
-        trend: `Trang ${(pageInfo?.page ?? page) + 1}`,
+        value: String(pageInfo?.totalTransactions ?? 0),
+        trend: "Toàn hệ thống",
         tone: "blue",
       },
       {
         label: "Đã hoàn tất",
-        value: String(completedCount),
-        trend: "Trong trang hiện tại",
+        value: String(pageInfo?.completedTransactions ?? 0),
+        trend: "Tổng giao dịch thành công",
         tone: "green",
       },
       {
         label: "Qua ngân hàng",
-        value: String(bankCount),
-        trend: `${cardCount} nguồn CARD`,
+        value: String(pageInfo?.bankTransactions ?? 0),
+        trend: `${pageInfo?.cardTransactions ?? 0} nguồn CARD`,
         tone: "amber",
       },
       {
         label: "Thực nhận",
-        value: formatVnd(totalDeposited ?? 0),
-        trend: "Tổng tiền đã nạp",
+        value: formatVnd(pageInfo?.totalCreditedAmount ?? 0),
+        trend: "Tổng thực nhận toàn hệ thống",
         tone: "rose",
       },
     ];
-  }, [deposits, page, pageInfo, totalDeposited]);
+  }, [pageInfo]);
+
+  function submitFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPage(0);
+    setFilters({ ...draftFilters, keyword: draftFilters.keyword.trim() });
+  }
+
+  function clearFilters() {
+    setDraftFilters(emptyFilters);
+    setFilters(emptyFilters);
+    setPage(0);
+  }
 
   function changePageSize(value: string) {
     const parsed = Number(value) as (typeof pageSizeOptions)[number];
@@ -232,12 +242,57 @@ export function DepositHistoryManager() {
           ))}
         </section>
 
-        <section className="role-panel admin-users-toolbar deposit-history-toolbar">
+        <form className="role-panel deposit-history-filter" onSubmit={submitFilters}>
+          <div className="deposit-history-filter-title">
+            <strong>Tìm kiếm giao dịch</strong>
+            <span>Tìm theo mã giao dịch, username, email hoặc nhà cung cấp</span>
+          </div>
+          <div className="deposit-history-filter-grid">
+            <label className="field-label">
+              Từ khóa
+              <input
+                className="role-input"
+                onChange={(event) => setDraftFilters((current) => ({ ...current, keyword: event.target.value }))}
+                placeholder="Mã giao dịch, username, email..."
+                value={draftFilters.keyword}
+              />
+            </label>
+            <label className="field-label">
+              Nguồn
+              <select className="role-select" onChange={(event) => setDraftFilters((current) => ({ ...current, source: event.target.value as DepositFilters["source"] }))} value={draftFilters.source}>
+                <option value="">Tất cả nguồn</option>
+                <option value="BANK">Ngân hàng</option>
+                <option value="CARD">Thẻ cào</option>
+              </select>
+            </label>
+            <label className="field-label">
+              Trạng thái
+              <select className="role-select" onChange={(event) => setDraftFilters((current) => ({ ...current, status: event.target.value as DepositFilters["status"] }))} value={draftFilters.status}>
+                <option value="">Tất cả trạng thái</option>
+                <option value="COMPLETED">Hoàn tất</option>
+                <option value="PENDING">Đang chờ</option>
+                <option value="FAILED">Thất bại</option>
+              </select>
+            </label>
+            <label className="field-label">
+              Từ ngày
+              <input className="role-input" type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, fromDate: event.target.value }))} value={draftFilters.fromDate} />
+            </label>
+            <label className="field-label">
+              Đến ngày
+              <input className="role-input" type="date" onChange={(event) => setDraftFilters((current) => ({ ...current, toDate: event.target.value }))} value={draftFilters.toDate} />
+            </label>
+            <div className="deposit-history-filter-actions">
+              <button className="primary-button h-11 px-5" disabled={isLoading} type="submit"><Search size={16} />Tìm kiếm</button>
+              <button className="ghost-button h-11 px-5" disabled={isLoading} onClick={clearFilters} type="button"><X size={16} />Xóa lọc</button>
+            </div>
+          </div>
+          <div className="deposit-history-filter-footer">
           <div className="admin-users-summary deposit-history-summary">
             <strong>
               {(pageInfo?.totalElements ?? 0).toLocaleString("vi-VN")} giao dịch
             </strong>
-            <span>ATM/Bank hiển thị dưới nguồn BANK</span>
+            <span>Kết quả theo bộ lọc hiện tại</span>
           </div>
           <label className="field-label deposit-history-size">
             Số dòng
@@ -254,7 +309,8 @@ export function DepositHistoryManager() {
               ))}
             </select>
           </label>
-        </section>
+          </div>
+        </form>
 
         {error ? <p className="admin-users-message error">{error}</p> : null}
 
@@ -273,6 +329,7 @@ export function DepositHistoryManager() {
                 <tr>
                   <th>Thời gian</th>
                   <th>Mã giao dịch</th>
+                  <th>Người nạp</th>
                   <th>Nguồn</th>
                   <th>Nhà cung cấp</th>
                   <th>Mệnh giá</th>
@@ -288,6 +345,10 @@ export function DepositHistoryManager() {
                     <td className="deposit-transaction-cell">
                       <strong>{deposit.transId}</strong>
                       <small>{deposit.id}</small>
+                    </td>
+                    <td className="deposit-customer-cell">
+                      <strong>{deposit.customerUsername || "—"}</strong>
+                      <small>{deposit.customerEmail || deposit.userId}</small>
                     </td>
                     <td>
                       <span className={`deposit-source-pill ${deposit.source.toLowerCase()}`}>
@@ -326,7 +387,7 @@ export function DepositHistoryManager() {
                 ))}
                 {!isLoading && deposits.length === 0 ? (
                   <tr>
-                    <td colSpan={8}>Chưa có giao dịch nạp tiền.</td>
+                    <td colSpan={9}>Chưa có giao dịch nạp tiền.</td>
                   </tr>
                 ) : null}
               </tbody>
