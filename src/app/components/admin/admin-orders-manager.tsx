@@ -479,7 +479,7 @@ export function AdminOrdersManager() {
                       <small>{serviceTypeLabel(order.type)}</small>
                     </td>
                     <td>
-                      <strong>{order.username || "Không có"}</strong>
+                      <strong>{order.customerUsername || "Không có"}</strong>
                     </td>
                     <td>
                       <strong>{formatVnd(order.amount)}</strong>

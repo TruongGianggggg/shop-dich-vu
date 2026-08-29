@@ -79,6 +79,7 @@ export type ServiceOrder = {
   subCategoryId: string;
   serviceName: string | null;
   userId: string | null;
+  customerUsername: string | null;
   type: string;
   status: ServiceOrderStatus;
   requestId: string;
