@@ -49,12 +49,7 @@ export async function proxyBackendResponse(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const userAgent = request.headers.get("User-Agent");
-  const forwardedFor = request.headers.get("X-Forwarded-For");
-  const realIp = request.headers.get("X-Real-IP");
-  if (userAgent) headers.set("User-Agent", userAgent);
-  if (forwardedFor) headers.set("X-Forwarded-For", forwardedFor);
-  if (realIp) headers.set("X-Real-IP", realIp);
+  appendClientRequestHeaders(headers, request);
 
   const method = request.method.toUpperCase();
   const requestBody =
@@ -80,6 +75,39 @@ export async function proxyBackendResponse(
     statusText: response.statusText,
     headers: responseHeaders,
   });
+}
+
+export function appendClientRequestHeaders(headers: Headers, request: Request) {
+  const userAgent = request.headers.get("User-Agent");
+  const clientIp = resolveClientIp(request);
+
+  if (userAgent) {
+    headers.set("User-Agent", userAgent);
+  }
+
+  if (clientIp) {
+    headers.set("X-Real-IP", clientIp);
+    headers.set("X-Forwarded-For", clientIp);
+  }
+}
+
+function resolveClientIp(request: Request) {
+  const realIp = request.headers.get("X-Real-IP")?.trim();
+  if (realIp) {
+    return realIp;
+  }
+
+  const forwardedFor = request.headers.get("X-Forwarded-For");
+  if (!forwardedFor) {
+    return null;
+  }
+
+  const addresses = forwardedFor
+    .split(",")
+    .map((address) => address.trim())
+    .filter(Boolean);
+
+  return addresses.at(-1) ?? null;
 }
 
 export async function proxyBackendJson(path: string, request: Request) {

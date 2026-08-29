@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { AUTH_TOKEN_COOKIE_NAME, authCookieOptions } from "@/lib/auth-cookie";
-import { getBackendUrl } from "@/lib/backend";
+import { appendClientRequestHeaders, getBackendUrl } from "@/lib/backend";
 import { AuthResponse } from "@/lib/shop-api";
 
 type BackendAuthResponse = AuthResponse & {
@@ -14,12 +14,17 @@ export async function createAuthSessionResponse(
   backendPath: string,
   request: Request,
 ) {
+  const headers = new Headers();
+  headers.set("Accept", "application/json");
+  headers.set(
+    "Content-Type",
+    request.headers.get("Content-Type") ?? "application/json",
+  );
+  appendClientRequestHeaders(headers, request);
+
   const backendResponse = await fetch(getBackendUrl(backendPath), {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": request.headers.get("Content-Type") ?? "application/json",
-    },
+    headers,
     body: await request.text(),
     cache: "no-store",
   });
