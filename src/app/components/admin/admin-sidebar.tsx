@@ -8,6 +8,7 @@ import {
   Layers3,
   LayoutDashboard,
   Settings,
+  ScrollText,
   Users,
   Gem,
 } from "lucide-react";
@@ -22,6 +23,7 @@ type AdminSection =
   | "orders"
   | "deposits"
   | "banks"
+  | "activity-logs"
   | "settings";
 
 const navItems = [
@@ -78,6 +80,12 @@ const navItems = [
     icon: Landmark,
     label: "Ngân hàng",
     section: "banks",
+  },
+  {
+    href: "/admin/activity-logs",
+    icon: ScrollText,
+    label: "Nhật ký hoạt động",
+    section: "activity-logs",
   },
   {
     href: "/admin/site-settings",

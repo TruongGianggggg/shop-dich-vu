@@ -49,6 +49,13 @@ export async function proxyBackendResponse(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  const userAgent = request.headers.get("User-Agent");
+  const forwardedFor = request.headers.get("X-Forwarded-For");
+  const realIp = request.headers.get("X-Real-IP");
+  if (userAgent) headers.set("User-Agent", userAgent);
+  if (forwardedFor) headers.set("X-Forwarded-For", forwardedFor);
+  if (realIp) headers.set("X-Real-IP", realIp);
+
   const method = request.method.toUpperCase();
   const requestBody =
     method === "GET" || method === "HEAD"
