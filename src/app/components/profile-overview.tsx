@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { useUserBalance } from "@/app/components/use-user-balance";
+import { TelegramLinkCard } from "@/app/components/telegram-link-card";
 import { formatVnd } from "@/lib/shop-api";
 
 const roleLabels = {
@@ -126,6 +127,10 @@ export function ProfileOverview() {
             ) : null}
           </div>
         </article>
+      </section>
+
+      <section className="profile-telegram-section">
+        <TelegramLinkCard />
       </section>
     </main>
   );
