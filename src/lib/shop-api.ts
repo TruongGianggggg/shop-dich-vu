@@ -27,6 +27,30 @@ export type ServiceOrderStatus =
   | "processing"
   | "done";
 
+export type ActiveOrderKind = "SERVICE" | "CURRENCY";
+
+export type AdminActiveOrder = {
+  id: string;
+  requestId: string;
+  kind: ActiveOrderKind;
+  serviceName: string;
+  customerUsername: string | null;
+  accountName: string | null;
+  serverName: string | null;
+  paymentAmount: number;
+  receivedAmount: number | null;
+  status: "pending" | "processing";
+  adminNote: string | null;
+  walletRefunded: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminActiveOrderPage = PageResponse<AdminActiveOrder> & {
+  pendingCount: number;
+  processingCount: number;
+};
+
 export type DepositHistory = {
   id: string;
   transId: string;

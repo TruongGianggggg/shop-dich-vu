@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ClipboardList,
+  ListTodo,
   Coins,
   CreditCard,
   FolderTree,
@@ -20,6 +21,7 @@ type AdminSection =
   | "service-sub-categories"
   | "currency-settings"
   | "currency-orders"
+  | "active-orders"
   | "orders"
   | "deposits"
   | "banks"
@@ -56,6 +58,12 @@ const navItems = [
     icon: Coins,
     label: "Cấu hình Vàng & Ngọc",
     section: "currency-settings",
+  },
+  {
+    href: "/admin/active-orders",
+    icon: ListTodo,
+    label: "Đơn cần xử lý",
+    section: "active-orders",
   },
   {
     href: "/admin/orders",
