@@ -24,23 +24,36 @@ import {
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const MAX_HTML_LENGTH = 3000;
 
 type RichTextEditorProps = {
   disabled?: boolean;
   maxHtmlLength?: number;
+  name: string;
   onChange: (value: string) => void;
   value: string;
 };
 
+export function richTextFormValue(
+  form: HTMLFormElement,
+  name: string,
+  fallback: string,
+) {
+  const value = new FormData(form).get(name);
+  return typeof value === "string" ? value.trim() : fallback.trim();
+}
+
 export function RichTextEditor({
   disabled = false,
   maxHtmlLength = MAX_HTML_LENGTH,
+  name,
   onChange,
   value,
 }: RichTextEditorProps) {
+  const formValueRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     immediatelyRender: false,
     editable: !disabled,
@@ -58,7 +71,9 @@ export function RichTextEditor({
     ],
     content: value || "",
     onUpdate: ({ editor: currentEditor }) => {
-      onChange(currentEditor.isEmpty ? "" : currentEditor.getHTML());
+      const html = currentEditor.isEmpty ? "" : currentEditor.getHTML();
+      if (formValueRef.current) formValueRef.current.value = html;
+      onChange(html);
     },
   });
 
@@ -70,7 +85,12 @@ export function RichTextEditor({
   useEffect(() => {
     if (!editor) return;
     const currentValue = editor.isEmpty ? "" : editor.getHTML();
-    if (currentValue !== value) editor.commands.setContent(value || "", { emitUpdate: false });
+    if (currentValue !== value) {
+      editor.commands.setContent(value || "", { emitUpdate: false });
+    }
+    if (formValueRef.current) {
+      formValueRef.current.value = editor.isEmpty ? "" : editor.getHTML();
+    }
   }, [editor, value]);
 
   function editLink() {
@@ -90,6 +110,7 @@ export function RichTextEditor({
   const htmlLength = value.length;
   return (
     <div className={`rich-text-editor${disabled ? " is-disabled" : ""}`}>
+      <input defaultValue={value} name={name} ref={formValueRef} type="hidden" />
       <div aria-label="Công cụ định dạng nội dung" className="rich-text-toolbar" role="toolbar">
         <ToolbarButton active={editor.isActive("bold")} label="In đậm" onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={17} /></ToolbarButton>
         <ToolbarButton active={editor.isActive("italic")} label="In nghiêng" onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={17} /></ToolbarButton>

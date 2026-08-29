@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, ImageUp, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
-import { RichTextEditor } from "@/app/components/rich-text-editor";
+import { RichTextEditor, richTextFormValue } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import { prepareLogoForUpload } from "@/lib/logo-background";
@@ -172,13 +172,31 @@ export function AdminSiteSettingsManager() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!session) return;
-    if (form.announcementContent.length > 3000) {
+    const formToSave = {
+      ...form,
+      announcementContent: richTextFormValue(
+        event.currentTarget,
+        "announcementContent",
+        form.announcementContent,
+      ),
+      footerDescription: richTextFormValue(
+        event.currentTarget,
+        "footerDescription",
+        form.footerDescription,
+      ),
+      footerSupportDescription: richTextFormValue(
+        event.currentTarget,
+        "footerSupportDescription",
+        form.footerSupportDescription,
+      ),
+    };
+    if (formToSave.announcementContent.length > 3000) {
       setError("Nội dung thông báo không được vượt quá 3.000 ký tự HTML.");
       return;
     }
     if (
-      form.footerDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH ||
-      form.footerSupportDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH
+      formToSave.footerDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH ||
+      formToSave.footerSupportDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH
     ) {
       setError("Mỗi nội dung mô tả footer không được vượt quá 1.000 ký tự HTML.");
       return;
@@ -192,7 +210,7 @@ export function AdminSiteSettingsManager() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formToSave),
       });
       const data = (await readJson(response)) as SiteSettings | unknown;
       if (!response.ok) {
@@ -373,6 +391,7 @@ export function AdminSiteSettingsManager() {
                 <span>Nội dung thông báo</span>
                 <RichTextEditor
                   disabled={isLoading || isSaving}
+                  name="announcementContent"
                   onChange={(announcementContent) => setForm({ ...form, announcementContent })}
                   value={form.announcementContent}
                 />
@@ -394,6 +413,7 @@ export function AdminSiteSettingsManager() {
                 <RichTextEditor
                   disabled={isLoading || isSaving}
                   maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  name="footerDescription"
                   onChange={(footerDescription) => setForm({ ...form, footerDescription })}
                   value={form.footerDescription}
                 />
@@ -411,6 +431,7 @@ export function AdminSiteSettingsManager() {
                 <RichTextEditor
                   disabled={isLoading || isSaving}
                   maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  name="footerSupportDescription"
                   onChange={(footerSupportDescription) => setForm({ ...form, footerSupportDescription })}
                   value={form.footerSupportDescription}
                 />

@@ -12,7 +12,7 @@ import {
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
-import { RichTextEditor } from "@/app/components/rich-text-editor";
+import { RichTextEditor, richTextFormValue } from "@/app/components/rich-text-editor";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import { richTextToPlainText } from "@/lib/rich-text";
@@ -587,14 +587,15 @@ export function AdminServicesManager({
       return;
     }
 
-    if (categoryForm.description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
+    const description = richTextFormValue(event.currentTarget, "description", categoryForm.description);
+    if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
       setError("Mô tả danh mục không được vượt quá 5.000 ký tự HTML.");
       return;
     }
 
     const payload: ServiceCategoryPayload = {
       name: categoryForm.name.trim(),
-      description: categoryForm.description.trim(),
+      description,
       displayOrder: numberFromInput(categoryForm.displayOrder),
       active: categoryForm.active,
     };
@@ -677,7 +678,7 @@ export function AdminServicesManager({
       return;
     }
 
-    const description = subCategoryForm.description.trim();
+    const description = richTextFormValue(event.currentTarget, "description", subCategoryForm.description);
     if (!description) {
       setError("Vui lòng nhập mô tả dịch vụ.");
       return;
@@ -844,7 +845,7 @@ export function AdminServicesManager({
       return;
     }
 
-    const description = packageForm.description.trim();
+    const description = richTextFormValue(event.currentTarget, "description", packageForm.description);
     if (!description) {
       setError("Vui lòng nhập mô tả gói dịch vụ.");
       return;
@@ -1771,6 +1772,7 @@ function CategoryFormView({
           <RichTextEditor
             disabled={isSaving}
             maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            name="description"
             onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
@@ -1950,6 +1952,7 @@ function SubCategoryFormView({
           <RichTextEditor
             disabled={isSaving}
             maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            name="description"
             onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
@@ -2082,6 +2085,7 @@ function PackageFormView({
           <RichTextEditor
             disabled={isSaving}
             maxHtmlLength={MAX_SERVICE_DESCRIPTION_LENGTH}
+            name="description"
             onChange={(description) => onChange({ ...form, description })}
             value={form.description}
           />
