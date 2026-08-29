@@ -169,8 +169,9 @@
 }
 
 .deposit-qr-result img {
-  height: 180px;
-  width: 180px;
+  height: auto;
+  max-width: 300px;
+  width: min(100%, 300px);
 }
 
 .deposit-qr-result strong { font-size: 16px; }

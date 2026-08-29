@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   BankAccount,
   BankQr,
@@ -18,6 +19,7 @@ type DepositQrButtonProps = {
   className?: string;
   initialMethod?: DepositMethod;
   label?: string;
+  onClose?: () => void;
   onOpen?: () => void;
 };
 
@@ -41,6 +43,7 @@ export function DepositQrButton({
   className = "",
   initialMethod = "bank",
   label = "Nạp tiền",
+  onClose,
   onOpen,
 }: DepositQrButtonProps = {}) {
   const session = useAuthSession();
@@ -205,11 +208,16 @@ export function DepositQrButton({
   useEffect(() => {
     if (!isOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const frame = window.requestAnimationFrame(() => {
       modalPanelRef.current?.scrollTo({ top: 0 });
     });
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.cancelAnimationFrame(frame);
+    };
   }, [isOpen, method, qrResult]);
 
   function openDeposit() {
@@ -229,6 +237,7 @@ export function DepositQrButton({
     setQrResult(null);
     setCardResult(null);
     setError("");
+    onClose?.();
   }
 
   function selectMethod(nextMethod: DepositMethod) {
@@ -286,7 +295,7 @@ export function DepositQrButton({
         {label}
       </button>
 
-      {isOpen ? (
+      {isOpen ? createPortal((
         <div className="deposit-modal" role="presentation">
           <button
             aria-label="Đóng nạp tiền"
@@ -374,10 +383,10 @@ export function DepositQrButton({
                   <div className="deposit-qr-result">
                     <Image
                       alt="QR nạp tiền"
-                      height={220}
+                      height={320}
                       src={qrResult.qrUrl}
                       unoptimized
-                      width={220}
+                      width={320}
                     />
                     <div>
                       <strong>Nhập số tiền trên ứng dụng ngân hàng</strong>
@@ -506,7 +515,7 @@ export function DepositQrButton({
             )}
           </section>
         </div>
-      ) : null}
+      ), document.body) : null}
     </>
   );
 }

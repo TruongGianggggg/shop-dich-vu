@@ -77,7 +77,7 @@ export function AccountActions() {
             <DepositQrButton
               className="account-menu-button account-mobile-deposit"
               label="Nạp tiền"
-              onOpen={() => setIsOpen(false)}
+              onClose={() => setIsOpen(false)}
             />
             <AccountMenuLink
               href="/thong-bao"
