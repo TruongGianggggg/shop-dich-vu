@@ -6963,7 +6963,46 @@ input {
 .activity-log-detail-grid div { min-width: 0; }
 .activity-log-detail-grid span { color: #98a2b3; display: block; font-size: 10px; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
 .activity-log-detail-grid p { color: #344054; font-family: inherit; font-size: 12px; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-.activity-log-pagination { padding: 18px 20px; }
+.activity-log-pagination {
+  align-items: center;
+  border-top: 1px solid #edf0f5;
+  gap: 12px;
+  justify-content: center;
+  padding: 18px 20px;
+}
+.activity-log-pagination button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  color: #344054;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 750;
+  gap: 6px;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 112px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+.activity-log-pagination button:hover:not(:disabled) {
+  border-color: #84adff;
+  color: #2563eb;
+}
+.activity-log-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+.activity-log-pagination > span {
+  color: #475467;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 72px;
+  text-align: center;
+  white-space: nowrap;
+}
 @media (max-width: 900px) {
   .activity-log-filter-grid { grid-template-columns: 1fr 1fr; }
   .activity-log-filter-grid .currency-order-filter-actions { grid-column: 1 / -1; }
@@ -6975,6 +7014,9 @@ input {
   .activity-log-filter-footer label { justify-content: space-between; width: 100%; }
   .activity-log-filter-footer .role-select { min-width: 120px; }
   .activity-log-intro { align-items: flex-start; }
+  .activity-log-pagination { gap: 8px; padding: 14px 12px; }
+  .activity-log-pagination button { flex: 1; min-width: 0; padding: 0 8px; }
+  .activity-log-pagination > span { min-width: 64px; }
 }
 .currency-order-filter-head { margin-bottom: 16px; }
 .currency-order-filter-head > div { align-items: baseline; display: flex; gap: 10px; }
