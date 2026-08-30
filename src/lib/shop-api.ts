@@ -443,7 +443,7 @@ export function getApiErrorMessage(data: unknown, fallback: string) {
 
 export function getRoleDestination(role: UserRole) {
   if (role === "ADMIN") {
-    return "/admin";
+    return "/";
   }
 
   if (role === "COLLABORATOR") {

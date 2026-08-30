@@ -1,7 +1,14 @@
-import { getBackendUrl, getRequestAuthToken } from "@/lib/backend";
+import {
+  getBackendUrl,
+  getRequestAuthToken,
+  requireAdminRequest,
+} from "@/lib/backend";
 
 export async function POST(request: Request) {
   try {
+    const forbidden = await requireAdminRequest(request);
+    if (forbidden) return forbidden;
+
     const token = getRequestAuthToken(request);
     const contentType = request.headers.get("Content-Type");
     const headers = new Headers({ Accept: "application/json" });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { formatVnd, getRoleDestination } from "@/lib/shop-api";
+import { formatVnd } from "@/lib/shop-api";
 import { DepositQrButton } from "./deposit-qr-button";
 import { clearAuthSession, useAuthSession } from "./use-auth-session";
 import { useUserBalance } from "./use-user-balance";
@@ -57,7 +57,7 @@ export function AccountActions() {
           />
           {session.role === "ADMIN" ? (
             <AccountMenuLink
-              href={getRoleDestination("ADMIN")}
+              href="/admin-access"
               label="Admin Panel"
               onClick={() => setIsOpen(false)}
             />

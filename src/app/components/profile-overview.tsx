@@ -123,7 +123,7 @@ export function ProfileOverview() {
               <Link href="/cong-tac-vien"><BriefcaseBusiness size={18} />Quản lý công việc</Link>
             ) : null}
             {session.role === "ADMIN" ? (
-              <Link href="/admin"><ShieldCheck size={18} />Admin Panel</Link>
+              <Link href="/admin-access"><ShieldCheck size={18} />Admin Panel</Link>
             ) : null}
           </div>
         </article>

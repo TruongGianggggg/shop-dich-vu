@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  ADMIN_ACCESS_COOKIE_NAME,
+  isAdminAccessGranted,
+} from "@/lib/admin-otp";
 import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth-cookie";
 import { AuthResponse, UserRole } from "@/lib/shop-api";
 
@@ -7,6 +11,11 @@ const backendBaseUrl =
   process.env.SHOP_GAME_API_URL ??
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   "http://localhost:8080";
+
+const authenticatedSessionCache = new WeakMap<
+  Request,
+  Promise<AuthResponse | null>
+>();
 
 export function getBackendUrl(path: string) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -35,6 +44,11 @@ export async function proxyBackendResponse(
   request: Request,
   options?: { accept?: string; body?: string },
 ) {
+  if (isAdminFrontendRequest(request)) {
+    const forbidden = await requireAdminRequest(request);
+    if (forbidden) return forbidden;
+  }
+
   const headers = new Headers();
   const contentType = request.headers.get("Content-Type");
   const token = getRequestAuthToken(request);
@@ -117,12 +131,25 @@ export async function proxyBackendJson(path: string, request: Request) {
 export async function requireAdminRequest(request: Request) {
   const session = await getAuthenticatedBackendSession(request);
 
-  if (session?.role === "ADMIN") {
+  if (
+    session?.role === "ADMIN" &&
+    isAdminAccessGranted(
+      getCookieValue(request, ADMIN_ACCESS_COOKIE_NAME) ?? undefined,
+      session.userId,
+    )
+  ) {
     return null;
   }
 
   return Response.json(
-    { message: "Admin permission is required." },
+    {
+      code:
+        session?.role === "ADMIN" ? "ADMIN_OTP_REQUIRED" : "ADMIN_REQUIRED",
+      message:
+        session?.role === "ADMIN"
+          ? "Vui lòng xác minh mã bảo mật Admin."
+          : "Admin permission is required.",
+    },
     { status: session ? 403 : 401 },
   );
 }
@@ -141,6 +168,15 @@ export async function requireCollaboratorRequest(request: Request) {
 }
 
 export async function getAuthenticatedBackendSession(request: Request) {
+  const cachedSession = authenticatedSessionCache.get(request);
+  if (cachedSession) return cachedSession;
+
+  const sessionPromise = loadAuthenticatedBackendSession(request);
+  authenticatedSessionCache.set(request, sessionPromise);
+  return sessionPromise;
+}
+
+async function loadAuthenticatedBackendSession(request: Request) {
   const token = getRequestAuthToken(request);
 
   if (!token) {
@@ -162,18 +198,31 @@ export async function getAuthenticatedBackendSession(request: Request) {
 }
 
 export function getRequestAuthToken(request: Request) {
-  const cookieHeader = request.headers.get("Cookie") ?? "";
-  const cookieToken = cookieHeader
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${AUTH_TOKEN_COOKIE_NAME}=`))
-    ?.slice(AUTH_TOKEN_COOKIE_NAME.length + 1);
+  const cookieToken = getCookieValue(request, AUTH_TOKEN_COOKIE_NAME);
 
-  if (cookieToken) return decodeURIComponent(cookieToken);
+  if (cookieToken) return cookieToken;
 
   return request.headers
     .get("Authorization")
     ?.replace(/^Bearer\s+/i, "") || null;
+}
+
+function getCookieValue(request: Request, name: string) {
+  const rawValue = (request.headers.get("Cookie") ?? "")
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`))
+    ?.slice(name.length + 1);
+
+  return rawValue ? decodeURIComponent(rawValue) : null;
+}
+
+function isAdminFrontendRequest(request: Request) {
+  try {
+    return new URL(request.url).pathname.startsWith("/api/admin/");
+  } catch {
+    return false;
+  }
 }
 
 function isUserRole(value: unknown): value is UserRole {
