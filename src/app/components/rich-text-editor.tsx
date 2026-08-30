@@ -93,6 +93,21 @@ export function RichTextEditor({
     }
   }, [editor, value]);
 
+  useEffect(() => {
+    if (!editor) return;
+    const form = formValueRef.current?.form;
+    if (!form) return;
+
+    const syncEditorHtml = (event: FormDataEvent) => {
+      const html = editor.isEmpty ? "" : editor.getHTML();
+      event.formData.set(name, html);
+      if (formValueRef.current) formValueRef.current.value = html;
+    };
+
+    form.addEventListener("formdata", syncEditorHtml);
+    return () => form.removeEventListener("formdata", syncEditorHtml);
+  }, [editor, name]);
+
   function editLink() {
     if (!editor) return;
     const currentHref = editor.getAttributes("link").href as string | undefined;

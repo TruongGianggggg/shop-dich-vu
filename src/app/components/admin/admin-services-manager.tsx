@@ -132,7 +132,7 @@ const currencyServiceTypes = new Set(["TOPUP_GOLD", "TOPUP_GEM"]);
 type ServicesView = "parents" | "children";
 const ALL_PARENT_CATEGORIES = "__all_parent_categories__";
 const ADMIN_TABLE_PAGE_SIZE = 10;
-const MAX_SERVICE_DESCRIPTION_LENGTH = 5000;
+const MAX_SERVICE_DESCRIPTION_LENGTH = 10000;
 
 export function AdminServicesManager({
   view = "parents",
@@ -589,7 +589,7 @@ export function AdminServicesManager({
 
     const description = richTextFormValue(event.currentTarget, "description", categoryForm.description);
     if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
-      setError("Mô tả danh mục không được vượt quá 5.000 ký tự HTML.");
+      setError("Mô tả danh mục không được vượt quá 10.000 ký tự HTML.");
       return;
     }
 
@@ -684,7 +684,7 @@ export function AdminServicesManager({
       return;
     }
     if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
-      setError("Mô tả dịch vụ không được vượt quá 5.000 ký tự HTML.");
+      setError("Mô tả dịch vụ không được vượt quá 10.000 ký tự HTML.");
       return;
     }
 
@@ -851,7 +851,7 @@ export function AdminServicesManager({
       return;
     }
     if (description.length > MAX_SERVICE_DESCRIPTION_LENGTH) {
-      setError("Mô tả gói dịch vụ không được vượt quá 5.000 ký tự HTML.");
+      setError("Mô tả gói dịch vụ không được vượt quá 10.000 ký tự HTML.");
       return;
     }
 

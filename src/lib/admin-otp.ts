@@ -20,7 +20,7 @@ export const ADMIN_ACCESS_COOKIE_NAME = "shop_admin_access";
 export const ADMIN_OTP_CHALLENGE_COOKIE_NAME = "shop_admin_otp_challenge";
 
 const OTP_TTL_MS = 3 * 60 * 1000;
-const ACCESS_TTL_SECONDS = 30 * 60;
+const ACCESS_TTL_SECONDS = 60 * 60;
 const RESEND_COOLDOWN_MS = 60 * 1000;
 const SEND_WINDOW_MS = 60 * 60 * 1000;
 const MAX_SENDS_PER_WINDOW = 5;

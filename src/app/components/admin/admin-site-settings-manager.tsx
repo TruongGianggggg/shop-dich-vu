@@ -28,7 +28,7 @@ const defaultSettings: SiteSettings = {
   footerZaloUrl: "",
 };
 
-const MAX_FOOTER_DESCRIPTION_LENGTH = 1000;
+const MAX_RICH_DESCRIPTION_LENGTH = 10000;
 
 type ImageField = "logoUrl" | "bannerUrls";
 
@@ -190,15 +190,15 @@ export function AdminSiteSettingsManager() {
         form.footerSupportDescription,
       ),
     };
-    if (formToSave.announcementContent.length > 3000) {
-      setError("Nội dung thông báo không được vượt quá 3.000 ký tự HTML.");
+    if (formToSave.announcementContent.length > MAX_RICH_DESCRIPTION_LENGTH) {
+      setError("Nội dung thông báo không được vượt quá 10.000 ký tự HTML.");
       return;
     }
     if (
-      formToSave.footerDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH ||
-      formToSave.footerSupportDescription.length > MAX_FOOTER_DESCRIPTION_LENGTH
+      formToSave.footerDescription.length > MAX_RICH_DESCRIPTION_LENGTH ||
+      formToSave.footerSupportDescription.length > MAX_RICH_DESCRIPTION_LENGTH
     ) {
-      setError("Mỗi nội dung mô tả footer không được vượt quá 1.000 ký tự HTML.");
+      setError("Mỗi nội dung mô tả footer không được vượt quá 10.000 ký tự HTML.");
       return;
     }
     setIsSaving(true);
@@ -391,6 +391,7 @@ export function AdminSiteSettingsManager() {
                 <span>Nội dung thông báo</span>
                 <RichTextEditor
                   disabled={isLoading || isSaving}
+                  maxHtmlLength={MAX_RICH_DESCRIPTION_LENGTH}
                   name="announcementContent"
                   onChange={(announcementContent) => setForm({ ...form, announcementContent })}
                   value={form.announcementContent}
@@ -412,7 +413,7 @@ export function AdminSiteSettingsManager() {
                 <span>Nội dung giới thiệu shop</span>
                 <RichTextEditor
                   disabled={isLoading || isSaving}
-                  maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  maxHtmlLength={MAX_RICH_DESCRIPTION_LENGTH}
                   name="footerDescription"
                   onChange={(footerDescription) => setForm({ ...form, footerDescription })}
                   value={form.footerDescription}
@@ -430,7 +431,7 @@ export function AdminSiteSettingsManager() {
                 <span>Nội dung liên hệ hỗ trợ</span>
                 <RichTextEditor
                   disabled={isLoading || isSaving}
-                  maxHtmlLength={MAX_FOOTER_DESCRIPTION_LENGTH}
+                  maxHtmlLength={MAX_RICH_DESCRIPTION_LENGTH}
                   name="footerSupportDescription"
                   onChange={(footerSupportDescription) => setForm({ ...form, footerSupportDescription })}
                   value={form.footerSupportDescription}
