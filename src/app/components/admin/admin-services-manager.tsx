@@ -2250,19 +2250,17 @@ function serviceCategoryPath(categoryId = "") {
 }
 
 function serviceSubCategoryPath(parentId: string, subCategoryId = "") {
-  const basePath = `${serviceCategoryPath(parentId)}/children`;
+  const parentQuery = `parentId=${encodeURIComponent(parentId)}`;
   return subCategoryId
-    ? `${basePath}/${encodeURIComponent(subCategoryId)}`
-    : basePath;
+    ? `/api/admin/service-sub-categories/${encodeURIComponent(subCategoryId)}?${parentQuery}`
+    : `/api/admin/service-sub-categories?${parentQuery}`;
 }
 
 function servicePackagePath(subCategoryId: string, packageId = "") {
-  const basePath = `/api/admin/service-sub-categories/${encodeURIComponent(
-    subCategoryId,
-  )}/packages`;
+  const subCategoryQuery = `subCategoryId=${encodeURIComponent(subCategoryId)}`;
   return packageId
-    ? `${basePath}/${encodeURIComponent(packageId)}`
-    : basePath;
+    ? `/api/admin/service-packages/${encodeURIComponent(packageId)}?${subCategoryQuery}`
+    : `/api/admin/service-packages?${subCategoryQuery}`;
 }
 
 function normalizeList<T>(data: unknown) {
