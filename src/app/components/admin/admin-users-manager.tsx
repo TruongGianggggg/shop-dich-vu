@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
   LockOpen,
   Pencil,
   Plus,
@@ -33,8 +36,28 @@ import {
 
 const pageSize = 20;
 const roles: UserRole[] = ["USER", "COLLABORATOR", "ADMIN"];
-type UserFilters = { username: string; email: string; role: "" | UserRole };
-const emptyFilters: UserFilters = { username: "", email: "", role: "" };
+type UserFilters = {
+  username: string;
+  email: string;
+  role: "" | UserRole;
+  minBalance: string;
+  maxBalance: string;
+};
+type UserSortField =
+  | "username"
+  | "email"
+  | "role"
+  | "balance"
+  | "collaboratorBalance"
+  | "createdAt";
+type UserSort = { field: UserSortField; direction: "asc" | "desc" };
+const emptyFilters: UserFilters = {
+  username: "",
+  email: "",
+  role: "",
+  minBalance: "",
+  maxBalance: "",
+};
 const emptyForm = {
   username: "",
   email: "",
@@ -50,6 +73,10 @@ export function AdminUsersManager() {
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<UserFilters>(emptyFilters);
   const [appliedFilters, setAppliedFilters] = useState<UserFilters>(emptyFilters);
+  const [sort, setSort] = useState<UserSort>({
+    field: "createdAt",
+    direction: "desc",
+  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -83,6 +110,10 @@ export function AdminUsersManager() {
         if (appliedFilters.username) params.set("username", appliedFilters.username);
         if (appliedFilters.email) params.set("email", appliedFilters.email);
         if (appliedFilters.role) params.set("role", appliedFilters.role);
+        if (appliedFilters.minBalance) params.set("minBalance", appliedFilters.minBalance);
+        if (appliedFilters.maxBalance) params.set("maxBalance", appliedFilters.maxBalance);
+        params.set("sortBy", sort.field);
+        params.set("sortDirection", sort.direction);
 
         const response = await fetch(`/api/admin/users?${params.toString()}`, {
           headers: authHeaders(activeSession),
@@ -124,7 +155,7 @@ export function AdminUsersManager() {
     return () => {
       ignore = true;
     };
-  }, [appliedFilters, canLoad, page, refreshKey, session]);
+  }, [appliedFilters, canLoad, page, refreshKey, session, sort]);
 
   const totalLabel = useMemo(() => {
     if (!pageInfo) {
@@ -137,11 +168,29 @@ export function AdminUsersManager() {
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    setError("");
+    const minBalance = normalizeIntegerInput(filters.minBalance);
+    const maxBalance = normalizeIntegerInput(filters.maxBalance);
+
+    if (
+      (minBalance && !isNonNegativeIntegerInput(minBalance)) ||
+      (maxBalance && !isNonNegativeIntegerInput(maxBalance))
+    ) {
+      setError("Khoảng số dư phải là số nguyên từ 0 trở lên.");
+      return;
+    }
+    if (minBalance && maxBalance && Number(minBalance) > Number(maxBalance)) {
+      setError("Số dư tối thiểu không được lớn hơn số dư tối đa.");
+      return;
+    }
+
     setPage(0);
     setAppliedFilters({
       username: filters.username.trim(),
       email: filters.email.trim(),
       role: filters.role,
+      minBalance,
+      maxBalance,
     });
   }
 
@@ -150,6 +199,17 @@ export function AdminUsersManager() {
     setAppliedFilters(emptyFilters);
     setPage(0);
     setMessage("");
+    setError("");
+  }
+
+  function changeSort(field: UserSortField) {
+    setPage(0);
+    setMessage("");
+    setSort((current) => ({
+      field,
+      direction:
+        current.field === field && current.direction === "asc" ? "desc" : "asc",
+    }));
   }
 
   async function submitUserForm(event: FormEvent<HTMLFormElement>) {
@@ -321,7 +381,9 @@ export function AdminUsersManager() {
       return;
     }
 
-    const confirmed = window.confirm(`Xoa tai khoan ${user.username}?`);
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn xóa tài khoản “${user.username}”?\n\nHành động này không thể hoàn tác.`,
+    );
 
     if (!confirmed) {
       return;
@@ -340,12 +402,12 @@ export function AdminUsersManager() {
       if (!response.ok) {
         const data = await readResponseJson(response);
         throw new Error(
-          getApiErrorMessage(data, "Khong xoa duoc nguoi dung."),
+          getApiErrorMessage(data, "Không thể xóa tài khoản này."),
         );
       }
 
       setUsers((current) => current.filter((item) => item.id !== user.id));
-      setMessage(`Da xoa ${user.username}.`);
+      setMessage(`Đã xóa tài khoản “${user.username}” thành công.`);
 
       if (editingUserId === user.id) {
         closeForm();
@@ -356,7 +418,7 @@ export function AdminUsersManager() {
       setError(
         exception instanceof Error
           ? exception.message
-          : "Khong xoa duoc nguoi dung.",
+          : "Không thể xóa tài khoản này.",
       );
     } finally {
       setUpdatingUserId("");
@@ -459,6 +521,28 @@ export function AdminUsersManager() {
                 {roles.map((role) => <option key={role} value={role}>{role}</option>)}
               </select>
             </label>
+            <label className="field-label">
+              Số dư từ
+              <input
+                className="text-field"
+                inputMode="numeric"
+                onChange={(event) => setFilters((current) => ({ ...current, minBalance: normalizeIntegerInput(event.target.value) }))}
+                placeholder="Tối thiểu"
+                type="text"
+                value={formatIntegerInput(filters.minBalance)}
+              />
+            </label>
+            <label className="field-label">
+              Số dư đến
+              <input
+                className="text-field"
+                inputMode="numeric"
+                onChange={(event) => setFilters((current) => ({ ...current, maxBalance: normalizeIntegerInput(event.target.value) }))}
+                placeholder="Tối đa"
+                type="text"
+                value={formatIntegerInput(filters.maxBalance)}
+              />
+            </label>
             <div className="admin-users-filter-actions">
               <button className="primary-button h-11 px-5" disabled={isLoading}>
                 <Search aria-hidden="true" size={16} />
@@ -500,13 +584,13 @@ export function AdminUsersManager() {
               <thead>
                 <tr>
                   <th>STT</th>
-                  <th>Người dùng</th>
+                  <SortableUserHeader field="username" label="Người dùng" onSort={changeSort} sort={sort} />
                   <th>Mã nạp</th>
-                  <th>Email</th>
-                  <th>Phân quyền</th>
-                  <th>Số dư</th>
-                  <th>CTV</th>
-                  <th>Ngày tạo</th>
+                  <SortableUserHeader field="email" label="Email" onSort={changeSort} sort={sort} />
+                  <SortableUserHeader field="role" label="Phân quyền" onSort={changeSort} sort={sort} />
+                  <SortableUserHeader field="balance" label="Số dư" onSort={changeSort} sort={sort} />
+                  <SortableUserHeader field="collaboratorBalance" label="CTV" onSort={changeSort} sort={sort} />
+                  <SortableUserHeader field="createdAt" label="Ngày tạo" onSort={changeSort} sort={sort} />
                   <th>Thao tác</th>
                 </tr>
               </thead>
@@ -763,6 +847,47 @@ export function AdminUsersManager() {
         document.body,
       ) : null}
     </main>
+  );
+}
+
+function SortableUserHeader({
+  field,
+  label,
+  onSort,
+  sort,
+}: {
+  field: UserSortField;
+  label: string;
+  onSort: (field: UserSortField) => void;
+  sort: UserSort;
+}) {
+  const isActive = sort.field === field;
+  const ariaSort = !isActive
+    ? "none"
+    : sort.direction === "asc"
+      ? "ascending"
+      : "descending";
+
+  return (
+    <th aria-sort={ariaSort}>
+      <button
+        aria-label={`${label}: sắp xếp ${isActive && sort.direction === "asc" ? "giảm dần" : "tăng dần"}`}
+        className={isActive ? "admin-users-sort is-active" : "admin-users-sort"}
+        onClick={() => onSort(field)}
+        type="button"
+      >
+        {label}
+        {isActive ? (
+          sort.direction === "asc" ? (
+            <ArrowUp aria-hidden="true" size={14} />
+          ) : (
+            <ArrowDown aria-hidden="true" size={14} />
+          )
+        ) : (
+          <ChevronsUpDown aria-hidden="true" size={14} />
+        )}
+      </button>
+    </th>
   );
 }
 

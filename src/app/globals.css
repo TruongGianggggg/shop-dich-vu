@@ -1947,7 +1947,13 @@ input {
 
 .admin-users-toolbar .admin-users-filter-form {
   align-items: end;
-  grid-template-columns: minmax(180px, .9fr) minmax(220px, 1.2fr) minmax(150px, .65fr) auto;
+  grid-template-columns:
+    minmax(160px, .9fr)
+    minmax(200px, 1.1fr)
+    minmax(140px, .65fr)
+    minmax(125px, .6fr)
+    minmax(125px, .6fr)
+    auto;
   max-width: none;
 }
 
@@ -2220,6 +2226,40 @@ input {
   letter-spacing: 0;
   padding: 14px 16px;
   text-transform: none;
+}
+
+.admin-users-sort {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 6px;
+  padding: 0;
+  text-align: left;
+}
+
+.admin-users-sort svg {
+  color: #98a2b3;
+  flex: 0 0 auto;
+}
+
+.admin-users-sort:hover,
+.admin-users-sort.is-active {
+  color: #2563eb;
+}
+
+.admin-users-sort.is-active svg {
+  color: #2563eb;
+}
+
+.admin-users-sort:focus-visible {
+  border-radius: 5px;
+  outline: 2px solid #93c5fd;
+  outline-offset: 3px;
 }
 
 .admin-users-table td {
