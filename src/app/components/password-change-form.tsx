@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { LoaderCircle, LogOut, Mail, RefreshCw, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   getApiErrorMessage,
@@ -126,7 +127,17 @@ export function PasswordChangeForm() {
           onClick={sendCode}
           type="button"
         >
-          {isSending ? "Đang gửi mã…" : "Gửi mã xác nhận qua email"}
+          {isSending ? (
+            <>
+              <LoaderCircle aria-hidden="true" className="password-change-spinner" />
+              Đang gửi mã…
+            </>
+          ) : (
+            <>
+              <Mail aria-hidden="true" />
+              Gửi mã xác nhận qua email
+            </>
+          )}
         </button>
       ) : (
         <form className="password-change-form" onSubmit={submit}>
@@ -174,7 +185,17 @@ export function PasswordChangeForm() {
             disabled={isSaving}
             type="submit"
           >
-            {isSaving ? "Đang đổi mật khẩu…" : "Xác nhận đổi mật khẩu"}
+            {isSaving ? (
+              <>
+                <LoaderCircle aria-hidden="true" className="password-change-spinner" />
+                Đang đổi mật khẩu…
+              </>
+            ) : (
+              <>
+                <ShieldCheck aria-hidden="true" />
+                Xác nhận đổi mật khẩu
+              </>
+            )}
           </button>
           <button
             className="password-change-resend"
@@ -182,6 +203,7 @@ export function PasswordChangeForm() {
             onClick={sendCode}
             type="button"
           >
+            <RefreshCw aria-hidden="true" />
             Gửi lại mã
           </button>
         </form>
@@ -190,6 +212,7 @@ export function PasswordChangeForm() {
       {message ? <p className="password-change-success">{message}</p> : null}
       {error ? <p className="password-change-error" role="alert">{error}</p> : null}
       <button className="password-change-logout" onClick={logout} type="button">
+        <LogOut aria-hidden="true" />
         Đăng xuất
       </button>
     </section>
