@@ -6,6 +6,7 @@ export type AuthResponse = {
   username: string;
   email: string;
   role: UserRole;
+  passwordChangeRequired: boolean;
 };
 
 export type PageResponse<T> = {

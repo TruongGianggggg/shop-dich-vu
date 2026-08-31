@@ -778,7 +778,8 @@ export function AdminUsersManager() {
                   <input
                     className="text-field"
                     maxLength={72}
-                    minLength={6}
+                    minLength={10}
+                    pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9\\s]).{10,72}"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -788,6 +789,7 @@ export function AdminUsersManager() {
                     placeholder={editingUserId ? "De trong neu khong doi" : ""}
                     required={!editingUserId}
                     type="password"
+                    title="Ít nhất 10 ký tự, có một chữ hoa và một ký tự đặc biệt"
                     value={form.password}
                   />
                 </label>

@@ -8,6 +8,11 @@ import {
   getApiErrorMessage,
   getRoleDestination,
 } from "@/lib/shop-api";
+import {
+  getPasswordPolicyError,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "@/lib/password-policy";
 import { TurnstileWidget } from "./turnstile-widget";
 import { saveAuthSession, verifyAuthSession } from "./use-auth-session";
 
@@ -52,6 +57,17 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
     event.preventDefault();
     setMessage("");
 
+    const formData = new FormData(event.currentTarget);
+    if (!isLogin) {
+      const passwordError = getPasswordPolicyError(
+        String(formData.get("password") ?? ""),
+      );
+      if (passwordError) {
+        setMessage(passwordError);
+        return;
+      }
+    }
+
     if (!turnstileToken) {
       const captchaMessage = "Vui lòng xác nhận bạn không phải người máy.";
       if (isLogin) showToast({ message: captchaMessage, type: "error" });
@@ -61,7 +77,6 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
 
     setIsSubmitting(true);
 
-    const formData = new FormData(event.currentTarget);
     const payload =
       mode === "login"
         ? {
@@ -130,7 +145,9 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         await new Promise((resolve) => setTimeout(resolve, 850));
       }
       router.replace(
-        verifiedSession.role === "USER" && returnUrl
+        verifiedSession.passwordChangeRequired
+          ? "/doi-mat-khau"
+          : verifiedSession.role === "USER" && returnUrl
           ? returnUrl
           : getRoleDestination(verifiedSession.role),
       );
@@ -210,16 +227,23 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
           <span>Mật khẩu</span>
           <input
             autoComplete={isLogin ? "current-password" : "new-password"}
-            maxLength={72}
-            minLength={6}
+            aria-describedby={isLogin ? undefined : "password-policy-help"}
+            maxLength={PASSWORD_MAX_LENGTH}
+            minLength={isLogin ? undefined : PASSWORD_MIN_LENGTH}
             name="password"
             placeholder={
-              isLogin ? "Nhập mật khẩu của bạn" : "Tạo mật khẩu từ 6 ký tự"
+              isLogin ? "Nhập mật khẩu của bạn" : "Tạo mật khẩu mạnh từ 10 ký tự"
             }
             required
             type="password"
           />
         </label>
+
+        {!isLogin ? (
+          <p className="login-popup-password-help" id="password-policy-help">
+            Ít nhất 10 ký tự, có một chữ hoa và một ký tự đặc biệt.
+          </p>
+        ) : null}
 
         <TurnstileWidget
           action={mode}

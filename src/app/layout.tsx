@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ScrollToPageTop } from "@/app/components/scroll-to-page-top";
+import { PasswordChangeGate } from "@/app/components/password-change-gate";
 import { StorefrontHeader } from "@/app/components/storefront-header";
 import { DEFAULT_SITE_SETTINGS, getPublicSiteSettings } from "@/lib/site-settings";
 import "./globals.css";
@@ -37,9 +38,11 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${storefrontFont.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <StorefrontHeader />
-        <ScrollToPageTop />
-        {children}
+        <PasswordChangeGate>
+          <StorefrontHeader />
+          <ScrollToPageTop />
+          {children}
+        </PasswordChangeGate>
       </body>
     </html>
   );

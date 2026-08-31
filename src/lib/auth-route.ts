@@ -76,6 +76,7 @@ export async function createAuthSessionResponse(
     username: backendSession.username,
     email: backendSession.email,
     role: backendSession.role,
+    passwordChangeRequired: backendSession.passwordChangeRequired,
   };
   const response = NextResponse.json(clientSession, {
     status: backendResponse.status,
