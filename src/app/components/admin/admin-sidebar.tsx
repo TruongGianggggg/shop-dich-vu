@@ -12,6 +12,7 @@ import {
   ScrollText,
   Users,
   Gem,
+  ServerCog,
 } from "lucide-react";
 
 type AdminSection =
@@ -23,6 +24,7 @@ type AdminSection =
   | "currency-orders"
   | "active-orders"
   | "orders"
+  | "vps"
   | "deposits"
   | "banks"
   | "activity-logs"
@@ -70,6 +72,12 @@ const navItems = [
     icon: ClipboardList,
     label: "Đơn hàng",
     section: "orders",
+  },
+  {
+    href: "/admin/vps",
+    icon: ServerCog,
+    label: "VPS Agency",
+    section: "vps",
   },
   {
     href: "/admin/currency-orders",

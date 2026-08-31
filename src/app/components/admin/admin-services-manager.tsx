@@ -116,6 +116,7 @@ const serviceTypes = [
   "TOPUP_CAROT",
   "TOPUP_GOLD",
   "TOPUP_GEM",
+  "VPS",
   "TOPUP_LIEN_QUAN_QUAN_HUY",
   "TOPUP_FREE_FIRE_DIAMOND",
   "TOPUP_THE9P",
@@ -2192,6 +2193,7 @@ function StatusPill({ active }: { active: boolean }) {
 }
 
 function serviceTypeLabel(type: string) {
+  if (type === "VPS") return "Dịch vụ VPS";
   if (type === "TOPUP_CAROT") return "Nạp Carot";
   if (type === "TOPUP_GOLD") return "Nạp Thỏi Vàng";
   if (type === "TOPUP_GEM") return "Nạp Ngọc";

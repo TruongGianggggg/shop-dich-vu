@@ -3,16 +3,23 @@ import { ServiceSubCategory } from "@/lib/shop-api";
 
 export function ReferenceServiceCard({ service }: { service: ServiceSubCategory }) {
   const href = serviceHref(service);
+  const serviceImage = service.imageUrl
+    ? `url(${JSON.stringify(service.imageUrl)})`
+    : null;
   const actionLabel = service.type === "TOPUP_GOLD" || service.type === "TOPUP_GEM"
     ? "Nạp ngay"
     : "Xem Tất Cả";
   return (
     <article className="reference-service-card">
       <div
-        className="reference-service-image"
+        className={serviceImage
+          ? "reference-service-image has-image"
+          : "reference-service-image"}
         style={
-          service.imageUrl
-            ? { backgroundImage: `url(${JSON.stringify(service.imageUrl)})` }
+          serviceImage
+            ? {
+                backgroundImage: `${serviceImage}, linear-gradient(rgba(15, 23, 42, 0.28), rgba(15, 23, 42, 0.28)), ${serviceImage}`,
+              }
             : undefined
         }
       >

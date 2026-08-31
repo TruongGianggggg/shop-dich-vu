@@ -85,6 +85,11 @@ export function StorefrontHeader() {
             <Link className={pathname === "/thong-bao" ? "is-active" : ""} href="/thong-bao">
               Thông báo
             </Link>
+            {session ? (
+              <Link className={pathname.startsWith("/vps-cua-toi") ? "is-active" : ""} href="/vps-cua-toi">
+                VPS của tôi
+              </Link>
+            ) : null}
             {session?.role === "COLLABORATOR" ? (
               <Link className={pathname.startsWith("/cong-tac-vien") ? "is-active" : ""} href="/cong-tac-vien">
                 Quản lý CTV

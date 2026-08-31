@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SafeRichText } from "@/app/components/safe-rich-text";
+import { RoleGate } from "@/app/components/role-gate";
 import { ServiceOrderForm } from "@/app/components/service-order-form";
+import { UserVpsManager } from "@/app/components/vps/user-vps-manager";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   ServiceCategory,
@@ -73,6 +75,17 @@ export default async function ServiceDetailPage({
   }
   if (data.service.type === "TOPUP_GEM") {
     redirect("/nap-ngoc");
+  }
+  if (data.service.type === "VPS") {
+    return (
+      <RoleGate allowedRoles={["USER", "COLLABORATOR", "ADMIN"]}>
+        <UserVpsManager
+          serviceName={data.service.name}
+          showHistory={false}
+          subCategoryId={data.service.id}
+        />
+      </RoleGate>
+    );
   }
 
   return (

@@ -68,6 +68,11 @@ export function AccountActions() {
             onClick={() => setIsOpen(false)}
           />
           <AccountMenuLink
+            href="/vps-cua-toi"
+            label="VPS của tôi"
+            onClick={() => setIsOpen(false)}
+          />
+          <AccountMenuLink
             href="/lich-su-vang-ngoc"
             label="Lịch sử Thỏi vàng & Ngọc"
             onClick={() => setIsOpen(false)}

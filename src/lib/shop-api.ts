@@ -421,6 +421,89 @@ export type GameNotificationFilters = {
   eventTypes: string[];
 };
 
+export type VpsOrderStatus =
+  | "PENDING"
+  | "ACTIVE"
+  | "REVIEW"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED";
+
+export type VpsPlan = {
+  id: string;
+  providerProductId: string;
+  subCategoryId: string;
+  name: string;
+  description: string;
+  billingCycle: string;
+  price: number;
+  addonCpuPrice: number;
+  addonRamPrice: number;
+  addonDiskPricePer10Gb: number;
+  active: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type VpsPlanPayload = Omit<
+  VpsPlan,
+  "id" | "subCategoryId" | "createdAt" | "updatedAt"
+>;
+
+export type VpsOrder = {
+  id: string;
+  requestId: string;
+  userId: string;
+  customerUsername: string;
+  planId: string;
+  planName: string;
+  providerProductId: string;
+  billingCycle: string;
+  osId: number;
+  addonCpu: number;
+  addonRam: number;
+  addonDisk: number;
+  amount: number;
+  providerTotal: number | null;
+  providerCredit: number | null;
+  status: VpsOrderStatus;
+  providerVpsId: string | null;
+  providerStatus: string | null;
+  ipAddress: string | null;
+  vpsUsername: string | null;
+  providerCreatedAt: string | null;
+  nextDueAt: string | null;
+  specialProduct: boolean;
+  walletRefunded: boolean;
+  providerMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type VpsCredentials = { username: string; password: string };
+
+export type VpsOption = {
+  id: string;
+  label: string;
+  raw: unknown;
+};
+
+export type VpsOptions = {
+  operatingSystems: VpsOption[];
+  billingCycles: VpsOption[];
+};
+
+export type VpsProviderInfo = {
+  configured: boolean;
+  agencyName: string | null;
+  totalService: number | null;
+  credit: number | null;
+  totalExpenses: number | null;
+  totalCredit: number | null;
+  raw: unknown;
+};
+
 export const AUTH_STORAGE_KEY = "shop-game-auth";
 
 export function getApiErrorMessage(data: unknown, fallback: string) {

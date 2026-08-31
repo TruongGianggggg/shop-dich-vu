@@ -521,6 +521,14 @@
   transition: filter .25s ease, transform .3s ease;
 }
 
+/* Keep the complete source image visible. A dimmed cover layer fills any
+   letterbox space when uploaded images do not share the card's 16:9 ratio. */
+.reference-service-row .reference-service-image.has-image {
+  background-position: center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: contain, cover, cover;
+}
+
 .reference-service-row .reference-card-content {
   background: #fff;
   border-radius: 0 0 10px 10px;
