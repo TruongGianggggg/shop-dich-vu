@@ -14,7 +14,6 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import nodemailer from "nodemailer";
 
 export const ADMIN_ACCESS_COOKIE_NAME = "shop_admin_access";
 export const ADMIN_OTP_CHALLENGE_COOKIE_NAME = "shop_admin_otp_challenge";
@@ -69,7 +68,11 @@ export const adminOtpChallengeCookieOptions = {
   secure: process.env.NODE_ENV === "production",
 };
 
-export async function createAndSendAdminOtp(userId: string) {
+export async function createAndSendAdminOtp(
+  userId: string,
+  recipientEmail: string,
+  deliverCode: (code: string) => Promise<void>,
+) {
   if (isAdminOtpAccountLocked(userId)) {
     const error = new Error("ADMIN_OTP_ACCOUNT_LOCKED");
     error.name = "AdminOtpAccountLockedError";
@@ -91,7 +94,7 @@ export async function createAndSendAdminOtp(userId: string) {
     if (retryAfterSeconds > 0 && now < activeChallenge.createdAt + RESEND_COOLDOWN_MS) {
       return {
         challengeId: activeChallenge.id,
-        email: maskEmail(getAdminOtpEmail()),
+        email: maskEmail(recipientEmail),
         expiresIn: Math.max(1, Math.ceil((activeChallenge.expiresAt - now) / 1000)),
         retryAfterSeconds,
         sent: false,
@@ -120,7 +123,7 @@ export async function createAndSendAdminOtp(userId: string) {
   state.challenges.set(challengeId, challenge);
 
   try {
-    await sendOtpEmail(code);
+    await deliverCode(code);
   } catch (error) {
     state.challenges.delete(challengeId);
     throw error;
@@ -131,7 +134,7 @@ export async function createAndSendAdminOtp(userId: string) {
 
   return {
     challengeId,
-    email: maskEmail(getAdminOtpEmail()),
+    email: maskEmail(recipientEmail),
     expiresIn: Math.floor(OTP_TTL_MS / 1000),
     retryAfterSeconds: Math.floor(RESEND_COOLDOWN_MS / 1000),
     sent: true,
@@ -320,52 +323,6 @@ function getOtpSecret() {
     throw new Error("ADMIN_OTP_SECRET must contain at least 32 characters.");
   }
   return secret;
-}
-
-function getAdminOtpEmail() {
-  const email = process.env.ADMIN_OTP_EMAIL?.trim();
-  if (!email) throw new Error("ADMIN_OTP_EMAIL is not configured.");
-  return email;
-}
-
-function getSmtpConfig() {
-  const host = process.env.SMTP_HOST?.trim() || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT ?? "465");
-  const user = process.env.SMTP_USER?.trim();
-  const password = process.env.SMTP_PASSWORD?.replace(/\s+/g, "");
-
-  if (!user || !password || !Number.isInteger(port)) {
-    throw new Error("SMTP configuration is incomplete.");
-  }
-
-  return { host, password, port, user };
-}
-
-async function sendOtpEmail(code: string) {
-  const { host, password, port, user } = getSmtpConfig();
-  const recipient = getAdminOtpEmail();
-  const transporter = nodemailer.createTransport({
-    auth: { pass: password, user },
-    host,
-    port,
-    secure: port === 465,
-  });
-
-  await transporter.sendMail({
-    from: process.env.MAIL_FROM?.trim() || `Shoppro247 Admin <${user}>`,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172036">
-        <h2>Xác minh truy cập Admin Panel</h2>
-        <p>Mã xác minh của bạn là:</p>
-        <div style="font-size:34px;font-weight:800;letter-spacing:8px;padding:18px;background:#f1f5f9;border-radius:10px;text-align:center">${code}</div>
-        <p>Mã có hiệu lực trong 3 phút và chỉ dùng được một lần.</p>
-        <p>Nếu bạn không yêu cầu mã này, hãy đổi mật khẩu tài khoản ngay.</p>
-      </div>
-    `,
-    subject: "[Shoppro247] Mã xác minh truy cập Admin Panel",
-    text: `Mã xác minh Admin Panel của bạn là ${code}. Mã có hiệu lực trong 3 phút và chỉ dùng được một lần.`,
-    to: recipient,
-  });
 }
 
 function maskEmail(email: string) {

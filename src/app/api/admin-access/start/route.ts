@@ -5,7 +5,11 @@ import {
   adminOtpChallengeCookieOptions,
   createAndSendAdminOtp,
 } from "@/lib/admin-otp";
-import { getAuthenticatedBackendSession } from "@/lib/backend";
+import {
+  getAuthenticatedBackendSession,
+  getBackendUrl,
+  getRequestAuthToken,
+} from "@/lib/backend";
 
 export async function POST(request: Request) {
   const session = await getAuthenticatedBackendSession(request);
@@ -21,7 +25,30 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await createAndSendAdminOtp(session.userId);
+    const token = getRequestAuthToken(request);
+    if (!token) {
+      return Response.json({ message: "Vui lòng đăng nhập lại." }, { status: 401 });
+    }
+
+    const result = await createAndSendAdminOtp(
+      session.userId,
+      session.email,
+      async (code) => {
+        const deliveryResponse = await fetch(getBackendUrl("/api/admin-access/code"), {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code }),
+          cache: "no-store",
+        });
+
+        if (!deliveryResponse.ok) {
+          throw new Error(`Backend mail delivery returned ${deliveryResponse.status}`);
+        }
+      },
+    );
     const response = NextResponse.json({
       email: result.email,
       expiresIn: result.expiresIn,
