@@ -1,9 +1,5 @@
 import "server-only";
 
-import {
-  ADMIN_ACCESS_COOKIE_NAME,
-  isAdminAccessGranted,
-} from "@/lib/admin-otp";
 import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth-cookie";
 import { AuthResponse, UserRole } from "@/lib/shop-api";
 
@@ -133,10 +129,7 @@ export async function requireAdminRequest(request: Request) {
 
   if (
     session?.role === "ADMIN" &&
-    isAdminAccessGranted(
-      getCookieValue(request, ADMIN_ACCESS_COOKIE_NAME) ?? undefined,
-      session.userId,
-    )
+    session.adminAccessGranted
   ) {
     return null;
   }

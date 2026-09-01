@@ -1,9 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  ADMIN_ACCESS_COOKIE_NAME,
-  isAdminAccessGranted,
-} from "@/lib/admin-otp";
 import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth-cookie";
 import { fetchBackendJson } from "@/lib/backend";
 import { AuthResponse } from "@/lib/shop-api";
@@ -27,14 +23,7 @@ export default async function AdminLayout({
 
   if (!session) redirect("/login");
   if (session.role !== "ADMIN") redirect("/");
-  if (
-    !isAdminAccessGranted(
-      cookieStore.get(ADMIN_ACCESS_COOKIE_NAME)?.value,
-      session.userId,
-    )
-  ) {
-    redirect("/admin-access");
-  }
+  if (!session.adminAccessGranted) redirect("/admin-access");
 
   return children;
 }

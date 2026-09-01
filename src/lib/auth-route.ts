@@ -1,11 +1,6 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
-import {
-  ADMIN_ACCESS_COOKIE_NAME,
-  ADMIN_OTP_CHALLENGE_COOKIE_NAME,
-  isAdminOtpAccountLocked,
-} from "@/lib/admin-otp";
 import { AUTH_TOKEN_COOKIE_NAME, authCookieOptions } from "@/lib/auth-cookie";
 import { appendClientRequestHeaders, getBackendUrl } from "@/lib/backend";
 import { AuthResponse } from "@/lib/shop-api";
@@ -56,19 +51,6 @@ export async function createAuthSessionResponse(
     );
   }
 
-  if (
-    backendSession.role === "ADMIN" &&
-    isAdminOtpAccountLocked(backendSession.userId)
-  ) {
-    return Response.json(
-      {
-        message:
-          "Tài khoản đã bị khóa do nhập sai mã xác minh Admin quá 3 lần.",
-      },
-      { status: 423 },
-    );
-  }
-
   const token = backendSession.token;
   const clientSession: AuthResponse = {
     expiresIn: backendSession.expiresIn,
@@ -76,6 +58,7 @@ export async function createAuthSessionResponse(
     username: backendSession.username,
     email: backendSession.email,
     role: backendSession.role,
+    adminAccessGranted: backendSession.adminAccessGranted,
     passwordChangeRequired: backendSession.passwordChangeRequired,
   };
   const response = NextResponse.json(clientSession, {
@@ -85,8 +68,8 @@ export async function createAuthSessionResponse(
     ...authCookieOptions,
     maxAge: backendSession.expiresIn,
   });
-  response.cookies.delete(ADMIN_ACCESS_COOKIE_NAME);
-  response.cookies.delete(ADMIN_OTP_CHALLENGE_COOKIE_NAME);
+  response.cookies.delete("shop_admin_access");
+  response.cookies.delete("shop_admin_otp_challenge");
   response.cookies.delete("shop_game_auth");
   return response;
 }

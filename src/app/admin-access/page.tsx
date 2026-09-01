@@ -23,6 +23,7 @@ export default async function AdminAccessPage({
 
   if (!session) redirect("/login");
   if (session.role !== "ADMIN") redirect("/");
+  if (session.adminAccessGranted) redirect("/admin");
 
   const query = await searchParams;
   const requestedNext = Array.isArray(query.next) ? query.next[0] : query.next;

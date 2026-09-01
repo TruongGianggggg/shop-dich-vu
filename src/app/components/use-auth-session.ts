@@ -33,6 +33,7 @@ function isAuthResponse(value: unknown): value is AuthResponse {
     typeof session.userId === "string" &&
     typeof session.username === "string" &&
     typeof session.email === "string" &&
+    typeof session.adminAccessGranted === "boolean" &&
     typeof session.passwordChangeRequired === "boolean" &&
     (session.role === "USER" ||
       session.role === "COLLABORATOR" ||

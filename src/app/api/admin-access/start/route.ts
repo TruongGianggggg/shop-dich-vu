@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server";
 import {
-  ADMIN_ACCESS_COOKIE_NAME,
-  ADMIN_OTP_CHALLENGE_COOKIE_NAME,
-  adminOtpChallengeCookieOptions,
-  createAndSendAdminOtp,
-} from "@/lib/admin-otp";
-import {
+  appendClientRequestHeaders,
   getAuthenticatedBackendSession,
   getBackendUrl,
   getRequestAuthToken,
 } from "@/lib/backend";
 
+const CHALLENGE_COOKIE_NAME = "shop_admin_otp_challenge";
+
+type BackendStartResponse = {
+  challengeId?: unknown;
+  email?: unknown;
+  expiresIn?: unknown;
+  message?: unknown;
+  retryAfterSeconds?: unknown;
+};
+
 export async function POST(request: Request) {
   const session = await getAuthenticatedBackendSession(request);
-
-  if (!session) {
+  const token = getRequestAuthToken(request);
+  if (!session || !token) {
     return Response.json({ message: "Vui lòng đăng nhập lại." }, { status: 401 });
   }
   if (session.role !== "ADMIN") {
@@ -25,62 +30,49 @@ export async function POST(request: Request) {
   }
 
   try {
-    const token = getRequestAuthToken(request);
-    if (!token) {
-      return Response.json({ message: "Vui lòng đăng nhập lại." }, { status: 401 });
+    const headers = new Headers({ Authorization: `Bearer ${token}` });
+    appendClientRequestHeaders(headers, request);
+    const backendResponse = await fetch(getBackendUrl("/api/admin-access/start"), {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+    const responseText = await backendResponse.text();
+    if (!backendResponse.ok) {
+      return new Response(responseText, {
+        status: backendResponse.status,
+        headers: { "Content-Type": backendResponse.headers.get("Content-Type") ?? "application/json" },
+      });
     }
 
-    const result = await createAndSendAdminOtp(
-      session.userId,
-      session.email,
-      async (code) => {
-        const deliveryResponse = await fetch(getBackendUrl("/api/admin-access/code"), {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code }),
-          cache: "no-store",
-        });
+    const result = JSON.parse(responseText) as BackendStartResponse;
+    if (typeof result.challengeId !== "string" || !result.challengeId) {
+      return Response.json(
+        { message: "Backend trả về yêu cầu xác minh không hợp lệ." },
+        { status: 502 },
+      );
+    }
 
-        if (!deliveryResponse.ok) {
-          throw new Error(`Backend mail delivery returned ${deliveryResponse.status}`);
-        }
-      },
-    );
     const response = NextResponse.json({
       email: result.email,
       expiresIn: result.expiresIn,
-      message: result.sent
-        ? "Mã xác minh đã được gửi."
-        : "Mã đã được gửi trước đó và vẫn còn hiệu lực.",
+      message: result.message,
       retryAfterSeconds: result.retryAfterSeconds,
     });
-
-    response.cookies.delete(ADMIN_ACCESS_COOKIE_NAME);
-    response.cookies.set(
-      ADMIN_OTP_CHALLENGE_COOKIE_NAME,
-      result.challengeId,
-      adminOtpChallengeCookieOptions,
-    );
+    response.cookies.set(CHALLENGE_COOKIE_NAME, result.challengeId, {
+      httpOnly: true,
+      maxAge: 3 * 60,
+      path: "/",
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+    response.cookies.delete("shop_admin_access");
     return response;
   } catch (error) {
-    console.error("Unable to send admin OTP", error);
-    const isRateLimited =
-      error instanceof Error && error.name === "OtpSendLimitError";
-    const isAccountLocked =
-      error instanceof Error && error.name === "AdminOtpAccountLockedError";
-
+    console.error("Unable to start backend Admin OTP challenge", error);
     return Response.json(
-      {
-        message: isAccountLocked
-          ? "Tài khoản đã bị khóa do nhập sai mã xác minh quá 3 lần."
-          : isRateLimited
-            ? "Bạn đã yêu cầu quá nhiều mã. Vui lòng thử lại sau 1 giờ."
-            : "Không gửi được mã xác minh. Hãy kiểm tra cấu hình SMTP.",
-      },
-      { status: isAccountLocked ? 423 : isRateLimited ? 429 : 503 },
+      { message: "Không kết nối được hệ thống gửi mã." },
+      { status: 502 },
     );
   }
 }

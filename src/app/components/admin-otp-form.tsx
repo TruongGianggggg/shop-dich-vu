@@ -146,7 +146,7 @@ export function AdminOtpForm({ next }: { next: string }) {
       </div>
 
       <p className="admin-access-footnote">
-        Mã hết hạn sau 3 phút. Nhập sai 3 lần sẽ khóa tài khoản.
+        Mã hết hạn sau 3 phút. Nhập sai 3 lần sẽ khóa xác minh trong 15 phút.
       </p>
     </section>
   );
