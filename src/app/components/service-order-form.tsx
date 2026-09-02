@@ -128,6 +128,7 @@ export function ServiceOrderForm({
           packageId: selectedPackage.id,
           username: account,
           password: String(formData.get("password") ?? ""),
+          contactInfo: String(formData.get("contactInfo") ?? "").trim(),
           server,
           note,
         }
@@ -261,17 +262,33 @@ export function ServiceOrderForm({
             </label>
           )}
           {isManualService ? (
-            <label className="detail-field">
-              <span>Mật Khẩu</span>
-              <input
-                autoComplete="new-password"
-                maxLength={120}
-                name="password"
-                placeholder="Nhập mật khẩu của tài khoản"
-                required
-                type="password"
-              />
-            </label>
+            <>
+              <label className="detail-field">
+                <span>Mật Khẩu</span>
+                <input
+                  autoComplete="new-password"
+                  maxLength={120}
+                  name="password"
+                  placeholder="Nhập mật khẩu của tài khoản"
+                  required
+                  type="password"
+                />
+              </label>
+              <label className="detail-field detail-field-wide">
+                <span>SĐT hoặc link Facebook</span>
+                <input
+                  autoComplete="tel"
+                  maxLength={500}
+                  name="contactInfo"
+                  placeholder="Nhập số điện thoại hoặc link Facebook để được hỗ trợ"
+                  required
+                  type="text"
+                />
+                <small className="detail-field-helper">
+                  Dùng để liên hệ hỗ trợ khi đơn hàng cần thêm thông tin.
+                </small>
+              </label>
+            </>
           ) : null}
           <label className="detail-field detail-field-wide">
             <span>Server</span>

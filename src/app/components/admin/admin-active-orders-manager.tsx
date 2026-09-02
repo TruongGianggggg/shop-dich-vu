@@ -175,6 +175,7 @@ export function AdminActiveOrdersManager() {
                 <Detail label="Dịch vụ" value={selectedOrder.serviceName} />
                 <Detail label="Khách hàng" value={selectedOrder.customerUsername || "Không có"} />
                 <Detail label="Tài khoản nhận" value={selectedOrder.accountName || "Không có"} />
+                <Detail label="SĐT / Facebook" value={selectedOrder.contactInfo || "Không có"} />
                 <Detail label="Server" value={selectedOrder.serverName || "Không có"} />
                 <Detail label="Thanh toán" value={formatVnd(selectedOrder.paymentAmount)} />
                 <Detail label="Thực nhận" value={selectedOrder.receivedAmount == null ? "Theo gói dịch vụ" : selectedOrder.receivedAmount.toLocaleString("vi-VN")} />

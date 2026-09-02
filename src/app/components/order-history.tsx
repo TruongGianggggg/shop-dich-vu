@@ -237,6 +237,7 @@ export function OrderHistory() {
                       <div><small>Dịch vụ đã mua</small><strong>{order.serviceName ?? serviceTypeLabel(order.type)}</strong></div>
                       <div><small>Mã gói</small><strong>{order.packageId}</strong></div>
                       <div><small>Cập nhật lúc</small><strong>{formatDate(order.updatedAt)}</strong></div>
+                      {order.contactInfo ? <div><small>SĐT / Facebook hỗ trợ</small><strong>{order.contactInfo}</strong></div> : null}
                       <div><small>Ghi chú</small><strong>{order.note ?? "Không có ghi chú"}</strong></div>
                       {order.externalMessage ? <p>{order.externalMessage}</p> : null}
                     </div>

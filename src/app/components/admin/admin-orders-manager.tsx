@@ -618,6 +618,7 @@ export function AdminOrdersManager() {
                 <div className="admin-order-compact-grid">
                   <CompactRow label="Tài khoản game" value={detailOrder.username ?? "Không có"} />
                   <CompactRow label="Mật khẩu" value={detailOrder.password ?? "Không có"} />
+                  <CompactRow label="SĐT / Facebook" value={detailOrder.contactInfo ?? "Không có"} />
                   <CompactRow label="Server" value={detailOrder.server ?? "Không có"} />
                   <CompactRow label="User ID" value={detailOrder.userId ?? "Không có"} />
                 </div>

@@ -202,6 +202,7 @@ function OrderCard({ busy, mode, onAction, order }: {
       <dl>
         <div><dt>Tài khoản game</dt><dd>{order.username ?? "—"}</dd></div>
         <div><dt>Mật khẩu</dt><dd>{order.password ?? "—"}</dd></div>
+        <div><dt>SĐT / Facebook</dt><dd>{order.contactInfo ?? "—"}</dd></div>
         <div><dt>Máy chủ</dt><dd>{order.server ?? "—"}</dd></div>
         <div><dt>Giá trị đơn</dt><dd>{formatVnd(order.amount)}</dd></div>
         {mode === "received" ? <div><dt>Hoa hồng dự kiến</dt><dd>{earning == null ? "—" : formatVnd(earning)}</dd></div> : null}

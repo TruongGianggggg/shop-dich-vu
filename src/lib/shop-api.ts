@@ -38,6 +38,7 @@ export type AdminActiveOrder = {
   serviceName: string;
   customerUsername: string | null;
   accountName: string | null;
+  contactInfo: string | null;
   serverName: string | null;
   paymentAmount: number;
   receivedAmount: number | null;
@@ -165,6 +166,7 @@ export type ServiceOrder = {
   the9pOrderCode: string | null;
   username: string | null;
   password: string | null;
+  contactInfo: string | null;
   server: string | null;
   note: string | null;
   adminNote: string | null;
