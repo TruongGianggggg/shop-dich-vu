@@ -134,7 +134,7 @@ export function CollaboratorDashboard() {
 
   return (
     <main className="role-dashboard">
-      <CollaboratorSidebar activeTab={activeTab} />
+      <CollaboratorSidebar active={activeTab} />
       <section className="role-main collaborator-role-main">
       <div className="collaborator-main">
       <section className="collaborator-hero">

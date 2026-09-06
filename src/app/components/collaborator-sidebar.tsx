@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeDollarSign, ClipboardList, UserCheck } from "lucide-react";
+import { BadgeDollarSign, ClipboardList, History, Landmark, UserCheck } from "lucide-react";
 
-export function CollaboratorSidebar({ activeTab }: { activeTab: "available" | "received" }) {
+type CollaboratorSection = "available" | "received" | "withdraw" | "withdraw-history";
+
+export function CollaboratorSidebar({ active }: { active: CollaboratorSection }) {
   return (
     <aside className="role-sidebar">
       <Link className="role-brand" href="/">
@@ -14,13 +16,21 @@ export function CollaboratorSidebar({ activeTab }: { activeTab: "available" | "r
       <div className="role-nav-block">
         <p>QUẢN TRỊ CTV</p>
         <nav className="role-nav">
-          <Link className={activeTab === "available" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=available">
+          <Link className={active === "available" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=available">
             <span aria-hidden="true"><ClipboardList size={16} strokeWidth={2.2} /></span>
             Đơn có thể nhận
           </Link>
-          <Link className={activeTab === "received" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=received">
+          <Link className={active === "received" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=received">
             <span aria-hidden="true"><UserCheck size={16} strokeWidth={2.2} /></span>
             Đơn của tôi
+          </Link>
+          <Link className={active === "withdraw" ? "role-nav-link active" : "role-nav-link"} href="/ctv/rut-tien">
+            <span aria-hidden="true"><Landmark size={16} strokeWidth={2.2} /></span>
+            Rút tiền CTV
+          </Link>
+          <Link className={active === "withdraw-history" ? "role-nav-link active" : "role-nav-link"} href="/ctv/lich-su-rut-tien">
+            <span aria-hidden="true"><History size={16} strokeWidth={2.2} /></span>
+            Lịch sử rút tiền
           </Link>
         </nav>
       </div>

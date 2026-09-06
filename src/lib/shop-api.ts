@@ -340,6 +340,23 @@ export type CollaboratorServiceDiscount = {
   updatedAt: string;
 };
 
+export type CollaboratorWithdrawalStatus = "PENDING" | "PAID" | "REJECTED";
+
+export type CollaboratorWithdrawal = {
+  id: string;
+  code: string;
+  collaboratorId: string;
+  collaboratorUsername: string;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  amount: number;
+  status: CollaboratorWithdrawalStatus;
+  adminNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ServiceSubCategoryPayload = {
   parentId: string;
   name: string;
