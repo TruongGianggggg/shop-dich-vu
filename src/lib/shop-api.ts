@@ -406,6 +406,15 @@ export type GameServerCurrencyConfigPayload = Omit<
   "id"
 >;
 
+export type CollaboratorCurrencyServer = GameServerCurrencyConfig & {
+  collaboratorUsername: string;
+};
+
+export type CurrencyServerCatalogItem = GameServerCurrencyConfig & {
+  source: "ADMIN" | "COLLABORATOR";
+  ownerUsername: string | null;
+};
+
 export type GameCurrencyType = "GOLD" | "GEM";
 
 export type GameCurrencyDisplaySettings = {

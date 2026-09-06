@@ -6,7 +6,7 @@ import { fetchBackendJson } from "@/lib/backend";
 import {
   GameCurrencyDisplaySettings,
   GameCurrencyType,
-  GameServerCurrencyConfig,
+  CurrencyServerCatalogItem,
   ServiceCategory,
   ServiceSubCategory,
 } from "@/lib/shop-api";
@@ -71,8 +71,8 @@ async function getCurrencySettings(): Promise<GameCurrencyDisplaySettings> {
 
 async function getConfigs(currencyType: GameCurrencyType) {
   try {
-    const configs = await fetchBackendJson<GameServerCurrencyConfig[]>(
-      "/api/currency-servers?activeOnly=true",
+    const configs = await fetchBackendJson<CurrencyServerCatalogItem[]>(
+      "/api/currency-server-catalog",
     );
     return configs.filter((item) =>
       currencyType === "GOLD" ? item.goldEnabled : item.gemEnabled,

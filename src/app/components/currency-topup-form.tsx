@@ -10,7 +10,7 @@ import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
   GameCurrencyOrder,
   GameCurrencyType,
-  GameServerCurrencyConfig,
+  CurrencyServerCatalogItem,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
@@ -20,7 +20,7 @@ export function CurrencyTopupForm({
   configs,
 }: {
   currencyType: GameCurrencyType;
-  configs: GameServerCurrencyConfig[];
+  configs: CurrencyServerCatalogItem[];
 }) {
   const router = useRouter();
   const session = useAuthSession();
@@ -62,7 +62,7 @@ export function CurrencyTopupForm({
     const formData = new FormData(event.currentTarget);
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/currency-orders", {
+      const response = await fetch(selectedConfig.source === "COLLABORATOR" ? "/api/collaborator-currency-orders" : "/api/currency-orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,7 +126,7 @@ export function CurrencyTopupForm({
             }}
             value={selectedConfigId}
           >
-            {configs.map((config) => <option key={config.id} value={config.id}>{config.name}</option>)}
+            {configs.map((config) => <option key={config.id} value={config.id}>{config.name}{config.ownerUsername ? ` · CTV ${config.ownerUsername}` : ""}</option>)}
           </select>
         </label>
         <label>
@@ -166,12 +166,12 @@ export function CurrencyTopupForm({
   );
 }
 
-function currencyAmount(config: GameServerCurrencyConfig | null | undefined, type: GameCurrencyType) {
+function currencyAmount(config: CurrencyServerCatalogItem | null | undefined, type: GameCurrencyType) {
   if (!config) return 0;
   return type === "GOLD" ? config.goldAmount : config.gemAmount;
 }
 
-function currencyPrice(config: GameServerCurrencyConfig | null | undefined, type: GameCurrencyType) {
+function currencyPrice(config: CurrencyServerCatalogItem | null | undefined, type: GameCurrencyType) {
   if (!config) return 0;
   return type === "GOLD" ? config.goldPrice : config.gemPrice;
 }
