@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Coins,
+  Gem,
   LockOpen,
   Pencil,
   Plus,
@@ -1111,6 +1112,7 @@ export function AdminUsersManager() {
                   <CurrencyPolicyOption
                     checked={currencyPolicy.goldSellingEnabled}
                     discount={currencyPolicy.goldDiscountPercent}
+                    icon="gold"
                     label="Cho phép bán Vàng"
                     onChecked={(checked) => setCurrencyPolicy((current) => ({ ...current, goldSellingEnabled: checked }))}
                     onDiscount={(value) => setCurrencyPolicy((current) => ({ ...current, goldDiscountPercent: value }))}
@@ -1118,6 +1120,7 @@ export function AdminUsersManager() {
                   <CurrencyPolicyOption
                     checked={currencyPolicy.gemSellingEnabled}
                     discount={currencyPolicy.gemDiscountPercent}
+                    icon="gem"
                     label="Cho phép bán Ngọc"
                     onChecked={(checked) => setCurrencyPolicy((current) => ({ ...current, gemSellingEnabled: checked }))}
                     onDiscount={(value) => setCurrencyPolicy((current) => ({ ...current, gemDiscountPercent: value }))}
@@ -1139,17 +1142,33 @@ export function AdminUsersManager() {
   );
 }
 
-function CurrencyPolicyOption({ checked, discount, label, onChecked, onDiscount }: {
+function CurrencyPolicyOption({ checked, discount, icon, label, onChecked, onDiscount }: {
   checked: boolean;
   discount: string;
+  icon: "gold" | "gem";
   label: string;
   onChecked: (checked: boolean) => void;
   onDiscount: (value: string) => void;
 }) {
-  return <div className={checked ? "collaborator-currency-policy-option is-enabled" : "collaborator-currency-policy-option"}>
-    <label><input checked={checked} onChange={(event) => onChecked(event.target.checked)} type="checkbox" /><span><strong>{label}</strong><small>CTV chỉ được tạo server và nhận đơn khi quyền này đang bật.</small></span></label>
-    <label className="collaborator-currency-policy-discount"><span>Chiết khấu admin</span><span><input disabled={!checked} inputMode="numeric" max="100" min="0" onChange={(event) => onDiscount(event.target.value.replace(/\D/g, ""))} type="number" value={discount} />%</span></label>
-  </div>;
+  return <article className={checked ? "currency-access-card is-enabled" : "currency-access-card"}>
+    <div className={`currency-access-icon ${icon}`} aria-hidden="true">
+      {icon === "gold" ? <Coins size={22} /> : <Gem size={22} />}
+    </div>
+    <div className="currency-access-copy">
+      <strong>{label}</strong>
+      <small>CTV được tạo server và nhận đơn loại này khi quyền đang bật.</small>
+    </div>
+    <label className="currency-access-switch">
+      <input checked={checked} onChange={(event) => onChecked(event.target.checked)} type="checkbox" />
+      <span aria-hidden="true" />
+      <em>{checked ? "Đang bật" : "Đang tắt"}</em>
+    </label>
+    <label className="currency-access-discount">
+      <span>Chiết khấu admin</span>
+      <span className="currency-access-input"><input disabled={!checked} inputMode="numeric" max="100" min="0" onChange={(event) => onDiscount(event.target.value.replace(/\D/g, ""))} type="number" value={discount} /><b>%</b></span>
+      <small>CTV nhận {Math.max(0, 100 - Number(discount || 0))}% giá trị đơn</small>
+    </label>
+  </article>;
 }
 
 function SortableUserHeader({

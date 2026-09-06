@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeDollarSign, ClipboardList, Coins, History, Landmark, ReceiptText, UserCheck } from "lucide-react";
+import { ClipboardList, Coins, History, Landmark, ReceiptText, UserCheck } from "lucide-react";
 
 type CollaboratorSection = "available" | "received" | "currency-settings" | "currency-orders" | "withdraw" | "withdraw-history";
 
@@ -41,12 +41,6 @@ export function CollaboratorSidebar({ active }: { active: CollaboratorSection })
             Lịch sử rút tiền
           </Link>
         </nav>
-      </div>
-
-      <div className="role-sidebar-widget">
-        <p>PHẠM VI CÔNG VIỆC</p>
-        <strong><BadgeDollarSign aria-hidden="true" size={18} /> Theo dịch vụ được giao</strong>
-        <span>Bạn chỉ thấy và nhận được đơn thuộc các gói dịch vụ admin đã phân công.</span>
       </div>
     </aside>
   );
