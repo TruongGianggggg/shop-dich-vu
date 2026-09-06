@@ -47,12 +47,17 @@ export async function proxyBackendResponse(
 
   const headers = new Headers();
   const contentType = request.headers.get("Content-Type");
+  const turnstileToken = request.headers.get("X-Turnstile-Token");
   const token = getRequestAuthToken(request);
 
   headers.set("Accept", options?.accept ?? "application/json");
 
   if (contentType) {
     headers.set("Content-Type", contentType);
+  }
+
+  if (turnstileToken) {
+    headers.set("X-Turnstile-Token", turnstileToken);
   }
 
   if (token) {

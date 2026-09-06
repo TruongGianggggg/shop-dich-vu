@@ -239,6 +239,15 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
           />
         </label>
 
+        {isLogin ? (
+          <Link
+            className="login-popup-forgot"
+            href={`/quen-mat-khau${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
+          >
+            Quên mật khẩu?
+          </Link>
+        ) : null}
+
         {!isLogin ? (
           <p className="login-popup-password-help" id="password-policy-help">
             Ít nhất 10 ký tự, có một chữ hoa và một ký tự đặc biệt.

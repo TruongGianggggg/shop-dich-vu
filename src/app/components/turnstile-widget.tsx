@@ -29,7 +29,7 @@ declare global {
 }
 
 type TurnstileWidgetProps = {
-  action: "login" | "register";
+  action: "forgot_password" | "login" | "register" | "reset_password";
   onTokenChange(token: string): void;
   resetKey: number;
   siteKey: string;
