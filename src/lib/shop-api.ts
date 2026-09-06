@@ -330,6 +330,16 @@ export type ServicePackage = {
   active: boolean;
 };
 
+export type CollaboratorServiceDiscount = {
+  id: string;
+  collaboratorId: string;
+  packageId: string;
+  discountPercent: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ServiceSubCategoryPayload = {
   parentId: string;
   name: string;

@@ -12,6 +12,7 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
+  ShieldCheck,
   Trash2,
   Users,
   X,
@@ -21,9 +22,12 @@ import { createPortal } from "react-dom";
 import {
   AdminUser,
   AuthResponse,
+  CollaboratorServiceDiscount,
   formatVnd,
   getApiErrorMessage,
   PageResponse,
+  ServiceCategory,
+  ServicePackage,
   UserRole,
 } from "@/lib/shop-api";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
@@ -66,6 +70,10 @@ const emptyForm = {
   balance: "",
 };
 
+type CollaboratorPackage = ServicePackage & {
+  serviceName: string;
+};
+
 export function AdminUsersManager() {
   const session = useAuthSession();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -86,6 +94,11 @@ export function AdminUsersManager() {
   const [form, setForm] = useState(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [servicesUser, setServicesUser] = useState<AdminUser | null>(null);
+  const [collaboratorPackages, setCollaboratorPackages] = useState<CollaboratorPackage[]>([]);
+  const [serviceAssignments, setServiceAssignments] = useState<Record<string, string>>({});
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
+  const [isSavingServices, setIsSavingServices] = useState(false);
 
   const canLoad = session?.role === "ADMIN";
 
@@ -463,6 +476,113 @@ export function AdminUsersManager() {
     }
   }
 
+  async function openCollaboratorServices(user: AdminUser) {
+    if (!session) return;
+    setServicesUser(user);
+    setCollaboratorPackages([]);
+    setServiceAssignments({});
+    setIsLoadingServices(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const [categoryResponse, discountResponse] = await Promise.all([
+        fetch("/api/admin/service-categories", { headers: authHeaders(session) }),
+        fetch(`/api/admin/collaborators/${encodeURIComponent(user.id)}/service-discounts`, {
+          headers: authHeaders(session),
+        }),
+      ]);
+      const [categoryData, discountData] = await Promise.all([
+        readResponseJson(categoryResponse),
+        readResponseJson(discountResponse),
+      ]);
+      if (!categoryResponse.ok) {
+        throw new Error(getApiErrorMessage(categoryData, "Không tải được danh mục dịch vụ."));
+      }
+      if (!discountResponse.ok) {
+        throw new Error(getApiErrorMessage(discountData, "Không tải được dịch vụ đã giao."));
+      }
+
+      const categories = normalizeList<ServiceCategory>(categoryData);
+      const serviceGroups = categories.flatMap((category) =>
+        (category.children ?? [])
+          .filter((child) => child.active && child.type === "GAME_SERVICE")
+          .map((child) => ({ id: child.id, name: `${category.name} / ${child.name}` })),
+      );
+      const packageResults = await Promise.all(
+        serviceGroups.map(async (group) => {
+          const response = await fetch(
+            `/api/admin/service-packages?subCategoryId=${encodeURIComponent(group.id)}`,
+            { headers: authHeaders(session) },
+          );
+          const data = await readResponseJson(response);
+          if (!response.ok) {
+            throw new Error(getApiErrorMessage(data, `Không tải được gói ${group.name}.`));
+          }
+          return normalizeList<ServicePackage>(data)
+            .filter((item) => item.active)
+            .map((item) => ({ ...item, serviceName: group.name }));
+        }),
+      );
+      const discounts = normalizeList<CollaboratorServiceDiscount>(discountData);
+      setCollaboratorPackages(packageResults.flat().sort((a, b) =>
+        a.serviceName.localeCompare(b.serviceName, "vi") || a.displayOrder - b.displayOrder,
+      ));
+      setServiceAssignments(Object.fromEntries(
+        discounts.filter((item) => item.active).map((item) => [item.packageId, String(item.discountPercent)]),
+      ));
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không tải được cấu hình dịch vụ CTV.");
+      setServicesUser(null);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  }
+
+  function toggleServicePackage(packageId: string) {
+    setServiceAssignments((current) => {
+      const next = { ...current };
+      if (packageId in next) delete next[packageId];
+      else next[packageId] = "0";
+      return next;
+    });
+  }
+
+  async function saveCollaboratorServices() {
+    if (!servicesUser || !session) return;
+    const assignments = Object.entries(serviceAssignments).map(([packageId, value]) => ({
+      packageId,
+      discountPercent: Number(value),
+    }));
+    if (assignments.some((item) => !Number.isInteger(item.discountPercent) || item.discountPercent < 0 || item.discountPercent > 100)) {
+      setError("Chiết khấu của mỗi gói phải là số nguyên từ 0 đến 100%.");
+      return;
+    }
+
+    setIsSavingServices(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `/api/admin/collaborators/${encodeURIComponent(servicesUser.id)}/service-discounts`,
+        {
+          method: "PUT",
+          headers: { ...authHeaders(session), "Content-Type": "application/json" },
+          body: JSON.stringify({ assignments }),
+        },
+      );
+      const data = await readResponseJson(response);
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Không lưu được dịch vụ CTV."));
+      }
+      setMessage(`Đã giao ${assignments.length} gói dịch vụ cho ${servicesUser.username}.`);
+      setServicesUser(null);
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không lưu được dịch vụ CTV.");
+    } finally {
+      setIsSavingServices(false);
+    }
+  }
+
   return (
     <main className="role-dashboard">
       <AdminSidebar active="users" />
@@ -643,6 +763,16 @@ export function AdminUsersManager() {
                     <td>{formatDate(user.createdAt)}</td>
                     <td>
                       <div className="admin-users-actions">
+                        {user.role === "COLLABORATOR" ? (
+                          <button
+                            className="ghost-button h-9 px-3"
+                            onClick={() => void openCollaboratorServices(user)}
+                            type="button"
+                          >
+                            <ShieldCheck aria-hidden="true" size={15} />
+                            Giao dịch vụ
+                          </button>
+                        ) : null}
                         {user.loginPermanentlyLocked ||
                         isLoginLocked(user.loginLockedUntil) ||
                         user.failedLoginAttempts > 0 ? (
@@ -848,6 +978,55 @@ export function AdminUsersManager() {
         </div>,
         document.body,
       ) : null}
+
+      {servicesUser && typeof document !== "undefined" ? createPortal(
+        <div className="admin-user-modal" role="presentation">
+          <button aria-label="Đóng cấu hình dịch vụ" className="admin-user-modal-backdrop" onClick={() => setServicesUser(null)} type="button" />
+          <section aria-modal="true" className="admin-user-modal-panel collaborator-services-modal" role="dialog">
+            <div className="admin-user-modal-header">
+              <div>
+                <h2>Giao dịch vụ cho cộng tác viên</h2>
+                <p>{servicesUser.username} chỉ thấy và nhận đơn thuộc các gói được chọn.</p>
+              </div>
+              <button aria-label="Đóng" className="admin-user-modal-close" onClick={() => setServicesUser(null)} type="button"><X aria-hidden="true" size={18} /></button>
+            </div>
+            <div className="collaborator-service-list">
+              {isLoadingServices ? <p className="collaborator-service-empty">Đang tải danh sách dịch vụ...</p> : null}
+              {!isLoadingServices && collaboratorPackages.length === 0 ? <p className="collaborator-service-empty">Chưa có gói dịch vụ game đang hoạt động.</p> : null}
+              {collaboratorPackages.map((item) => {
+                const selected = item.id in serviceAssignments;
+                return (
+                  <label className={selected ? "collaborator-service-option is-selected" : "collaborator-service-option"} key={item.id}>
+                    <input checked={selected} onChange={() => toggleServicePackage(item.id)} type="checkbox" />
+                    <span><small>{item.serviceName}</small><strong>{item.name}</strong><em>Giá khách: {formatVnd(item.price)}</em></span>
+                    <span className="collaborator-discount-field">
+                      Chiết khấu
+                      <input
+                        disabled={!selected}
+                        inputMode="numeric"
+                        max="100"
+                        min="0"
+                        onChange={(event) => setServiceAssignments((current) => ({ ...current, [item.id]: event.target.value.replace(/\D/g, "") }))}
+                        type="number"
+                        value={serviceAssignments[item.id] ?? ""}
+                      />
+                      %
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="admin-user-modal-actions">
+              <button className="ghost-button h-11 px-5" disabled={isSavingServices} onClick={() => setServicesUser(null)} type="button">Hủy</button>
+              <button className="primary-button h-11 px-5" disabled={isLoadingServices || isSavingServices} onClick={() => void saveCollaboratorServices()} type="button">
+                <ShieldCheck aria-hidden="true" size={16} />
+                {isSavingServices ? "Đang lưu..." : "Lưu dịch vụ được giao"}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body,
+      ) : null}
     </main>
   );
 }
@@ -919,4 +1098,12 @@ function formatDate(value: string) {
 
 function isLoginLocked(value: string | null) {
   return Boolean(value && new Date(value).getTime() > Date.now());
+}
+
+function normalizeList<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object" && "content" in data && Array.isArray((data as { content?: unknown }).content)) {
+    return (data as { content: T[] }).content;
+  }
+  return [];
 }

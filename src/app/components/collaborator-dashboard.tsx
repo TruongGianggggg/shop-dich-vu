@@ -12,6 +12,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { useUserBalance } from "@/app/components/use-user-balance";
+import { CollaboratorSidebar } from "@/app/components/collaborator-sidebar";
 import {
   formatVnd,
   getApiErrorMessage,
@@ -68,9 +69,16 @@ export function CollaboratorDashboard() {
   }, []);
 
   useEffect(() => {
+    const requestedTab = new URLSearchParams(window.location.search).get("tab");
+    const requestedTabId = window.setTimeout(() => {
+      if (requestedTab === "received" || requestedTab === "available") {
+        setActiveTab(requestedTab);
+      }
+    }, 0);
     const initialLoadId = window.setTimeout(() => void loadOrders(), 0);
     const intervalId = window.setInterval(() => void loadOrders(false), 30_000);
     return () => {
+      window.clearTimeout(requestedTabId);
       window.clearTimeout(initialLoadId);
       window.clearInterval(intervalId);
     };
@@ -120,7 +128,10 @@ export function CollaboratorDashboard() {
   }
 
   return (
-    <main className="collaborator-main">
+    <main className="role-dashboard">
+      <CollaboratorSidebar activeTab={activeTab} />
+      <section className="role-main collaborator-role-main">
+      <div className="collaborator-main">
       <section className="collaborator-hero">
         <div>
           <p>TRUNG TÂM CỘNG TÁC VIÊN</p>
@@ -170,6 +181,8 @@ export function CollaboratorDashboard() {
             ))}
           </div>
         )}
+      </section>
+      </div>
       </section>
     </main>
   );
