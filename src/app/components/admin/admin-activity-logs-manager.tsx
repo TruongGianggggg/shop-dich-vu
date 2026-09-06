@@ -163,7 +163,7 @@ export function AdminActivityLogsManager() {
           <form className="currency-order-filter-grid activity-log-filter-grid" onSubmit={submit}>
             <label>
               <span>Từ khóa</span>
-              <input className="text-field" maxLength={180} onChange={(event) => setFilters({ ...filters, keyword: event.target.value })} placeholder="Username, IP, nội dung, đối tượng..." value={filters.keyword} />
+              <input className="text-field" maxLength={180} onChange={(event) => setFilters({ ...filters, keyword: event.target.value })} placeholder="Username, nội dung hoặc đối tượng..." value={filters.keyword} />
             </label>
             <label>
               <span>Hành động</span>

@@ -134,7 +134,7 @@ export function AdminActiveOrdersManager() {
         <section className="role-panel currency-order-filter-panel active-order-filter-panel">
           <div className="currency-order-filter-head"><div><strong>Tìm kiếm đơn</strong><span>Gồm dịch vụ game, Carot, Thỏi vàng và Ngọc</span></div></div>
           <form className="currency-order-filter-grid active-order-filter-grid" onSubmit={submitSearch}>
-            <label><span>Từ khóa</span><input className="text-field" placeholder="Mã đơn, khách hàng, tài khoản, server..." value={filters.keyword} onChange={(event) => setFilters({ ...filters, keyword: event.target.value })} /></label>
+            <label><span>Từ khóa</span><input className="text-field" placeholder="Mã đơn, username, nhân vật, server..." value={filters.keyword} onChange={(event) => setFilters({ ...filters, keyword: event.target.value })} /></label>
             <label><span>Nhóm đơn</span><select className="role-select wide" value={filters.kind} onChange={(event) => setFilters({ ...filters, kind: event.target.value })}><option value="">Tất cả dịch vụ</option><option value="SERVICE">Dịch vụ game / Carot</option><option value="CURRENCY">Thỏi vàng / Ngọc</option></select></label>
             <label><span>Trạng thái</span><select className="role-select wide" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Chờ và đang xử lý</option><option value="pending">Chờ xử lý</option><option value="processing">Đang xử lý</option></select></label>
             <label><span>Từ ngày</span><input className="text-field" type="date" value={filters.fromDate} onChange={(event) => setFilters({ ...filters, fromDate: event.target.value })} /></label>

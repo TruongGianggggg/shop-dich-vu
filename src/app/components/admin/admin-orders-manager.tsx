@@ -340,7 +340,7 @@ export function AdminOrdersManager() {
                 onChange={(event) =>
                   setFilters({ ...filters, customer: event.target.value })
                 }
-                placeholder="Username, email hoặc tài khoản game"
+                placeholder="Username hoặc email khách hàng"
                 value={filters.customer}
               />
             </label>

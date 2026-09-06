@@ -314,7 +314,7 @@ export function AdminVpsManager() {
             <div className="role-panel-head">
               <div><p className="section-kicker">Đơn hàng</p><h2>Lịch sử mua VPS</h2></div>
               <form className={styles.adminFilters} onSubmit={(event) => { event.preventDefault(); setPage(0); setAppliedKeyword(keyword.trim()); }}>
-                <input onChange={(event) => setKeyword(event.target.value)} placeholder="Mã đơn, khách, IP, VPS ID" value={keyword} />
+                <input onChange={(event) => setKeyword(event.target.value)} placeholder="Mã đơn, khách hàng, VPS ID" value={keyword} />
                 <select onChange={(event) => { setPage(0); setStatus(event.target.value as "" | VpsOrderStatus); }} value={status}>
                   <option value="">Tất cả trạng thái</option>
                   {Object.entries(statusLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
