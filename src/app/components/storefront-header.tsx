@@ -32,7 +32,7 @@ export function StorefrontHeader() {
   const pathname = usePathname();
   const session = useAuthSession();
   const [settings, setSettings] = useState<SiteSettings>(fallbackSettings);
-  const isAdminRoute = pathname.startsWith("/admin");
+  const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/ctv");
   const isAuthRoute = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export function StorefrontHeader() {
               </Link>
             ) : null}
             {session?.role === "COLLABORATOR" ? (
-              <Link className={pathname.startsWith("/cong-tac-vien") ? "is-active" : ""} href="/cong-tac-vien">
+              <Link href="/ctv">
                 Quản lý CTV
               </Link>
             ) : null}

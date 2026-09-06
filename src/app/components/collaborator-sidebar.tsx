@@ -14,11 +14,11 @@ export function CollaboratorSidebar({ activeTab }: { activeTab: "available" | "r
       <div className="role-nav-block">
         <p>QUẢN TRỊ CTV</p>
         <nav className="role-nav">
-          <Link className={activeTab === "available" ? "role-nav-link active" : "role-nav-link"} href="/cong-tac-vien?tab=available">
+          <Link className={activeTab === "available" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=available">
             <span aria-hidden="true"><ClipboardList size={16} strokeWidth={2.2} /></span>
             Đơn có thể nhận
           </Link>
-          <Link className={activeTab === "received" ? "role-nav-link active" : "role-nav-link"} href="/cong-tac-vien?tab=received">
+          <Link className={activeTab === "received" ? "role-nav-link active" : "role-nav-link"} href="/ctv?tab=received">
             <span aria-hidden="true"><UserCheck size={16} strokeWidth={2.2} /></span>
             Đơn của tôi
           </Link>

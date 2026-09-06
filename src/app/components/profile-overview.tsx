@@ -120,7 +120,7 @@ export function ProfileOverview() {
             <DepositQrButton />
             <Link href="/lich-su-mua"><History size={18} />Lịch sử mua</Link>
             {session.role === "COLLABORATOR" ? (
-              <Link href="/cong-tac-vien"><BriefcaseBusiness size={18} />Quản lý công việc</Link>
+              <Link href="/ctv"><BriefcaseBusiness size={18} />Quản lý công việc</Link>
             ) : null}
             {session.role === "ADMIN" ? (
               <Link href="/admin-access"><ShieldCheck size={18} />Admin Panel</Link>

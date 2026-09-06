@@ -1,10 +1,5 @@
-import { CollaboratorDashboard } from "@/app/components/collaborator-dashboard";
-import { RoleGate } from "@/app/components/role-gate";
+import { redirect } from "next/navigation";
 
 export default function CollaboratorPage() {
-  return (
-    <RoleGate allowedRoles={["COLLABORATOR"]}>
-      <CollaboratorDashboard />
-    </RoleGate>
-  );
+  redirect("/ctv");
 }

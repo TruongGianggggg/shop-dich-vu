@@ -27,6 +27,23 @@
 .collaborator-tabs button { border-bottom: 3px solid transparent; color: #64748b; font-weight: 700; padding: 18px 16px 15px; }
 .collaborator-tabs button[aria-selected="true"] { border-color: #2563eb; color: #1d4ed8; }
 .collaborator-tabs span { background: #e2e8f0; border-radius: 999px; font-size: 11px; margin-left: 5px; padding: 2px 7px; }
+.collaborator-order-table-wrap { overflow: auto; }
+.collaborator-order-table { min-width: 1050px; width: 100%; }
+.collaborator-order-table th { background: #f8fafc; color: #64748b; font-size: 12px; padding: 14px 16px; text-align: left; white-space: nowrap; }
+.collaborator-order-table td { border-top: 1px solid #edf2f7; color: #475569; font-size: 13px; padding: 15px 16px; vertical-align: middle; }
+.collaborator-order-table tbody tr:hover { background: #f8fbff; }
+.collaborator-table-code { color: #1e3a8a; font-size: 12px; }
+.collaborator-detail-button { align-items: center; display: inline-flex; gap: 7px; min-height: 36px; padding: 0 12px; white-space: nowrap; }
+.collaborator-order-modal { max-width: 780px; }
+.collaborator-order-modal-body { max-height: min(65dvh, 650px); overflow: auto; padding: 22px 24px; }
+.collaborator-order-modal-summary { align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; justify-content: space-between; padding: 14px 16px; }
+.collaborator-order-modal-summary > strong { color: #0f172a; font-size: 20px; }
+.collaborator-order-detail-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+.collaborator-order-detail-grid > div { background: white; border: 1px solid #e5e7eb; border-radius: 10px; min-width: 0; padding: 12px 14px; }
+.collaborator-order-detail-grid dt { color: #94a3b8; font-size: 11px; font-weight: 700; }
+.collaborator-order-detail-grid dd { color: #1f2937; font-size: 14px; font-weight: 700; margin-top: 4px; overflow-wrap: anywhere; }
+.collaborator-order-modal-body .collaborator-order-note { margin: 14px 0 0; }
+.collaborator-order-modal-actions { flex-wrap: wrap; }
 .collaborator-order-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 22px; }
 .collaborator-order-card { border: 1px solid #dbe3ef; border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; }
 .collaborator-order-card > header { align-items: center; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; padding: 14px 17px; }
@@ -4493,6 +4510,12 @@ input {
   .admin-user-modal-actions > button {
     flex: 1;
   }
+}
+
+@media (max-width: 640px) {
+  .collaborator-order-detail-grid { grid-template-columns: 1fr; }
+  .collaborator-order-modal-actions { justify-content: stretch; }
+  .collaborator-order-modal-actions button { flex: 1 1 auto; }
 }
 
 @media (max-width: 640px) {
