@@ -7,6 +7,8 @@
 
 /* Collaborator workspace */
 .collaborator-main { background: #f5f7fb; min-height: calc(100dvh - 76px); padding: 36px max(20px, calc((100vw - 1240px) / 2)) 64px; }
+.collaborator-role-main { padding: 0; }
+.collaborator-role-main .collaborator-main { min-height: 100vh; padding-left: 24px; padding-right: 24px; }
 .collaborator-hero { align-items: center; background: linear-gradient(135deg, #172554, #1d4ed8); border-radius: 22px; color: white; display: flex; justify-content: space-between; padding: 30px 34px; }
 .collaborator-hero p { color: #bfdbfe; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
 .collaborator-hero h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-top: 5px; }
@@ -2181,6 +2183,14 @@ input {
 .admin-users-col-role { width: 12%; }
 .admin-users-col-balance { width: 11%; }
 .admin-users-col-collaborator { width: 6%; }
+.admin-permissions-modal { max-width: 720px; }
+.admin-permission-list { display: grid; gap: 10px; max-height: min(58vh, 560px); overflow-y: auto; padding: 20px 24px; }
+.admin-permission-option { align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; display: flex; gap: 12px; padding: 13px 14px; }
+.admin-permission-option:has(input:checked) { background: #eff6ff; border-color: #93c5fd; }
+.admin-permission-option input { accent-color: #2563eb; height: 17px; margin-top: 2px; width: 17px; }
+.admin-permission-option span { display: grid; gap: 3px; }
+.admin-permission-option strong { color: #0f172a; font-size: 14px; }
+.admin-permission-option small { color: #64748b; font-size: 12px; line-height: 1.5; }
 .admin-users-col-created { width: 14%; }
 .admin-users-col-actions { width: 14%; }
 

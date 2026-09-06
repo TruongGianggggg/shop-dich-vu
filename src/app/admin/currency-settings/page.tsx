@@ -5,7 +5,7 @@ import "./currency-settings.css";
 
 export default function AdminCurrencySettingsPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN"]}>
+    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="CURRENCY_SETTINGS">
       <AdminCurrencySettingsManager />
     </RoleGate>
   );

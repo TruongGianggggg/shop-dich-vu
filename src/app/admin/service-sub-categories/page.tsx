@@ -10,7 +10,7 @@ export default async function AdminServiceSubCategoriesPage({
   const { categoryId = "" } = await searchParams;
 
   return (
-    <RoleGate allowedRoles={["ADMIN"]}>
+    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="SERVICE_CATALOG">
       <AdminServicesManager
         initialCategoryId={categoryId}
         view="children"

@@ -4,7 +4,7 @@ import "./site-settings.css";
 
 export default function AdminSiteSettingsPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN"]}>
+    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="SITE_SETTINGS">
       <AdminSiteSettingsManager />
     </RoleGate>
   );

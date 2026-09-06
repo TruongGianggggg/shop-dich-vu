@@ -35,6 +35,9 @@ function isAuthResponse(value: unknown): value is AuthResponse {
     typeof session.email === "string" &&
     typeof session.adminAccessGranted === "boolean" &&
     typeof session.passwordChangeRequired === "boolean" &&
+    (session.backofficePermissions === undefined ||
+      (Array.isArray(session.backofficePermissions) &&
+        session.backofficePermissions.every((permission) => typeof permission === "string"))) &&
     (session.role === "USER" ||
       session.role === "COLLABORATOR" ||
       session.role === "ADMIN")
@@ -44,7 +47,9 @@ function isAuthResponse(value: unknown): value is AuthResponse {
 async function fetchAuthSession() {
   const response = await fetch("/api/auth/me", { cache: "no-store" });
   const data = response.ok ? await response.json() : null;
-  return isAuthResponse(data) ? data : null;
+  return isAuthResponse(data)
+    ? { ...data, backofficePermissions: data.backofficePermissions ?? [] }
+    : null;
 }
 
 export function refreshAuthSession() {
@@ -103,7 +108,10 @@ function subscribe(callback: () => void) {
 
 export function saveAuthSession(session: AuthResponse) {
   sessionRevision += 1;
-  memorySession = session;
+  memorySession = {
+    ...session,
+    backofficePermissions: session.backofficePermissions ?? [],
+  };
   clearLegacyClientSession();
   notifySubscribers();
   return true;

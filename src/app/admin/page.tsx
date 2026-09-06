@@ -3,7 +3,7 @@ import { AdminDashboard } from "@/app/components/admin/admin-dashboard";
 
 export default function AdminPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN"]}>
+    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="DASHBOARD">
       <AdminDashboard />
     </RoleGate>
   );

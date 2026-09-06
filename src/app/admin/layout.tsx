@@ -22,8 +22,11 @@ export default async function AdminLayout({
   }
 
   if (!session) redirect("/login");
-  if (session.role !== "ADMIN") redirect("/");
-  if (!session.adminAccessGranted) redirect("/admin-access");
+  if (session.role !== "ADMIN" && session.role !== "COLLABORATOR") redirect("/");
+  if (session.role === "ADMIN" && !session.adminAccessGranted) redirect("/admin-access");
+  if (session.role === "COLLABORATOR" && !session.backofficePermissions?.length) {
+    redirect("/cong-tac-vien");
+  }
 
   return children;
 }
