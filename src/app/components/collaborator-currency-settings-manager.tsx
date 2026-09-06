@@ -4,7 +4,7 @@ import { Coins, Gem, Pencil, Plus, RefreshCw, Server, Trash2 } from "lucide-reac
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CollaboratorSidebar } from "@/app/components/collaborator-sidebar";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
-import { CollaboratorCurrencyServer, GameServerCurrencyConfigPayload, formatVnd, getApiErrorMessage } from "@/lib/shop-api";
+import { CollaboratorCurrencyPolicy, CollaboratorCurrencyServer, GameServerCurrencyConfigPayload, formatVnd, getApiErrorMessage } from "@/lib/shop-api";
 
 type Form = { name: string; goldEnabled: boolean; goldAmount: string; goldPrice: string; gemEnabled: boolean; gemAmount: string; gemPrice: string; displayOrder: string; toolServerIndex: string; active: boolean };
 const empty: Form = { name: "", goldEnabled: true, goldAmount: "37000000", goldPrice: "10000", gemEnabled: false, gemAmount: "1000", gemPrice: "10000", displayOrder: "0", toolServerIndex: "1", active: true };
@@ -17,24 +17,36 @@ export function CollaboratorCurrencySettingsManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [policy, setPolicy] = useState<CollaboratorCurrencyPolicy | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const response = await fetch("/api/collaborators/currency-servers", { cache: "no-store" });
-      const data = await readJson(response);
-      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được cấu hình server."));
-      setItems(data as CollaboratorCurrencyServer[]);
+      const [serverResponse, policyResponse] = await Promise.all([
+        fetch("/api/collaborators/currency-servers", { cache: "no-store" }),
+        fetch("/api/collaborators/currency-policy", { cache: "no-store" }),
+      ]);
+      const [serverData, policyData] = await Promise.all([readJson(serverResponse), readJson(policyResponse)]);
+      if (!serverResponse.ok) throw new Error(getApiErrorMessage(serverData, "Không tải được cấu hình server."));
+      if (!policyResponse.ok) throw new Error(getApiErrorMessage(policyData, "Không tải được quyền bán Vàng/Ngọc."));
+      const nextPolicy = policyData as CollaboratorCurrencyPolicy;
+      setItems(serverData as CollaboratorCurrencyServer[]);
+      setPolicy(nextPolicy);
+      setForm((current) => editingId ? current : {
+        ...current,
+        goldEnabled: nextPolicy.goldSellingEnabled,
+        gemEnabled: !nextPolicy.goldSellingEnabled && nextPolicy.gemSellingEnabled,
+      });
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không tải được cấu hình server."); }
     finally { setLoading(false); }
-  }, []);
+  }, [editingId]);
   useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
 
   function edit(item: CollaboratorCurrencyServer) {
     setEditingId(item.id); setMessage(""); setError("");
-    setForm({ name: item.name, goldEnabled: item.goldEnabled, goldAmount: String(item.goldAmount), goldPrice: String(item.goldPrice), gemEnabled: item.gemEnabled, gemAmount: String(item.gemAmount), gemPrice: String(item.gemPrice), displayOrder: String(item.displayOrder), toolServerIndex: String(item.toolServerIndex), active: item.active });
+    setForm({ name: item.name, goldEnabled: item.goldEnabled && !!policy?.goldSellingEnabled, goldAmount: String(item.goldAmount), goldPrice: String(item.goldPrice), gemEnabled: item.gemEnabled && !!policy?.gemSellingEnabled, gemAmount: String(item.gemAmount), gemPrice: String(item.gemPrice), displayOrder: String(item.displayOrder), toolServerIndex: String(item.toolServerIndex), active: item.active });
   }
-  function reset() { setEditingId(""); setForm({ ...empty, displayOrder: String(items.length), toolServerIndex: String(nextIndex(items)) }); }
+  function reset() { setEditingId(""); setForm({ ...empty, goldEnabled: !!policy?.goldSellingEnabled, gemEnabled: !policy?.goldSellingEnabled && !!policy?.gemSellingEnabled, displayOrder: String(items.length), toolServerIndex: String(nextIndex(items)) }); }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(""); setMessage("");
@@ -59,11 +71,11 @@ export function CollaboratorCurrencySettingsManager() {
   }
 
   return <main className="role-dashboard"><CollaboratorSidebar active="currency-settings" /><section className="role-main collaborator-role-main ctv-currency-main">
-    <header className="role-topbar backoffice-users-header"><div><p className="section-kicker">KÊNH BÁN CỦA CTV</p><h1>Cấu hình Vàng &amp; Ngọc</h1><p className="role-subtitle">Mỗi server được gắn tự động với username CTV của bạn để bot nhận đúng đơn.</p></div><button className="ghost-button h-11 px-5" disabled={loading} onClick={() => void load()}><RefreshCw size={16} /> Tải lại</button></header>
+    <header className="role-topbar backoffice-users-header"><div><p className="section-kicker">KÊNH BÁN CỦA CTV</p><h1>Cấu hình Vàng &amp; Ngọc</h1><p className="role-subtitle">Mỗi server được gắn tự động với username CTV của bạn để bot nhận đúng đơn.</p><div className="ctv-currency-permissions"><span className={policy?.goldSellingEnabled ? "is-granted" : ""}>Vàng: {policy?.goldSellingEnabled ? `Được bán · CK ${policy.goldDiscountPercent}%` : "Chưa được cấp"}</span><span className={policy?.gemSellingEnabled ? "is-granted" : ""}>Ngọc: {policy?.gemSellingEnabled ? `Được bán · CK ${policy.gemDiscountPercent}%` : "Chưa được cấp"}</span></div></div><button className="ghost-button h-11 px-5" disabled={loading} onClick={() => void load()}><RefreshCw size={16} /> Tải lại</button></header>
     {message ? <p className="admin-users-message success">{message}</p> : null}{error ? <p className="admin-users-message error">{error}</p> : null}
     <div className="ctv-currency-layout"><section className="role-panel ctv-currency-form-card"><div className="role-panel-head"><div><p className="section-kicker">{editingId ? "CHỈNH SỬA" : "THÊM SERVER"}</p><h2>Thông tin mở bán</h2></div><Server size={22} /></div>
       <form className="ctv-currency-form" onSubmit={submit}><label className="field-label ctv-currency-wide">Tên hiển thị<input className="text-field" maxLength={120} placeholder="Ví dụ: Server 1 - CTV Giang" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
-        <CurrencyFields type="gold" form={form} setForm={setForm} /><CurrencyFields type="gem" form={form} setForm={setForm} />
+        <CurrencyFields permitted={!!policy?.goldSellingEnabled} type="gold" form={form} setForm={setForm} /><CurrencyFields permitted={!!policy?.gemSellingEnabled} type="gem" form={form} setForm={setForm} />
         <label className="field-label">Index server của tool<input className="text-field" min={1} max={21} required type="number" value={form.toolServerIndex} onChange={(e) => setForm({ ...form, toolServerIndex: e.target.value })} /><small>Từ 1 đến 21, đúng server trong game.</small></label>
         <label className="field-label">Thứ tự hiển thị<input className="text-field" inputMode="numeric" value={formatIntegerInput(form.displayOrder)} onChange={(e) => setForm({ ...form, displayOrder: normalizeIntegerInput(e.target.value) })} /></label>
         <label className="admin-check-field ctv-currency-wide"><input checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} type="checkbox" /> Đang mở bán cho khách</label>
@@ -73,9 +85,9 @@ export function CollaboratorCurrencySettingsManager() {
     </div></section></main>;
 }
 
-function CurrencyFields({ type, form, setForm }: { type: "gold" | "gem"; form: Form; setForm: (form: Form) => void }) {
+function CurrencyFields({ type, form, setForm, permitted }: { type: "gold" | "gem"; form: Form; setForm: (form: Form) => void; permitted: boolean }) {
   const gold = type === "gold", enabled = gold ? form.goldEnabled : form.gemEnabled, Icon = gold ? Coins : Gem;
-  return <fieldset className={`ctv-currency-block ${type}`}><label><input checked={enabled} onChange={(e) => setForm({ ...form, [gold ? "goldEnabled" : "gemEnabled"]: e.target.checked })} type="checkbox" /><Icon size={17} /> Bật bán {gold ? "Vàng" : "Ngọc"}</label><div><label className="field-label">Số lượng<input className="text-field" disabled={!enabled} inputMode="numeric" required={enabled} value={formatIntegerInput(gold ? form.goldAmount : form.gemAmount)} onChange={(e) => setForm({ ...form, [gold ? "goldAmount" : "gemAmount"]: normalizeIntegerInput(e.target.value) })} /></label><label className="field-label">Giá bán<input className="text-field" disabled={!enabled} inputMode="numeric" required={enabled} value={formatIntegerInput(gold ? form.goldPrice : form.gemPrice)} onChange={(e) => setForm({ ...form, [gold ? "goldPrice" : "gemPrice"]: normalizeIntegerInput(e.target.value) })} /></label></div></fieldset>;
+  return <fieldset className={`ctv-currency-block ${type}`}><label><input checked={enabled} disabled={!permitted} onChange={(e) => setForm({ ...form, [gold ? "goldEnabled" : "gemEnabled"]: e.target.checked })} type="checkbox" /><Icon size={17} /> Bật bán {gold ? "Vàng" : "Ngọc"} {!permitted ? <small>Admin chưa cấp quyền</small> : null}</label><div><label className="field-label">Số lượng<input className="text-field" disabled={!enabled || !permitted} inputMode="numeric" required={enabled && permitted} value={formatIntegerInput(gold ? form.goldAmount : form.gemAmount)} onChange={(e) => setForm({ ...form, [gold ? "goldAmount" : "gemAmount"]: normalizeIntegerInput(e.target.value) })} /></label><label className="field-label">Giá bán<input className="text-field" disabled={!enabled || !permitted} inputMode="numeric" required={enabled && permitted} value={formatIntegerInput(gold ? form.goldPrice : form.gemPrice)} onChange={(e) => setForm({ ...form, [gold ? "goldPrice" : "gemPrice"]: normalizeIntegerInput(e.target.value) })} /></label></div></fieldset>;
 }
 function nextIndex(items: CollaboratorCurrencyServer[]) { const used = new Set(items.map((x) => x.toolServerIndex)); for (let i = 1; i <= 21; i++) if (!used.has(i)) return i; return 21; }
 async function readJson(response: Response) { try { return await response.json() as unknown; } catch { return null; } }

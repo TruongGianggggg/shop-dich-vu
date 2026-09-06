@@ -1,0 +1,12 @@
+.ctv-currency-orders-main { background:#f5f7fb; min-width:0; padding-bottom:60px; }
+.ctv-currency-readonly-note { align-items:center; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; color:#1d4ed8; display:flex; gap:12px; margin:16px 0; padding:14px 16px; }
+.ctv-currency-readonly-note div { display:grid; gap:3px; }
+.ctv-currency-readonly-note strong { font-size:14px; }
+.ctv-currency-readonly-note span { color:#475569; font-size:12px; }
+.ctv-currency-order-filters { grid-template-columns:repeat(4,minmax(150px,1fr)) auto; }
+.ctv-currency-orders-table { min-width:1320px; }
+.ctv-currency-orders-table td small { color:#64748b; display:block; font-size:11px; margin-top:4px; }
+.ctv-currency-orders-table .currency-type-pill { align-items:center; display:inline-flex; gap:5px; }
+.ctv-currency-earning { color:#047857; }
+@media(max-width:1200px){.ctv-currency-order-filters{grid-template-columns:repeat(2,minmax(180px,1fr))}.ctv-currency-order-filters .currency-order-filter-actions{grid-column:1/-1}}
+@media(max-width:640px){.ctv-currency-order-filters{grid-template-columns:1fr}.ctv-currency-order-filters .currency-order-filter-actions{grid-column:auto}}

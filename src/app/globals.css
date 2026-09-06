@@ -2278,6 +2278,80 @@ input {
   max-width: 820px;
 }
 
+.collaborator-currency-policy-modal {
+  max-width: 680px;
+}
+
+.collaborator-currency-policy-list {
+  display: grid;
+  gap: 14px;
+  padding: 22px 24px;
+}
+
+.collaborator-currency-policy-option {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 16px;
+}
+
+.collaborator-currency-policy-option.is-enabled {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.collaborator-currency-policy-option > label:first-child {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  gap: 11px;
+}
+
+.collaborator-currency-policy-option input[type="checkbox"] {
+  accent-color: #16a34a;
+  height: 18px;
+  margin-top: 2px;
+  width: 18px;
+}
+
+.collaborator-currency-policy-option strong,
+.collaborator-currency-policy-option small {
+  display: block;
+}
+
+.collaborator-currency-policy-option small {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.collaborator-currency-policy-discount {
+  align-items: flex-end;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 5px;
+}
+
+.collaborator-currency-policy-discount > span:last-child {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.collaborator-currency-policy-discount input {
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  height: 38px;
+  padding: 0 9px;
+  text-align: right;
+  width: 74px;
+}
+
 .collaborator-service-list {
   display: grid;
   gap: 10px;
@@ -2358,6 +2432,14 @@ input {
 }
 
 @media (max-width: 640px) {
+  .collaborator-currency-policy-option {
+    grid-template-columns: 1fr;
+  }
+
+  .collaborator-currency-policy-discount {
+    align-items: flex-start;
+  }
+
   .collaborator-service-option {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -7750,6 +7832,7 @@ input {
 .currency-type-pill.gold { background: #fffaeb; border: 1px solid #fedf89; color: #b54708; }
 .currency-type-pill.gem { background: #f4f3ff; border: 1px solid #d9d6fe; color: #5925dc; }
 .currency-ended-label { color: #667085; font-size: 11px; font-weight: 800; }
+.currency-order-provider { color:#64748b; display:block; font-size:11px; margin-top:4px; white-space:nowrap; }
 .currency-note-cell span { color: #667085; font-size: 12px; }
 
 /* Customer profile */

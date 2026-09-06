@@ -410,6 +410,15 @@ export type CollaboratorCurrencyServer = GameServerCurrencyConfig & {
   collaboratorUsername: string;
 };
 
+export type CollaboratorCurrencyPolicy = {
+  collaboratorId: string;
+  collaboratorUsername: string;
+  goldSellingEnabled: boolean;
+  goldDiscountPercent: number;
+  gemSellingEnabled: boolean;
+  gemDiscountPercent: number;
+};
+
 export type CurrencyServerCatalogItem = GameServerCurrencyConfig & {
   source: "ADMIN" | "COLLABORATOR";
   ownerUsername: string | null;
@@ -430,6 +439,11 @@ export type GameCurrencyOrder = {
   id: string;
   requestId: string;
   username: string;
+  collaboratorOrder: boolean;
+  collaboratorUsername: string | null;
+  collaboratorDiscountPercent: number | null;
+  collaboratorEarningAmount: number | null;
+  collaboratorPaid: boolean;
   serverConfigId: string;
   serverName: string;
   toolServerIndex: number;

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeDollarSign, ClipboardList, Coins, History, Landmark, UserCheck } from "lucide-react";
+import { BadgeDollarSign, ClipboardList, Coins, History, Landmark, ReceiptText, UserCheck } from "lucide-react";
 
-type CollaboratorSection = "available" | "received" | "currency-settings" | "withdraw" | "withdraw-history";
+type CollaboratorSection = "available" | "received" | "currency-settings" | "currency-orders" | "withdraw" | "withdraw-history";
 
 export function CollaboratorSidebar({ active }: { active: CollaboratorSection }) {
   return (
@@ -27,6 +27,10 @@ export function CollaboratorSidebar({ active }: { active: CollaboratorSection })
           <Link className={active === "currency-settings" ? "role-nav-link active" : "role-nav-link"} href="/ctv/cau-hinh-vang-ngoc">
             <span aria-hidden="true"><Coins size={16} strokeWidth={2.2} /></span>
             Cấu hình Vàng &amp; Ngọc
+          </Link>
+          <Link className={active === "currency-orders" ? "role-nav-link active" : "role-nav-link"} href="/ctv/don-vang-ngoc">
+            <span aria-hidden="true"><ReceiptText size={16} strokeWidth={2.2} /></span>
+            Đơn Vàng &amp; Ngọc
           </Link>
           <Link className={active === "withdraw" ? "role-nav-link active" : "role-nav-link"} href="/ctv/rut-tien">
             <span aria-hidden="true"><Landmark size={16} strokeWidth={2.2} /></span>

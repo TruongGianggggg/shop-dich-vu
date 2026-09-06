@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Coins,
   LockOpen,
   Pencil,
   Plus,
@@ -23,6 +24,7 @@ import {
   AdminUser,
   AuthResponse,
   CollaboratorServiceDiscount,
+  CollaboratorCurrencyPolicy,
   formatVnd,
   getApiErrorMessage,
   PageResponse,
@@ -99,6 +101,15 @@ export function AdminUsersManager() {
   const [serviceAssignments, setServiceAssignments] = useState<Record<string, string>>({});
   const [isLoadingServices, setIsLoadingServices] = useState(false);
   const [isSavingServices, setIsSavingServices] = useState(false);
+  const [currencyPolicyUser, setCurrencyPolicyUser] = useState<AdminUser | null>(null);
+  const [currencyPolicy, setCurrencyPolicy] = useState({
+    goldSellingEnabled: false,
+    goldDiscountPercent: "0",
+    gemSellingEnabled: false,
+    gemDiscountPercent: "0",
+  });
+  const [isLoadingCurrencyPolicy, setIsLoadingCurrencyPolicy] = useState(false);
+  const [isSavingCurrencyPolicy, setIsSavingCurrencyPolicy] = useState(false);
 
   const canLoad = session?.role === "ADMIN";
 
@@ -583,6 +594,64 @@ export function AdminUsersManager() {
     }
   }
 
+  async function openCurrencyPolicy(user: AdminUser) {
+    if (!session) return;
+    setCurrencyPolicyUser(user);
+    setIsLoadingCurrencyPolicy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch(
+        `/api/admin/collaborators/${encodeURIComponent(user.id)}/currency-policy`,
+        { cache: "no-store", headers: authHeaders(session) },
+      );
+      const data = await readResponseJson(response);
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được quyền bán Vàng/Ngọc."));
+      const policy = data as CollaboratorCurrencyPolicy;
+      setCurrencyPolicy({
+        goldSellingEnabled: policy.goldSellingEnabled,
+        goldDiscountPercent: String(policy.goldDiscountPercent),
+        gemSellingEnabled: policy.gemSellingEnabled,
+        gemDiscountPercent: String(policy.gemDiscountPercent),
+      });
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không tải được quyền bán Vàng/Ngọc.");
+      setCurrencyPolicyUser(null);
+    } finally {
+      setIsLoadingCurrencyPolicy(false);
+    }
+  }
+
+  async function saveCurrencyPolicy() {
+    if (!currencyPolicyUser || !session) return;
+    const goldDiscountPercent = Number(currencyPolicy.goldDiscountPercent);
+    const gemDiscountPercent = Number(currencyPolicy.gemDiscountPercent);
+    if (![goldDiscountPercent, gemDiscountPercent].every((value) => Number.isInteger(value) && value >= 0 && value <= 100)) {
+      setError("Chiết khấu Vàng và Ngọc phải là số nguyên từ 0 đến 100%.");
+      return;
+    }
+    setIsSavingCurrencyPolicy(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `/api/admin/collaborators/${encodeURIComponent(currencyPolicyUser.id)}/currency-policy`,
+        {
+          method: "PUT",
+          headers: { ...authHeaders(session), "Content-Type": "application/json" },
+          body: JSON.stringify({ ...currencyPolicy, goldDiscountPercent, gemDiscountPercent }),
+        },
+      );
+      const data = await readResponseJson(response);
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không lưu được quyền bán Vàng/Ngọc."));
+      setMessage(`Đã cập nhật quyền bán Vàng/Ngọc cho ${currencyPolicyUser.username}.`);
+      setCurrencyPolicyUser(null);
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không lưu được quyền bán Vàng/Ngọc.");
+    } finally {
+      setIsSavingCurrencyPolicy(false);
+    }
+  }
+
   return (
     <main className="role-dashboard">
       <AdminSidebar active="users" />
@@ -764,14 +833,14 @@ export function AdminUsersManager() {
                     <td>
                       <div className="admin-users-actions">
                         {user.role === "COLLABORATOR" ? (
-                          <button
-                            className="ghost-button h-9 px-3"
-                            onClick={() => void openCollaboratorServices(user)}
-                            type="button"
-                          >
-                            <ShieldCheck aria-hidden="true" size={15} />
-                            Giao dịch vụ
-                          </button>
+                          <>
+                            <button className="ghost-button h-9 px-3" onClick={() => void openCollaboratorServices(user)} type="button">
+                              <ShieldCheck aria-hidden="true" size={15} /> Giao dịch vụ
+                            </button>
+                            <button className="ghost-button h-9 px-3" onClick={() => void openCurrencyPolicy(user)} type="button">
+                              <Coins aria-hidden="true" size={15} /> Vàng &amp; Ngọc
+                            </button>
+                          </>
                         ) : null}
                         {user.loginPermanentlyLocked ||
                         isLoginLocked(user.loginLockedUntil) ||
@@ -1027,8 +1096,60 @@ export function AdminUsersManager() {
         </div>,
         document.body,
       ) : null}
+
+      {currencyPolicyUser && typeof document !== "undefined" ? createPortal(
+        <div className="admin-user-modal" role="presentation">
+          <button aria-label="Đóng phân quyền Vàng Ngọc" className="admin-user-modal-backdrop" onClick={() => setCurrencyPolicyUser(null)} type="button" />
+          <section aria-modal="true" className="admin-user-modal-panel collaborator-currency-policy-modal" role="dialog">
+            <div className="admin-user-modal-header">
+              <div><h2>Quyền bán Vàng &amp; Ngọc</h2><p>Cấu hình cho CTV {currencyPolicyUser.username}. Chiết khấu là phần admin giữ lại.</p></div>
+              <button aria-label="Đóng" className="admin-user-modal-close" onClick={() => setCurrencyPolicyUser(null)} type="button"><X size={18} /></button>
+            </div>
+            <div className="collaborator-currency-policy-list">
+              {isLoadingCurrencyPolicy ? <p className="collaborator-service-empty">Đang tải cấu hình...</p> : (
+                <>
+                  <CurrencyPolicyOption
+                    checked={currencyPolicy.goldSellingEnabled}
+                    discount={currencyPolicy.goldDiscountPercent}
+                    label="Cho phép bán Vàng"
+                    onChecked={(checked) => setCurrencyPolicy((current) => ({ ...current, goldSellingEnabled: checked }))}
+                    onDiscount={(value) => setCurrencyPolicy((current) => ({ ...current, goldDiscountPercent: value }))}
+                  />
+                  <CurrencyPolicyOption
+                    checked={currencyPolicy.gemSellingEnabled}
+                    discount={currencyPolicy.gemDiscountPercent}
+                    label="Cho phép bán Ngọc"
+                    onChecked={(checked) => setCurrencyPolicy((current) => ({ ...current, gemSellingEnabled: checked }))}
+                    onDiscount={(value) => setCurrencyPolicy((current) => ({ ...current, gemDiscountPercent: value }))}
+                  />
+                </>
+              )}
+            </div>
+            <div className="admin-user-modal-actions">
+              <button className="ghost-button h-11 px-5" disabled={isSavingCurrencyPolicy} onClick={() => setCurrencyPolicyUser(null)} type="button">Hủy</button>
+              <button className="primary-button h-11 px-5" disabled={isLoadingCurrencyPolicy || isSavingCurrencyPolicy} onClick={() => void saveCurrencyPolicy()} type="button">
+                <ShieldCheck size={16} /> {isSavingCurrencyPolicy ? "Đang lưu..." : "Lưu quyền & chiết khấu"}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body,
+      ) : null}
     </main>
   );
+}
+
+function CurrencyPolicyOption({ checked, discount, label, onChecked, onDiscount }: {
+  checked: boolean;
+  discount: string;
+  label: string;
+  onChecked: (checked: boolean) => void;
+  onDiscount: (value: string) => void;
+}) {
+  return <div className={checked ? "collaborator-currency-policy-option is-enabled" : "collaborator-currency-policy-option"}>
+    <label><input checked={checked} onChange={(event) => onChecked(event.target.checked)} type="checkbox" /><span><strong>{label}</strong><small>CTV chỉ được tạo server và nhận đơn khi quyền này đang bật.</small></span></label>
+    <label className="collaborator-currency-policy-discount"><span>Chiết khấu admin</span><span><input disabled={!checked} inputMode="numeric" max="100" min="0" onChange={(event) => onDiscount(event.target.value.replace(/\D/g, ""))} type="number" value={discount} />%</span></label>
+  </div>;
 }
 
 function SortableUserHeader({

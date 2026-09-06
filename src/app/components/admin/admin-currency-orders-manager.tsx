@@ -104,13 +104,13 @@ export function AdminCurrencyOrdersManager() {
             <td className="currency-code-cell"><strong title={order.requestId}>{order.requestId}</strong></td>
             <td className="currency-user-cell"><strong>{order.username || "—"}</strong></td>
             <td><strong>{order.characterName}</strong></td>
-            <td><strong>{order.serverName}</strong></td>
+            <td><strong>{order.serverName}</strong>{order.collaboratorOrder ? <small className="currency-order-provider">CTV: {order.collaboratorUsername}</small> : <small className="currency-order-provider">Admin</small>}</td>
             <td><span className={`currency-type-pill ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? "Vàng" : "Ngọc"}</span></td>
-            <td className="currency-money-cell"><strong>{formatVnd(order.paymentAmount)}</strong></td>
+            <td className="currency-money-cell"><strong>{formatVnd(order.paymentAmount)}</strong>{order.collaboratorOrder ? <small className="currency-order-provider">CK {order.collaboratorDiscountPercent ?? 0}% · CTV nhận {formatVnd(order.collaboratorEarningAmount ?? order.paymentAmount)}</small> : null}</td>
             <td className="currency-amount-cell"><strong>{order.receivedAmount.toLocaleString("vi-VN")}</strong></td>
             <td><span className={`admin-order-status-pill ${order.status.toLowerCase()}`}>{labels[order.status]}</span></td>
             <td className="currency-note-cell"><span title={order.adminNote ?? ""}>{order.adminNote || "—"}</span></td>
-            <td>{terminalStatuses.includes(order.status) ? <span className="currency-ended-label">Đã kết thúc</span> : <select className="role-select" disabled={updatingId === order.id} defaultValue="" onChange={(event) => event.target.value && updateStatus(order, event.target.value as ServiceOrderStatus)}><option value="">Cập nhật</option>{order.status === "pending" ? <option value="processing">Đang xử lý</option> : null}<option value="done">Hoàn thành</option><option value="error">Lỗi</option><option value="refund_error">Lỗi hoàn tiền</option></select>}</td>
+            <td>{order.collaboratorOrder ? <span className="currency-ended-label">Tool CTV tự động</span> : terminalStatuses.includes(order.status) ? <span className="currency-ended-label">Đã kết thúc</span> : <select className="role-select" disabled={updatingId === order.id} defaultValue="" onChange={(event) => event.target.value && updateStatus(order, event.target.value as ServiceOrderStatus)}><option value="">Cập nhật</option>{order.status === "pending" ? <option value="processing">Đang xử lý</option> : null}<option value="done">Hoàn thành</option><option value="error">Lỗi</option><option value="refund_error">Lỗi hoàn tiền</option></select>}</td>
           </tr>)}
         </tbody></table></div>
         {!loading && !orders.length ? <p className="admin-users-message">Chưa có đơn phù hợp.</p> : null}
