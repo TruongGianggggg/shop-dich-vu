@@ -126,7 +126,7 @@ export function CurrencyTopupForm({
             }}
             value={selectedConfigId}
           >
-            {configs.map((config) => <option key={config.id} value={config.id}>{config.name}{config.ownerUsername ? ` · CTV ${config.ownerUsername}` : ""}</option>)}
+            {configs.map((config) => <option key={config.id} value={config.id}>{config.name}</option>)}
           </select>
         </label>
         <label>
