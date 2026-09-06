@@ -3,7 +3,7 @@ import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminDepositsPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="DEPOSITS">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <DepositHistoryManager />
     </RoleGate>
   );

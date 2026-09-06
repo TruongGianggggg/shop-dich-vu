@@ -4,7 +4,7 @@ import "../services/services-upload.css";
 
 export default function AdminServiceCategoriesPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="SERVICE_CATALOG">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <AdminServicesManager view="parents" />
     </RoleGate>
   );

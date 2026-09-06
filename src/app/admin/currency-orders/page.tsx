@@ -2,5 +2,5 @@ import { AdminCurrencyOrdersManager } from "@/app/components/admin/admin-currenc
 import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminCurrencyOrdersPage() {
-  return <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="CURRENCY_ORDERS"><AdminCurrencyOrdersManager /></RoleGate>;
+  return <RoleGate allowedRoles={["ADMIN"]}><AdminCurrencyOrdersManager /></RoleGate>;
 }

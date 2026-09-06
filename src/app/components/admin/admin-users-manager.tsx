@@ -12,7 +12,6 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
-  ShieldCheck,
   Trash2,
   Users,
   X,
@@ -22,13 +21,11 @@ import { createPortal } from "react-dom";
 import {
   AdminUser,
   AuthResponse,
-  BackofficePermission,
   formatVnd,
   getApiErrorMessage,
   PageResponse,
   UserRole,
 } from "@/lib/shop-api";
-import { backofficePermissionOptions } from "@/lib/backoffice-permissions";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import {
@@ -89,9 +86,6 @@ export function AdminUsersManager() {
   const [form, setForm] = useState(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [permissionsUser, setPermissionsUser] = useState<AdminUser | null>(null);
-  const [permissionDraft, setPermissionDraft] = useState<BackofficePermission[]>([]);
-  const [isSavingPermissions, setIsSavingPermissions] = useState(false);
 
   const canLoad = session?.role === "ADMIN";
 
@@ -469,51 +463,6 @@ export function AdminUsersManager() {
     }
   }
 
-  function openPermissions(user: AdminUser) {
-    setPermissionsUser(user);
-    setPermissionDraft(user.backofficePermissions ?? []);
-    setMessage("");
-    setError("");
-  }
-
-  function togglePermission(permission: BackofficePermission) {
-    setPermissionDraft((current) =>
-      current.includes(permission)
-        ? current.filter((item) => item !== permission)
-        : [...current, permission],
-    );
-  }
-
-  async function savePermissions() {
-    if (!session || !permissionsUser) return;
-
-    setIsSavingPermissions(true);
-    setError("");
-    try {
-      const response = await fetch(
-        `/api/admin/users/${encodeURIComponent(permissionsUser.id)}/permissions`,
-        {
-          method: "PUT",
-          headers: { ...authHeaders(session), "Content-Type": "application/json" },
-          body: JSON.stringify({ permissions: permissionDraft }),
-        },
-      );
-      const data = (await readResponseJson(response)) as AdminUser | unknown;
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, "Không lưu được quyền cộng tác viên."));
-      }
-
-      const updated = data as AdminUser;
-      setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
-      setMessage(`Đã cập nhật quyền cho ${updated.username}.`);
-      setPermissionsUser(null);
-    } catch (exception) {
-      setError(exception instanceof Error ? exception.message : "Không lưu được quyền cộng tác viên.");
-    } finally {
-      setIsSavingPermissions(false);
-    }
-  }
-
   return (
     <main className="role-dashboard">
       <AdminSidebar active="users" />
@@ -694,16 +643,6 @@ export function AdminUsersManager() {
                     <td>{formatDate(user.createdAt)}</td>
                     <td>
                       <div className="admin-users-actions">
-                        {user.role === "COLLABORATOR" ? (
-                          <button
-                            className="ghost-button h-9 px-3"
-                            onClick={() => openPermissions(user)}
-                            type="button"
-                          >
-                            <ShieldCheck aria-hidden="true" size={15} />
-                            Quyền ({user.backofficePermissions?.length ?? 0})
-                          </button>
-                        ) : null}
                         {user.loginPermanentlyLocked ||
                         isLoginLocked(user.loginLockedUntil) ||
                         user.failedLoginAttempts > 0 ? (
@@ -905,48 +844,6 @@ export function AdminUsersManager() {
                 </button>
               </div>
             </form>
-          </section>
-        </div>,
-        document.body,
-      ) : null}
-
-      {permissionsUser && typeof document !== "undefined" ? createPortal(
-        <div className="admin-user-modal" role="presentation">
-          <button
-            aria-label="Đóng form phân quyền"
-            className="admin-user-modal-backdrop"
-            onClick={() => setPermissionsUser(null)}
-            type="button"
-          />
-          <section aria-modal="true" className="admin-user-modal-panel admin-permissions-modal" role="dialog">
-            <div className="admin-user-modal-header">
-              <div>
-                <h2>Phân quyền cộng tác viên</h2>
-                <p>{permissionsUser.username} chỉ thấy và sử dụng các chức năng được chọn.</p>
-              </div>
-              <button aria-label="Đóng" className="admin-user-modal-close" onClick={() => setPermissionsUser(null)} type="button">
-                <X aria-hidden="true" size={18} />
-              </button>
-            </div>
-            <div className="admin-permission-list">
-              {backofficePermissionOptions.map((option) => (
-                <label className="admin-permission-option" key={option.value}>
-                  <input
-                    checked={permissionDraft.includes(option.value)}
-                    onChange={() => togglePermission(option.value)}
-                    type="checkbox"
-                  />
-                  <span><strong>{option.label}</strong><small>{option.description}</small></span>
-                </label>
-              ))}
-            </div>
-            <div className="admin-user-modal-actions">
-              <button className="ghost-button h-11 px-5" disabled={isSavingPermissions} onClick={() => setPermissionsUser(null)} type="button">Hủy</button>
-              <button className="primary-button h-11 px-5" disabled={isSavingPermissions} onClick={() => void savePermissions()} type="button">
-                <ShieldCheck aria-hidden="true" size={16} />
-                {isSavingPermissions ? "Đang lưu..." : "Lưu phân quyền"}
-              </button>
-            </div>
           </section>
         </div>,
         document.body,

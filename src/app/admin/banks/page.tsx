@@ -3,7 +3,7 @@ import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminBanksPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="BANKS">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <AdminBanksManager />
     </RoleGate>
   );

@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { BackofficePermission, UserRole } from "@/lib/shop-api";
-import { hasBackofficePermission } from "@/lib/backoffice-permissions";
+import { UserRole } from "@/lib/shop-api";
 import { useAuthSession } from "./use-auth-session";
 
 type RoleGateProps = {
   allowedRoles: UserRole[];
-  requiredPermission?: BackofficePermission;
   children: React.ReactNode;
 };
 
-export function RoleGate({ allowedRoles, children, requiredPermission }: RoleGateProps) {
+export function RoleGate({ allowedRoles, children }: RoleGateProps) {
   const session = useAuthSession();
 
   if (!session) {
@@ -30,21 +28,16 @@ export function RoleGate({ allowedRoles, children, requiredPermission }: RoleGat
     );
   }
 
-  const lacksPermission =
-    session.role === "COLLABORATOR" &&
-    requiredPermission &&
-    !hasBackofficePermission(session.backofficePermissions, requiredPermission);
-
-  if (!allowedRoles.includes(session.role) || lacksPermission) {
+  if (!allowedRoles.includes(session.role)) {
     return (
       <main className="page-shell py-24">
         <div className="notice-panel">
           <p className="section-kicker">Khong dung phan quyen</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-950">
-            Tài khoản {session.username} không được cấp quyền vào trang này
+            Tai khoan {session.username} khong co quyen vao trang nay
           </h1>
           <Link className="ghost-button mt-6 h-11 px-5" href="/">
-            Về trang cộng tác viên
+            Ve trang chu
           </Link>
         </div>
       </main>

@@ -3,7 +3,7 @@ import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminOrdersPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="ORDERS">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <AdminOrdersManager />
     </RoleGate>
   );

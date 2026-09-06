@@ -3,7 +3,7 @@ import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminActivityLogsPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="ACTIVITY_LOGS">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <AdminActivityLogsManager />
     </RoleGate>
   );

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth-cookie";
-import { AuthResponse, BackofficePermission, UserRole } from "@/lib/shop-api";
+import { AuthResponse, UserRole } from "@/lib/shop-api";
 
 const backendBaseUrl =
   process.env.SHOP_GAME_API_URL ??
@@ -126,7 +126,6 @@ export async function proxyBackendJson(path: string, request: Request) {
 
 export async function requireAdminRequest(request: Request) {
   const session = await getAuthenticatedBackendSession(request);
-  const delegatedPermission = backofficePermissionForPath(request);
 
   if (
     session?.role === "ADMIN" &&
@@ -135,57 +134,17 @@ export async function requireAdminRequest(request: Request) {
     return null;
   }
 
-  if (
-    session?.role === "COLLABORATOR" &&
-    delegatedPermission &&
-    (session.backofficePermissions?.includes(delegatedPermission) ||
-      ((delegatedPermission === "ORDERS" || delegatedPermission === "CURRENCY_ORDERS") &&
-        session.backofficePermissions?.includes("ACTIVE_ORDERS")))
-  ) {
-    return null;
-  }
-
   return Response.json(
     {
       code:
-        session?.role === "ADMIN" ? "ADMIN_OTP_REQUIRED" : "BACKOFFICE_PERMISSION_REQUIRED",
+        session?.role === "ADMIN" ? "ADMIN_OTP_REQUIRED" : "ADMIN_REQUIRED",
       message:
         session?.role === "ADMIN"
           ? "Vui lòng xác minh mã bảo mật Admin."
-          : "Bạn chưa được Admin cấp quyền sử dụng chức năng này.",
+          : "Admin permission is required.",
     },
     { status: session ? 403 : 401 },
   );
-}
-
-function backofficePermissionForPath(request: Request): BackofficePermission | null {
-  let pathname: string;
-  try {
-    pathname = new URL(request.url).pathname;
-  } catch {
-    return null;
-  }
-
-  const mappings: Array<[string, BackofficePermission]> = [
-    ["/api/admin/dashboard", "DASHBOARD"],
-    ["/api/admin/service-categories", "SERVICE_CATALOG"],
-    ["/api/admin/service-sub-categories", "SERVICE_CATALOG"],
-    ["/api/admin/service-packages", "SERVICE_CATALOG"],
-    ["/api/admin/service-images", "SERVICE_CATALOG"],
-    ["/api/admin/the9p", "SERVICE_CATALOG"],
-    ["/api/admin/currency-settings", "CURRENCY_SETTINGS"],
-    ["/api/admin/currency-servers", "CURRENCY_SETTINGS"],
-    ["/api/admin/active-orders", "ACTIVE_ORDERS"],
-    ["/api/admin/orders", "ORDERS"],
-    ["/api/admin/vps", "VPS"],
-    ["/api/admin/currency-orders", "CURRENCY_ORDERS"],
-    ["/api/admin/deposits", "DEPOSITS"],
-    ["/api/admin/banks", "BANKS"],
-    ["/api/admin/activity-logs", "ACTIVITY_LOGS"],
-    ["/api/admin/site-settings", "SITE_SETTINGS"],
-  ];
-
-  return mappings.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? null;
 }
 
 export async function requireCollaboratorRequest(request: Request) {

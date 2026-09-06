@@ -12,7 +12,6 @@ import {
   WalletCards,
 } from "lucide-react";
 import { useUserBalance } from "@/app/components/use-user-balance";
-import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import {
   formatVnd,
   getApiErrorMessage,
@@ -121,10 +120,7 @@ export function CollaboratorDashboard() {
   }
 
   return (
-    <main className="role-dashboard">
-      <AdminSidebar active="collaborator-work" />
-      <section className="role-main collaborator-role-main">
-      <div className="collaborator-main">
+    <main className="collaborator-main">
       <section className="collaborator-hero">
         <div>
           <p>TRUNG TÂM CỘNG TÁC VIÊN</p>
@@ -174,8 +170,6 @@ export function CollaboratorDashboard() {
             ))}
           </div>
         )}
-      </section>
-      </div>
       </section>
     </main>
   );

@@ -1,25 +1,11 @@
 export type UserRole = "USER" | "COLLABORATOR" | "ADMIN";
 
-export type BackofficePermission =
-  | "DASHBOARD"
-  | "SERVICE_CATALOG"
-  | "CURRENCY_SETTINGS"
-  | "ACTIVE_ORDERS"
-  | "ORDERS"
-  | "VPS"
-  | "CURRENCY_ORDERS"
-  | "DEPOSITS"
-  | "BANKS"
-  | "ACTIVITY_LOGS"
-  | "SITE_SETTINGS";
-
 export type AuthResponse = {
   expiresIn: number;
   userId: string;
   username: string;
   email: string;
   role: UserRole;
-  backofficePermissions: BackofficePermission[];
   adminAccessGranted: boolean;
   passwordChangeRequired: boolean;
 };
@@ -292,7 +278,6 @@ export type AdminUser = {
   email: string;
   depositCode: string;
   role: UserRole;
-  backofficePermissions: BackofficePermission[];
   balance: number;
   totalDeposited: number;
   collaboratorBalance: number;

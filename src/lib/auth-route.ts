@@ -58,7 +58,6 @@ export async function createAuthSessionResponse(
     username: backendSession.username,
     email: backendSession.email,
     role: backendSession.role,
-    backofficePermissions: backendSession.backofficePermissions ?? [],
     adminAccessGranted: backendSession.adminAccessGranted,
     passwordChangeRequired: backendSession.passwordChangeRequired,
   };

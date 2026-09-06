@@ -3,7 +3,7 @@ import { RoleGate } from "@/app/components/role-gate";
 
 export default function AdminVpsPage() {
   return (
-    <RoleGate allowedRoles={["ADMIN", "COLLABORATOR"]} requiredPermission="VPS">
+    <RoleGate allowedRoles={["ADMIN"]}>
       <AdminVpsManager />
     </RoleGate>
   );
