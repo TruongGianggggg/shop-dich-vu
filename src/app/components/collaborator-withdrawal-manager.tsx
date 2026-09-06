@@ -1,6 +1,19 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, History, Landmark, Send, WalletCards } from "lucide-react";
+import {
+  BadgeDollarSign,
+  Building2,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  History,
+  Landmark,
+  Send,
+  ShieldCheck,
+  UserRound,
+  WalletCards,
+} from "lucide-react";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CollaboratorSidebar } from "@/app/components/collaborator-sidebar";
 import { useUserBalance } from "@/app/components/use-user-balance";
@@ -92,38 +105,49 @@ export function CollaboratorWithdrawalManager({ view }: { view: "create" | "hist
     <main className="role-dashboard">
       <CollaboratorSidebar active={view === "create" ? "withdraw" : "withdraw-history"} />
       <section className="role-main collaborator-role-main collaborator-withdraw-main">
-        <header className="role-topbar backoffice-users-header">
-          <div><p className="section-kicker">TÀI CHÍNH CỘNG TÁC VIÊN</p><h1>{view === "create" ? "Rút tiền CTV" : "Lịch sử rút tiền"}</h1></div>
-          <div className="collaborator-withdraw-balance"><WalletCards size={19} /><span>Số dư khả dụng</span><strong>{formatVnd(wallet?.collaboratorBalance ?? 0)}</strong></div>
+        <header className="role-topbar backoffice-users-header collaborator-withdraw-hero">
+          <div><p className="section-kicker">TÀI CHÍNH CỘNG TÁC VIÊN</p><h1>{view === "create" ? "Rút tiền về tài khoản" : "Lịch sử rút tiền"}</h1><span>{view === "create" ? "Tạo yêu cầu thanh toán hoa hồng nhanh chóng và an toàn." : "Theo dõi toàn bộ yêu cầu và trạng thái thanh toán của bạn."}</span></div>
+          <div className="collaborator-withdraw-balance"><WalletCards size={22} /><span>Số dư có thể rút</span><strong>{formatVnd(wallet?.collaboratorBalance ?? 0)}</strong></div>
         </header>
 
         {message ? <p className="admin-users-message success">{message}</p> : null}
         {error ? <p className="admin-users-message error">{error}</p> : null}
 
         {view === "create" ? (
-          <section className="role-panel collaborator-withdraw-card">
-            <div className="role-panel-head"><div><p className="section-kicker">TẠO YÊU CẦU</p><h2>Thông tin nhận tiền</h2></div><Landmark size={24} /></div>
-            <form className="collaborator-withdraw-form" onSubmit={submitWithdrawal}>
-              <label className="field-label">Ngân hàng
-                <select className="role-select wide" required value={form.bankName} onChange={(event) => setForm({ ...form, bankName: event.target.value })}>
-                  <option value="">Chọn ngân hàng</option>
-                  {bankNames.map((bank) => <option key={bank} value={bank}>{bank}</option>)}
-                </select>
-              </label>
-              <label className="field-label">Số tài khoản
-                <input className="text-field" maxLength={40} placeholder="Nhập số tài khoản" required value={form.accountNumber} onChange={(event) => setForm({ ...form, accountNumber: event.target.value.replace(/\s/g, "") })} />
-              </label>
-              <label className="field-label">Chủ tài khoản
-                <input className="text-field" maxLength={120} placeholder="NGUYEN VAN A" required value={form.accountName} onChange={(event) => setForm({ ...form, accountName: event.target.value.toUpperCase() })} />
-              </label>
-              <label className="field-label">Số tiền cần rút
-                <input className="text-field" inputMode="numeric" min={minimumAmount} placeholder={formatVnd(minimumAmount)} required type="number" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} />
-                <small>Tối thiểu {formatVnd(minimumAmount)}. Tiền sẽ được giữ ngay khi gửi yêu cầu.</small>
-              </label>
-              <div className="collaborator-withdraw-notice"><strong>Lưu ý</strong><p>Kiểm tra kỹ ngân hàng, số tài khoản và tên chủ tài khoản. Nếu admin từ chối, toàn bộ số tiền sẽ tự động hoàn lại ví CTV.</p></div>
-              <button className="primary-button h-11 px-5" disabled={saving} type="submit"><Send size={16} />{saving ? "Đang gửi..." : "Gửi yêu cầu rút tiền"}</button>
-            </form>
-          </section>
+          <div className="collaborator-withdraw-layout">
+            <section className="role-panel collaborator-withdraw-card">
+              <div className="collaborator-withdraw-card-head"><span><Landmark size={22} /></span><div><p className="section-kicker">TẠO YÊU CẦU</p><h2>Thông tin tài khoản nhận</h2><small>Vui lòng nhập chính xác để tránh chậm thanh toán.</small></div></div>
+              <form className="collaborator-withdraw-form" onSubmit={submitWithdrawal}>
+                <label className="field-label withdraw-field"><span>Ngân hàng</span><div className="withdraw-input-shell"><Building2 size={18} />
+                  <select required value={form.bankName} onChange={(event) => setForm({ ...form, bankName: event.target.value })}>
+                    <option value="">Chọn ngân hàng nhận tiền</option>
+                    {bankNames.map((bank) => <option key={bank} value={bank}>{bank}</option>)}
+                  </select>
+                </div></label>
+                <label className="field-label withdraw-field"><span>Số tài khoản</span><div className="withdraw-input-shell"><BadgeDollarSign size={18} />
+                  <input maxLength={40} placeholder="Ví dụ: 0123456789" required value={form.accountNumber} onChange={(event) => setForm({ ...form, accountNumber: event.target.value.replace(/\s/g, "") })} />
+                </div></label>
+                <label className="field-label withdraw-field withdraw-field-full"><span>Tên chủ tài khoản</span><div className="withdraw-input-shell"><UserRound size={18} />
+                  <input maxLength={120} placeholder="NGUYEN VAN A" required value={form.accountName} onChange={(event) => setForm({ ...form, accountName: event.target.value.toUpperCase() })} />
+                </div></label>
+                <label className="field-label withdraw-field withdraw-field-full"><span>Số tiền muốn rút</span><div className="withdraw-input-shell withdraw-amount-input"><span>₫</span>
+                  <input inputMode="numeric" min={minimumAmount} placeholder="Nhập số tiền" required type="number" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} />
+                </div><small>Số tiền tối thiểu: <strong>{formatVnd(minimumAmount)}</strong></small></label>
+                <div className="withdraw-quick-amounts">
+                  {[50_000, 100_000, 200_000].map((amount) => <button disabled={(wallet?.collaboratorBalance ?? 0) < amount} key={amount} onClick={() => setForm({ ...form, amount: String(amount) })} type="button">{formatVnd(amount)}</button>)}
+                  <button disabled={(wallet?.collaboratorBalance ?? 0) < minimumAmount} onClick={() => setForm({ ...form, amount: String(wallet?.collaboratorBalance ?? 0) })} type="button">Rút toàn bộ</button>
+                </div>
+                <div className="collaborator-withdraw-notice"><ShieldCheck size={19} /><div><strong>Thông tin được bảo vệ</strong><p>Nếu admin từ chối yêu cầu, toàn bộ số tiền sẽ tự động hoàn lại ví CTV.</p></div></div>
+                <button className="primary-button collaborator-withdraw-submit" disabled={saving} type="submit"><Send size={17} />{saving ? "Đang gửi yêu cầu..." : "Gửi yêu cầu rút tiền"}</button>
+              </form>
+            </section>
+
+            <aside className="collaborator-withdraw-guide">
+              <div className="withdraw-guide-balance"><span><WalletCards size={21} /></span><p>Số dư khả dụng</p><strong>{formatVnd(wallet?.collaboratorBalance ?? 0)}</strong><small>Tiền hoa hồng có thể yêu cầu thanh toán</small></div>
+              <div className="withdraw-guide-steps"><h3>Quy trình thanh toán</h3><div><span>1</span><p><strong>Gửi yêu cầu</strong><small>Nhập tài khoản và số tiền</small></p></div><div><span>2</span><p><strong>Admin kiểm tra</strong><small>Đối chiếu thông tin nhận tiền</small></p></div><div><span><CheckCircle2 size={15} /></span><p><strong>Nhận thanh toán</strong><small>Trạng thái được cập nhật tại lịch sử</small></p></div></div>
+              <div className="withdraw-guide-time"><Clock3 size={18} /><p><strong>Thời gian xử lý</strong><small>Yêu cầu được admin duyệt thủ công.</small></p></div>
+            </aside>
+          </div>
         ) : (
           <section className="role-panel role-table-panel backoffice-table-card collaborator-withdraw-history-card">
             <div className="role-panel-head"><div><p className="section-kicker">LỊCH SỬ</p><h2>Yêu cầu rút tiền của tôi</h2></div><span><History size={15} /> {history?.totalElements ?? 0} yêu cầu</span></div>
