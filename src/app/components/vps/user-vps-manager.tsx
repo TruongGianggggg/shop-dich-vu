@@ -28,7 +28,7 @@ import {
 import styles from "./vps.module.css";
 
 const statusLabel: Record<VpsOrderStatus, string> = {
-  PENDING: "Đang tạo",
+  PENDING: "Đang xử lý",
   ACTIVE: "Đang hoạt động",
   REVIEW: "Cần đối soát",
   FAILED: "Thất bại",
@@ -108,6 +108,7 @@ export function UserVpsManager({
   const selectedPlan = plans.find((plan) => plan.id === effectiveSelectedPlanId) ?? null;
   const total = useMemo(() => {
     if (!selectedPlan) return 0;
+    if (selectedPlan.provisioningType === "MANUAL") return selectedPlan.price;
     return selectedPlan.price
       + addonCpu * selectedPlan.addonCpuPrice
       + addonRam * selectedPlan.addonRamPrice
@@ -116,7 +117,8 @@ export function UserVpsManager({
 
   async function purchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedPlan || !Number.isInteger(Number(osId)) || Number(osId) < 1) {
+    if (!selectedPlan) return;
+    if (selectedPlan.provisioningType === "AGENCY" && (!Number.isInteger(Number(osId)) || Number(osId) < 1)) {
       setError("Vui lòng chọn hệ điều hành hợp lệ.");
       return;
     }
@@ -130,16 +132,18 @@ export function UserVpsManager({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: selectedPlan.id,
-          osId: Number(osId),
-          addonCpu,
-          addonRam,
-          addonDisk,
+          osId: selectedPlan.provisioningType === "MANUAL" ? 0 : Number(osId),
+          addonCpu: selectedPlan.provisioningType === "MANUAL" ? 0 : addonCpu,
+          addonRam: selectedPlan.provisioningType === "MANUAL" ? 0 : addonRam,
+          addonDisk: selectedPlan.provisioningType === "MANUAL" ? 0 : addonDisk,
         }),
       });
       const data = await readJson(response);
       if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tạo được VPS."));
       const order = data as VpsOrder;
-      setNotice(order.status === "ACTIVE"
+      setNotice(order.provisioningType === "MANUAL" && order.status === "PENDING"
+        ? "Đã thanh toán. Admin sẽ cấu hình và bàn giao VPS cho bạn."
+        : order.status === "ACTIVE"
         ? "VPS đã được tạo thành công."
         : order.status === "FAILED"
           ? "Nhà cung cấp từ chối đơn; số dư đã được hoàn lại."
@@ -201,7 +205,7 @@ export function UserVpsManager({
     <main className={styles.page}>
       <section className={styles.hero}>
         <div>
-          <p>VPS AGENCY</p>
+          <p>VPS AGENCY & THỦ CÔNG</p>
           <h1>{serviceName}</h1>
           <span>
             {showHistory
@@ -232,8 +236,9 @@ export function UserVpsManager({
                 type="button"
               >
                 <span><Server size={22} /></span>
+                <small>{plan.provisioningType === "MANUAL" ? "ADMIN BÀN GIAO" : "TỰ ĐỘNG"}</small>
                 <h3>{plan.name}</h3>
-                <p>{plan.description || "Gói VPS được cung cấp tự động qua Agency."}</p>
+                <p>{plan.description || (plan.provisioningType === "MANUAL" ? "VPS được admin cấu hình và bàn giao sau khi thanh toán." : "Gói VPS được cung cấp tự động qua Agency.")}</p>
                 <strong>{formatVnd(plan.price)}</strong>
                 <small>{plan.billingCycle}</small>
               </button>
@@ -243,6 +248,7 @@ export function UserVpsManager({
 
         {selectedPlan ? (
           <form className={styles.purchaseForm} onSubmit={purchase}>
+            {selectedPlan.provisioningType === "AGENCY" ? <>
             <label>
               <span>Hệ điều hành</span>
               {options.operatingSystems.length ? (
@@ -261,6 +267,7 @@ export function UserVpsManager({
                 {[0, 10, 20, 30, 40, 50].map((value) => <option key={value} value={value}>{value} GB</option>)}
               </select>
             </label>
+            </> : <div className={styles.manualPurchaseNotice}><Server size={20} /><div><strong>Admin sẽ bàn giao cấu hình</strong><span>Sau khi thanh toán, đơn chuyển sang chờ xử lý. IP, cổng và tài khoản đăng nhập sẽ xuất hiện trong lịch sử VPS khi admin hoàn tất.</span></div></div>}
             <div className={styles.purchaseTotal}>
               <span>Tổng thanh toán</span><strong>{formatVnd(total)}</strong>
               <button disabled={submitting} type="submit">
@@ -286,14 +293,16 @@ export function UserVpsManager({
                 <article className={styles.orderCard} key={order.id}>
                   <header>
                     <div><small>{order.requestId}</small><h3>{order.planName}</h3></div>
-                    <span className={`${styles.status} ${styles[`status${order.status}`]}`}>{statusLabel[order.status]}</span>
+                    <span className={`${styles.status} ${styles[`status${order.status}`]}`}>{order.status === "PENDING" && order.provisioningType === "MANUAL" ? "Chờ admin bàn giao" : statusLabel[order.status]}</span>
                   </header>
                   <dl>
-                    <Info label="IP" value={order.ipAddress ?? "Chưa cấp"} />
+                    <Info label="Kiểu cấp" value={order.provisioningType === "MANUAL" ? "Thủ công" : "Agency"} />
+                    <Info label="IP / Host" value={order.ipAddress ?? "Chưa cấp"} />
+                    <Info label="Cổng" value={order.connectionPort ? String(order.connectionPort) : "—"} />
                     <Info label="VPS ID" value={order.providerVpsId ?? "—"} />
                     <Info label="Trạng thái máy" value={order.providerStatus ?? "—"} />
                     <Info label="Hết hạn" value={formatDate(order.nextDueAt)} />
-                    <Info label="Hệ điều hành" value={`OS #${order.osId}`} />
+                    {order.provisioningType === "AGENCY" ? <Info label="Hệ điều hành" value={`OS #${order.osId}`} /> : null}
                     <Info label="Thanh toán" value={formatVnd(order.amount)} />
                   </dl>
                   {order.providerMessage ? <p className={styles.providerMessage}>{order.providerMessage}</p> : null}
@@ -301,6 +310,8 @@ export function UserVpsManager({
                     <div className={styles.credentials}>
                       <CredentialRow label="Tài khoản" value={secret.username} />
                       <CredentialRow label="Mật khẩu" value={secret.password} />
+                      {secret.connectionPort ? <CredentialRow label="Cổng" value={String(secret.connectionPort)} /> : null}
+                      {secret.accessNote ? <CredentialRow label="Ghi chú" value={secret.accessNote} /> : null}
                     </div>
                   ) : null}
                   <footer>
@@ -309,12 +320,12 @@ export function UserVpsManager({
                         <button disabled={busy} onClick={() => void revealCredentials(order)} type="button">
                           {secret ? <EyeOff size={15} /> : <Eye size={15} />} {secret ? "Ẩn đăng nhập" : "Xem đăng nhập"}
                         </button>
-                        <button disabled={busy} onClick={() => void runAction(order, "restart", "Khởi động lại")} type="button">
+                        {order.provisioningType === "AGENCY" ? <><button disabled={busy} onClick={() => void runAction(order, "restart", "Khởi động lại")} type="button">
                           <RotateCw size={15} /> Khởi động lại
                         </button>
                         <button disabled={busy} onClick={() => void runAction(order, "off", "Tắt")} type="button">
                           <CirclePower size={15} /> Tắt máy
-                        </button>
+                        </button></> : null}
                       </>
                     ) : <span>Cập nhật {formatDateTime(order.updatedAt)}</span>}
                   </footer>

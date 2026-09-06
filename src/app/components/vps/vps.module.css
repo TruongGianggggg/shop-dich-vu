@@ -26,6 +26,9 @@
 .purchaseForm { align-items: end; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; display: grid; gap: 13px; grid-template-columns: 1.4fr repeat(3, .8fr) 1.2fr; margin-top: 17px; padding: 17px; }
 .purchaseForm label > span { align-items: center; color: #475569; display: flex; font-size: 12px; font-weight: 750; gap: 5px; margin-bottom: 7px; }
 .purchaseForm input, .purchaseForm select { background: white; border: 1px solid #cbd5e1; border-radius: 9px; height: 43px; padding: 0 11px; width: 100%; }
+.manualPurchaseNotice { align-items: flex-start; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 11px; color: #1d4ed8; display: flex; gap: 10px; grid-column: 1 / span 4; padding: 13px; }
+.manualPurchaseNotice strong, .manualPurchaseNotice span { display: block; }
+.manualPurchaseNotice span { color: #475569; font-size: 12px; line-height: 1.5; margin-top: 2px; }
 .purchaseTotal { border-left: 1px solid #dbe3ef; padding-left: 15px; }
 .purchaseTotal > span { color: #64748b; display: block; font-size: 11px; }
 .purchaseTotal > strong { color: #0f172a; display: block; font-size: 18px; margin: 2px 0 8px; }
@@ -95,9 +98,12 @@
 .modal header > button { color: #64748b; }
 .formGrid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .formGrid label > span { color: #475569; display: block; font-size: 12px; font-weight: 750; margin-bottom: 6px; }
-.formGrid input:not([type="checkbox"]), .formGrid textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; width: 100%; }
-.formGrid input:not([type="checkbox"]) { height: 42px; }
+.formGrid input:not([type="checkbox"]), .formGrid select, .formGrid textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; width: 100%; }
+.formGrid input:not([type="checkbox"]), .formGrid select { height: 42px; }
 .formGrid textarea { padding-bottom: 9px; padding-top: 9px; resize: vertical; }
+.manualHint { align-items: flex-start; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px; display: flex; flex-direction: column; justify-content: center; padding: 9px 11px; }
+.manualHint strong { color: #1d4ed8; font-size: 12px; }
+.manualHint span { color: #64748b; font-size: 11px; line-height: 1.45; margin-top: 2px; }
 .fullField { grid-column: 1 / -1; }
 .checkbox { align-items: center; display: flex; font-size: 13px; font-weight: 700; gap: 8px; grid-column: 1 / -1; }
 .modal > footer { border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 15px; }
@@ -114,6 +120,12 @@
 .adminCredentials span { color: #94a3b8; font-size: 11px; }
 .adminCredentials code { font-size: 12px; overflow-wrap: anywhere; }
 .adminCredentials button { color: #93c5fd; }
+.manualProvisionForm { background: #f8fafc; border: 1px solid #dbe3ef; border-radius: 12px; margin-top: 15px; padding: 15px; }
+.manualProvisionHead { align-items: flex-end; display: flex; justify-content: space-between; margin-bottom: 13px; }
+.manualProvisionHead p { color: #2563eb; font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.manualProvisionHead h3 { color: #0f172a; font-size: 16px; margin-top: 2px; }
+.manualProvisionHead > span { color: #64748b; font-size: 11px; }
+.manualProvisionForm > button { align-items: center; border-radius: 8px; display: flex; font-size: 13px; font-weight: 750; gap: 6px; margin-left: auto; margin-top: 13px; min-height: 40px; padding: 0 14px; }
 .actionFooter { flex-wrap: wrap; justify-content: flex-start !important; }
 .actionFooter button { background: #eff6ff; color: #1d4ed8; }
 .dangerButton { background: #fee2e2 !important; color: #b91c1c !important; margin-left: auto; }

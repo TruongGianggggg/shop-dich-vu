@@ -483,9 +483,12 @@ export type VpsOrderStatus =
   | "EXPIRED"
   | "CANCELLED";
 
+export type VpsProvisioningType = "AGENCY" | "MANUAL";
+
 export type VpsPlan = {
   id: string;
   providerProductId: string;
+  provisioningType: VpsProvisioningType;
   subCategoryId: string;
   name: string;
   description: string;
@@ -513,6 +516,7 @@ export type VpsOrder = {
   planId: string;
   planName: string;
   providerProductId: string;
+  provisioningType: VpsProvisioningType;
   billingCycle: string;
   osId: number;
   addonCpu: number;
@@ -525,7 +529,9 @@ export type VpsOrder = {
   providerVpsId: string | null;
   providerStatus: string | null;
   ipAddress: string | null;
+  connectionPort: number | null;
   vpsUsername: string | null;
+  accessNote: string | null;
   providerCreatedAt: string | null;
   nextDueAt: string | null;
   specialProduct: boolean;
@@ -535,7 +541,22 @@ export type VpsOrder = {
   updatedAt: string;
 };
 
-export type VpsCredentials = { username: string; password: string };
+export type VpsCredentials = {
+  username: string;
+  password: string;
+  connectionPort: number | null;
+  accessNote: string | null;
+};
+
+export type VpsManualProvisionPayload = {
+  host: string;
+  connectionPort: number;
+  username: string;
+  password: string;
+  nextDueAt: string;
+  providerStatus: string;
+  accessNote: string;
+};
 
 export type VpsOption = {
   id: string;

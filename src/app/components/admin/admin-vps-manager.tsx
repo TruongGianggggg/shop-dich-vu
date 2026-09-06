@@ -23,6 +23,7 @@ import {
   getApiErrorMessage,
   PageResponse,
   VpsCredentials,
+  VpsManualProvisionPayload,
   VpsOrder,
   VpsOrderStatus,
   VpsPlan,
@@ -34,6 +35,7 @@ import styles from "@/app/components/vps/vps.module.css";
 type Tab = "orders" | "plans";
 const emptyPlan: VpsPlanPayload = {
   providerProductId: "",
+  provisioningType: "AGENCY",
   name: "",
   description: "",
   billingCycle: "",
@@ -43,6 +45,16 @@ const emptyPlan: VpsPlanPayload = {
   addonDiskPricePer10Gb: 0,
   active: false,
   displayOrder: 0,
+};
+
+const emptyManualProvision: VpsManualProvisionPayload = {
+  host: "",
+  connectionPort: 22,
+  username: "root",
+  password: "",
+  nextDueAt: "",
+  providerStatus: "running",
+  accessNote: "",
 };
 
 const statusLabel: Record<VpsOrderStatus, string> = {
@@ -73,6 +85,7 @@ export function AdminVpsManager() {
   const [showPlanForm, setShowPlanForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<VpsOrder | null>(null);
   const [credentials, setCredentials] = useState<VpsCredentials | null>(null);
+  const [manualForm, setManualForm] = useState<VpsManualProvisionPayload>(emptyManualProvision);
 
   const loadOverview = useCallback(async () => {
     const [providerResponse, plansResponse] = await Promise.all([
@@ -132,6 +145,7 @@ export function AdminVpsManager() {
     setEditingId(plan.id);
     setPlanForm({
       providerProductId: plan.providerProductId,
+      provisioningType: plan.provisioningType,
       name: plan.name,
       description: plan.description,
       billingCycle: plan.billingCycle,
@@ -143,6 +157,20 @@ export function AdminVpsManager() {
       displayOrder: plan.displayOrder,
     });
     setShowPlanForm(true);
+  }
+
+  function openOrder(order: VpsOrder) {
+    setSelectedOrder(order);
+    setCredentials(null);
+    setManualForm({
+      host: order.ipAddress ?? "",
+      connectionPort: order.connectionPort ?? 22,
+      username: order.vpsUsername ?? "root",
+      password: "",
+      nextDueAt: toDateTimeLocal(order.nextDueAt),
+      providerStatus: order.providerStatus ?? "running",
+      accessNote: order.accessNote ?? "",
+    });
   }
 
   async function savePlan(event: FormEvent<HTMLFormElement>) {
@@ -201,6 +229,31 @@ export function AdminVpsManager() {
     }
   }
 
+  async function provisionManual(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedOrder) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch(`/api/admin/vps/orders/${encodeURIComponent(selectedOrder.id)}/manual-provision`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...manualForm, nextDueAt: new Date(manualForm.nextDueAt).toISOString() }),
+      });
+      const data = await readJson(response);
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không bàn giao được VPS."));
+      setSelectedOrder(data as VpsOrder);
+      setManualForm((current) => ({ ...current, password: "" }));
+      setNotice("Đã lưu cấu hình và bàn giao VPS cho khách.");
+      await loadOrders();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Không bàn giao được VPS.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function runAction(order: VpsOrder, action: string, label: string) {
     if (!window.confirm(`Xác nhận ${label.toLowerCase()} VPS ${order.ipAddress ?? order.requestId}?`)) return;
     setBusy(true);
@@ -229,7 +282,7 @@ export function AdminVpsManager() {
       <AdminSidebar active="vps" />
       <section className={`role-main ${styles.adminMain}`}>
         <header className="role-topbar">
-          <div><p className="section-kicker">VPS Agency</p><h1>Quản lý VPS</h1></div>
+          <div><p className="section-kicker">VPS Agency & thủ công</p><h1>Quản lý VPS</h1></div>
           <div className="role-topbar-actions">
             <button className="ghost-button h-11 px-4" disabled={busy} onClick={() => void syncPlans()} type="button"><CloudCog size={16} /> Đồng bộ Agency</button>
             <button className="primary-button h-11 px-4" disabled={loading} onClick={() => void load()} type="button"><RefreshCw size={16} /> Tải lại</button>
@@ -271,17 +324,18 @@ export function AdminVpsManager() {
             </div>
             <div className="role-table-wrap">
               <table className="role-table">
-                <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Gói VPS</th><th>IP / VPS ID</th><th>Giá</th><th>Trạng thái</th><th /></tr></thead>
+                <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Gói VPS</th><th>Kiểu cấp</th><th>IP / VPS ID</th><th>Giá</th><th>Trạng thái</th><th /></tr></thead>
                 <tbody>
                   {orders.map((order) => (
                     <tr key={order.id}>
                       <td><strong>{order.requestId}</strong><small className={styles.tableSub}>{formatDateTime(order.createdAt)}</small></td>
                       <td>{order.customerUsername}</td>
-                      <td>{order.planName}<small className={styles.tableSub}>{order.billingCycle} · OS #{order.osId}</small></td>
+                      <td>{order.planName}<small className={styles.tableSub}>{order.billingCycle}{order.provisioningType === "AGENCY" ? ` · OS #${order.osId}` : ""}</small></td>
+                      <td>{order.provisioningType === "MANUAL" ? "Thủ công" : "Agency"}</td>
                       <td>{order.ipAddress ?? "Chưa cấp"}<small className={styles.tableSub}>{order.providerVpsId ?? "—"}</small></td>
                       <td><strong>{formatVnd(order.amount)}</strong></td>
-                      <td><span className={`${styles.status} ${styles[`status${order.status}`]}`}>{statusLabel[order.status]}</span></td>
-                      <td><button className={styles.iconButton} onClick={() => { setSelectedOrder(order); setCredentials(null); }} title="Xem chi tiết" type="button"><Eye size={16} /></button></td>
+                      <td><span className={`${styles.status} ${styles[`status${order.status}`]}`}>{order.status === "PENDING" && order.provisioningType === "MANUAL" ? "Chờ bàn giao" : statusLabel[order.status]}</span></td>
+                      <td><button className={styles.iconButton} onClick={() => openOrder(order)} title="Xem chi tiết" type="button"><Eye size={16} /></button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -302,12 +356,13 @@ export function AdminVpsManager() {
             </div>
             <div className="role-table-wrap">
               <table className="role-table">
-                <thead><tr><th>Thứ tự</th><th>Gói</th><th>Product ID</th><th>Chu kỳ</th><th>Giá bán</th><th>Trạng thái</th><th /></tr></thead>
+                <thead><tr><th>Thứ tự</th><th>Gói</th><th>Kiểu cấp</th><th>Product ID</th><th>Chu kỳ</th><th>Giá bán</th><th>Trạng thái</th><th /></tr></thead>
                 <tbody>
                   {plans.map((plan) => (
                     <tr key={plan.id}>
                       <td>{plan.displayOrder}</td><td><strong>{plan.name}</strong><small className={styles.tableSub}>{plan.description || "Chưa có mô tả"}</small></td>
-                      <td><code>{plan.providerProductId}</code></td><td>{plan.billingCycle || "Chưa cấu hình"}</td><td><strong>{formatVnd(plan.price)}</strong></td>
+                      <td>{plan.provisioningType === "MANUAL" ? "Thủ công" : "Agency"}</td>
+                      <td>{plan.provisioningType === "MANUAL" ? "—" : <code>{plan.providerProductId}</code>}</td><td>{plan.billingCycle || "Chưa cấu hình"}</td><td><strong>{formatVnd(plan.price)}</strong></td>
                       <td><span className={`${styles.planState} ${plan.active ? styles.planActive : ""}`}>{plan.active ? "Đang bán" : "Đang ẩn"}</span></td>
                       <td><button className={styles.iconButton} onClick={() => openEditPlan(plan)} title="Sửa gói" type="button"><Pencil size={15} /></button></td>
                     </tr>
@@ -324,13 +379,12 @@ export function AdminVpsManager() {
           <form className={styles.modal} onSubmit={savePlan}>
             <header><div><p>GÓI VPS</p><h2>{editingId ? "Cập nhật gói VPS" : "Thêm gói VPS"}</h2></div><button disabled={busy} onClick={() => setShowPlanForm(false)} type="button"><X size={19} /></button></header>
             <div className={styles.formGrid}>
-              <PlanField label="Product ID Agency" required value={planForm.providerProductId} onChange={(value) => setPlanForm((current) => ({ ...current, providerProductId: value }))} />
+              <label><span>Kiểu cấp VPS</span><select onChange={(event) => setPlanForm((current) => ({ ...current, provisioningType: event.target.value as VpsPlanPayload["provisioningType"], providerProductId: event.target.value === "MANUAL" ? "" : current.providerProductId, addonCpuPrice: event.target.value === "MANUAL" ? 0 : current.addonCpuPrice, addonRamPrice: event.target.value === "MANUAL" ? 0 : current.addonRamPrice, addonDiskPricePer10Gb: event.target.value === "MANUAL" ? 0 : current.addonDiskPricePer10Gb }))} value={planForm.provisioningType}><option value="AGENCY">Tự động qua Agency</option><option value="MANUAL">Admin nhập cấu hình bằng tay</option></select></label>
+              {planForm.provisioningType === "AGENCY" ? <PlanField label="Product ID Agency" required value={planForm.providerProductId} onChange={(value) => setPlanForm((current) => ({ ...current, providerProductId: value }))} /> : <div className={styles.manualHint}><strong>Cấp thủ công</strong><span>Sau khi khách thanh toán, đơn sẽ chờ admin nhập IP và thông tin đăng nhập.</span></div>}
               <PlanField label="Tên gói" required value={planForm.name} onChange={(value) => setPlanForm((current) => ({ ...current, name: value }))} />
               <PlanField label="Chu kỳ thuê" placeholder="monthly / 1-month..." required value={planForm.billingCycle} onChange={(value) => setPlanForm((current) => ({ ...current, billingCycle: value }))} />
               <PlanNumber label="Giá bán" value={planForm.price} onChange={(value) => setPlanForm((current) => ({ ...current, price: value }))} />
-              <PlanNumber label="Giá / CPU thêm" value={planForm.addonCpuPrice} onChange={(value) => setPlanForm((current) => ({ ...current, addonCpuPrice: value }))} />
-              <PlanNumber label="Giá / RAM thêm" value={planForm.addonRamPrice} onChange={(value) => setPlanForm((current) => ({ ...current, addonRamPrice: value }))} />
-              <PlanNumber label="Giá / 10 GB đĩa" value={planForm.addonDiskPricePer10Gb} onChange={(value) => setPlanForm((current) => ({ ...current, addonDiskPricePer10Gb: value }))} />
+              {planForm.provisioningType === "AGENCY" ? <><PlanNumber label="Giá / CPU thêm" value={planForm.addonCpuPrice} onChange={(value) => setPlanForm((current) => ({ ...current, addonCpuPrice: value }))} /><PlanNumber label="Giá / RAM thêm" value={planForm.addonRamPrice} onChange={(value) => setPlanForm((current) => ({ ...current, addonRamPrice: value }))} /><PlanNumber label="Giá / 10 GB đĩa" value={planForm.addonDiskPricePer10Gb} onChange={(value) => setPlanForm((current) => ({ ...current, addonDiskPricePer10Gb: value }))} /></> : null}
               <PlanNumber label="Thứ tự hiển thị" value={planForm.displayOrder} onChange={(value) => setPlanForm((current) => ({ ...current, displayOrder: value }))} />
               <label className={styles.fullField}><span>Mô tả</span><textarea onChange={(event) => setPlanForm((current) => ({ ...current, description: event.target.value }))} rows={4} value={planForm.description} /></label>
               <label className={styles.checkbox}><input checked={planForm.active} onChange={(event) => setPlanForm((current) => ({ ...current, active: event.target.checked }))} type="checkbox" /> Mở bán gói này</label>
@@ -346,19 +400,32 @@ export function AdminVpsManager() {
             <header><div><p>CHI TIẾT ĐƠN</p><h2>{selectedOrder.requestId}</h2></div><button disabled={busy} onClick={() => setSelectedOrder(null)} type="button"><X size={19} /></button></header>
             <dl className={styles.detailGrid}>
               <Detail label="Khách hàng" value={selectedOrder.customerUsername} /><Detail label="Gói VPS" value={selectedOrder.planName} />
-              <Detail label="IP" value={selectedOrder.ipAddress ?? "Chưa cấp"} /><Detail label="VPS ID" value={selectedOrder.providerVpsId ?? "—"} />
+              <Detail label="Kiểu cấp" value={selectedOrder.provisioningType === "MANUAL" ? "Admin nhập thủ công" : "Tự động qua Agency"} /><Detail label="IP / Host" value={selectedOrder.ipAddress ?? "Chưa cấp"} />
+              <Detail label="Cổng kết nối" value={selectedOrder.connectionPort ? String(selectedOrder.connectionPort) : "—"} /><Detail label="VPS ID" value={selectedOrder.providerVpsId ?? "—"} />
               <Detail label="Trạng thái" value={statusLabel[selectedOrder.status]} /><Detail label="Trạng thái máy" value={selectedOrder.providerStatus ?? "—"} />
               <Detail label="Thanh toán" value={formatVnd(selectedOrder.amount)} /><Detail label="Hết hạn" value={formatDateTime(selectedOrder.nextDueAt)} />
             </dl>
             {selectedOrder.providerMessage ? <p className={styles.providerMessage}>{selectedOrder.providerMessage}</p> : null}
-            {credentials ? <div className={styles.adminCredentials}><Credential label="Tài khoản" value={credentials.username} /><Credential label="Mật khẩu" value={credentials.password} /></div> : null}
+            {selectedOrder.provisioningType === "MANUAL" && !["FAILED", "CANCELLED", "EXPIRED"].includes(selectedOrder.status) ? (
+              <form className={styles.manualProvisionForm} onSubmit={provisionManual}>
+                <div className={styles.manualProvisionHead}><div><p>BÀN GIAO THỦ CÔNG</p><h3>Thông tin truy cập VPS</h3></div><span>Có thể cập nhật lại khi cần</span></div>
+                <div className={styles.formGrid}>
+                  <PlanField label="IP hoặc hostname" required value={manualForm.host} onChange={(value) => setManualForm((current) => ({ ...current, host: value }))} />
+                  <PlanNumber label="Cổng kết nối" min={1} max={65535} value={manualForm.connectionPort} onChange={(value) => setManualForm((current) => ({ ...current, connectionPort: value }))} />
+                  <PlanField label="Tài khoản" required value={manualForm.username} onChange={(value) => setManualForm((current) => ({ ...current, username: value }))} />
+                  <PlanField label={selectedOrder.status === "ACTIVE" ? "Mật khẩu mới" : "Mật khẩu"} placeholder={selectedOrder.status === "ACTIVE" ? "Nhập lại để cập nhật bàn giao" : "Nhập mật khẩu VPS"} required value={manualForm.password} onChange={(value) => setManualForm((current) => ({ ...current, password: value }))} />
+                  <label><span>Ngày hết hạn</span><input min={toDateTimeLocal(new Date().toISOString())} onChange={(event) => setManualForm((current) => ({ ...current, nextDueAt: event.target.value }))} required type="datetime-local" value={manualForm.nextDueAt} /></label>
+                  <PlanField label="Trạng thái máy" required value={manualForm.providerStatus} onChange={(value) => setManualForm((current) => ({ ...current, providerStatus: value }))} />
+                  <label className={styles.fullField}><span>Ghi chú truy cập</span><textarea maxLength={1000} onChange={(event) => setManualForm((current) => ({ ...current, accessNote: event.target.value }))} placeholder="Ví dụ: SSH/RDP, lưu ý firewall..." rows={3} value={manualForm.accessNote} /></label>
+                </div>
+                <button className={styles.saveButton} disabled={busy} type="submit">{busy ? <LoaderCircle className={styles.spin} size={16} /> : <Save size={16} />} Lưu và bàn giao cho khách</button>
+              </form>
+            ) : null}
+            {credentials ? <div className={styles.adminCredentials}><Credential label="Tài khoản" value={credentials.username} /><Credential label="Mật khẩu" value={credentials.password} />{credentials.connectionPort ? <Credential label="Cổng" value={String(credentials.connectionPort)} /> : null}{credentials.accessNote ? <Credential label="Ghi chú" value={credentials.accessNote} /> : null}</div> : null}
             <footer className={styles.actionFooter}>
               {selectedOrder.status === "ACTIVE" ? <>
                 <button disabled={busy} onClick={() => void revealCredentials(selectedOrder)} type="button"><Eye size={15} /> Xem đăng nhập</button>
-                <button disabled={busy} onClick={() => void runAction(selectedOrder, "on", "Bật")} type="button"><CirclePower size={15} /> Bật</button>
-                <button disabled={busy} onClick={() => void runAction(selectedOrder, "restart", "Khởi động lại")} type="button"><RotateCw size={15} /> Khởi động lại</button>
-                <button disabled={busy} onClick={() => void runAction(selectedOrder, "off", "Tắt")} type="button"><CirclePower size={15} /> Tắt</button>
-                <button className={styles.dangerButton} disabled={busy} onClick={() => void runAction(selectedOrder, "cancel", "Hủy")} type="button">Hủy VPS</button>
+                {selectedOrder.provisioningType === "AGENCY" ? <><button disabled={busy} onClick={() => void runAction(selectedOrder, "on", "Bật")} type="button"><CirclePower size={15} /> Bật</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "restart", "Khởi động lại")} type="button"><RotateCw size={15} /> Khởi động lại</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "off", "Tắt")} type="button"><CirclePower size={15} /> Tắt</button><button className={styles.dangerButton} disabled={busy} onClick={() => void runAction(selectedOrder, "cancel", "Hủy")} type="button">Hủy VPS</button></> : null}
               </> : <span>Không có thao tác trực tiếp cho trạng thái này.</span>}
             </footer>
           </section>
@@ -371,10 +438,11 @@ export function AdminVpsManager() {
 function PlanField({ label, value, onChange, required = false, placeholder = "" }: { label: string; value: string; onChange: (value: string) => void; required?: boolean; placeholder?: string }) {
   return <label><span>{label}</span><input onChange={(event) => onChange(event.target.value)} placeholder={placeholder} required={required} value={value} /></label>;
 }
-function PlanNumber({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
-  return <label><span>{label}</span><input min="0" onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))} type="number" value={value} /></label>;
+function PlanNumber({ label, value, onChange, min = 0, max }: { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number }) {
+  return <label><span>{label}</span><input max={max} min={min} onChange={(event) => onChange(Math.max(min, Number(event.target.value) || min))} type="number" value={value} /></label>;
 }
 function Detail({ label, value }: { label: string; value: string }) { return <div><dt>{label}</dt><dd>{value}</dd></div>; }
 function Credential({ label, value }: { label: string; value: string }) { return <div><span>{label}</span><code>{value}</code><button onClick={() => void navigator.clipboard.writeText(value)} type="button"><Copy size={14} /></button></div>; }
 function formatDateTime(value: string | null) { return value ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—"; }
+function toDateTimeLocal(value: string | null) { if (!value) return ""; const date = new Date(value); const offset = date.getTimezoneOffset(); return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 16); }
 async function readJson(response: Response) { const text = await response.text(); if (!text) return {}; try { return JSON.parse(text) as unknown; } catch { return { message: text }; } }
