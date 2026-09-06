@@ -173,9 +173,9 @@ export function AdminCurrencySettingsManager() {
       || (form.gemEnabled && (!isPositiveIntegerInput(form.gemAmount) || !isPositiveIntegerInput(form.gemPrice)))
       || !isNonNegativeIntegerInput(form.displayOrder)
       || !isPositiveIntegerInput(form.toolServerIndex)
-      || Number(form.toolServerIndex) > 21
+      || Number(form.toolServerIndex) > 22
     ) {
-      setError("Số lượng và giá bán phải lớn hơn 0; index tool phải từ 1 đến 21.");
+      setError("Số lượng và giá bán phải lớn hơn 0; index tool phải từ 1 đến 22.");
       return;
     }
 
@@ -367,14 +367,14 @@ export function AdminCurrencySettingsManager() {
                       <input
                         className="text-field"
                         inputMode="numeric"
-                        max="21"
+                        max="22"
                         min="1"
                         onChange={(event) => setForm({ ...form, toolServerIndex: normalizeIntegerInput(event.target.value) })}
                         required
                         type="number"
                         value={form.toolServerIndex}
                       />
-                      <small>Giá trị duy nhất từ 1 đến 21, đúng với server trong game.</small>
+                      <small>Giá trị duy nhất từ 1 đến 22; Server 15 sử dụng index 22.</small>
                     </label>
                     <label className="admin-check-field currency-active-field">
                       <input
@@ -508,10 +508,10 @@ function authHeaders(_session: AuthResponse) {
 
 function nextAvailableToolIndex(configs: GameServerCurrencyConfig[]) {
   const usedIndexes = new Set(configs.map((config) => config.toolServerIndex));
-  for (let index = 1; index <= 21; index += 1) {
+  for (let index = 1; index <= 22; index += 1) {
     if (!usedIndexes.has(index)) return index;
   }
-  return 21;
+  return 22;
 }
 
 async function readResponseJson(response: Response) {

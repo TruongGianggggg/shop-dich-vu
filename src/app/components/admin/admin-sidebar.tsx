@@ -22,6 +22,7 @@ type AdminSection =
   | "service-categories"
   | "service-sub-categories"
   | "currency-settings"
+  | "collaborator-currency-settings"
   | "currency-orders"
   | "active-orders"
   | "orders"
@@ -62,6 +63,12 @@ const navItems = [
     icon: Coins,
     label: "Cấu hình Vàng & Ngọc",
     section: "currency-settings",
+  },
+  {
+    href: "/admin/collaborator-currency-settings",
+    icon: HandCoins,
+    label: "Cấu hình Vàng Ngọc CTV",
+    section: "collaborator-currency-settings",
   },
   {
     href: "/admin/active-orders",
