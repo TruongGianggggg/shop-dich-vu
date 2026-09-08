@@ -335,20 +335,20 @@
 
 .monthly-leaderboard-action {
   border-top: 1px solid #eef2f6;
-  padding: 10px;
+  padding: 12px;
 }
 
 .monthly-leaderboard .leaderboard-deposit-button {
   background: #1297ef;
   border: 0;
-  border-radius: 6px;
-  box-shadow: 0 4px 9px rgba(18, 151, 239, .22);
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(18, 151, 239, .25);
   color: #fff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 950;
   margin: 0;
-  min-height: 38px;
-  padding: 8px 12px;
+  min-height: 46px;
+  padding: 10px 16px;
   text-transform: uppercase;
   width: 100%;
 }

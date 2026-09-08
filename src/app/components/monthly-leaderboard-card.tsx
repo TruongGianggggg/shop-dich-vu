@@ -225,7 +225,7 @@ export function MonthlyLeaderboardCard({
             {isSubmitting ? "ĐANG XÁC NHẬN..." : "XÁC NHẬN"}
           </button>
         ) : (
-          <DepositQrButton className="leaderboard-deposit-button" label="👉 NẠP TIỀN NGAY 👈" />
+          <DepositQrButton className="leaderboard-deposit-button" label="👉 NẠP TIỀN ATM NGAY 👈" />
         )}
       </div>
     </div>
