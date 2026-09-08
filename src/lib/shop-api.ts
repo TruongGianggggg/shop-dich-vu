@@ -393,6 +393,7 @@ export type GameServerCurrencyConfig = {
   goldEnabled: boolean;
   goldAmount: number;
   goldPrice: number;
+  goldSaleType: GoldSaleType;
   gemEnabled: boolean;
   gemAmount: number;
   gemPrice: number;
@@ -425,6 +426,7 @@ export type CurrencyServerCatalogItem = GameServerCurrencyConfig & {
 };
 
 export type GameCurrencyType = "GOLD" | "GEM";
+export type GoldSaleType = "BAR" | "FRESH";
 
 export type GameCurrencyDisplaySettings = {
   goldImageUrl: string;
@@ -449,6 +451,7 @@ export type GameCurrencyOrder = {
   toolServerIndex: number;
   characterName: string;
   currencyType: GameCurrencyType;
+  goldSaleType: GoldSaleType;
   status: ServiceOrderStatus;
   unitAmount: number;
   unitPrice: number;

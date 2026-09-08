@@ -83,7 +83,7 @@ export function AdminCollaboratorCurrencySettingsManager() {
             <td><strong>{config.collaboratorUsername}</strong></td>
             <td><strong>{config.name}</strong><small>Thứ tự #{config.displayOrder}</small></td>
             <td><span className="ctv-tool-index">{config.toolServerIndex}</span>{config.toolServerIndex === 22 ? <small>Server 15</small> : null}</td>
-            <td>{config.goldEnabled ? <strong>{config.goldAmount.toLocaleString("vi-VN")}</strong> : <span className="ctv-config-off">Không bán</span>}</td>
+            <td>{config.goldEnabled ? <><strong>{config.goldAmount.toLocaleString("vi-VN")}</strong><small>{config.goldSaleType === "FRESH" ? "Vàng tươi" : "Thỏi vàng"}</small></> : <span className="ctv-config-off">Không bán</span>}</td>
             <td>{config.goldEnabled ? <strong>{formatVnd(config.goldPrice)}</strong> : "—"}</td>
             <td>{config.gemEnabled ? <strong>{config.gemAmount.toLocaleString("vi-VN")}</strong> : <span className="ctv-config-off">Không bán</span>}</td>
             <td>{config.gemEnabled ? <strong>{formatVnd(config.gemPrice)}</strong> : "—"}</td>

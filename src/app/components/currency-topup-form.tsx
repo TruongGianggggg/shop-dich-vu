@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Coins, Gem, Server } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useAuthSession } from "@/app/components/use-auth-session";
-import { formatReceivedCurrency } from "@/lib/game-currency";
+import { formatReceivedCurrency, goldSaleTypeLabel } from "@/lib/game-currency";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
   GameCurrencyOrder,
@@ -43,6 +43,8 @@ export function CurrencyTopupForm({
     ? Math.floor((numericPayment * unitAmount) / unitPrice)
     : 0;
   const isGold = currencyType === "GOLD";
+  const goldSaleType = selectedConfig?.goldSaleType ?? "BAR";
+  const currencyLabel = isGold ? goldSaleTypeLabel(goldSaleType) : "Ngọc";
   const returnUrl = isGold ? "/nap-vang" : "/nap-ngoc";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -94,7 +96,7 @@ export function CurrencyTopupForm({
       <div className="currency-shop-empty">
         <Server size={30} />
         <strong>Chưa có server đang mở bán</strong>
-        <p>Quản trị viên chưa cấu hình {isGold ? "Thỏi vàng" : "Ngọc"} cho server nào.</p>
+        <p>Quản trị viên chưa cấu hình {isGold ? "Vàng" : "Ngọc"} cho server nào.</p>
         <Link href="/">Quay lại trang chủ</Link>
       </div>
     );
@@ -106,7 +108,7 @@ export function CurrencyTopupForm({
       <div className={`currency-topup-heading ${isGold ? "gold" : "gem"}`}>
         <span><Icon size={25} /></span>
         <div>
-          <p>NẠP {isGold ? "THỎI VÀNG" : "NGỌC"}</p>
+          <p>NẠP {currencyLabel.toUpperCase()}</p>
           <h1>Thông tin đơn nạp</h1>
         </div>
       </div>
@@ -138,11 +140,11 @@ export function CurrencyTopupForm({
             type="text"
             value={formatIntegerInput(paymentAmount)}
           />
-          <small>Mỗi {formatVnd(unitPrice)} nhận {formatReceivedCurrency(unitAmount, currencyType)}</small>
+          <small>Mỗi {formatVnd(unitPrice)} nhận {formatReceivedCurrency(unitAmount, currencyType, goldSaleType)}</small>
         </label>
         <label>
           <span>Thực nhận</span>
-          <output>{formatReceivedCurrency(receivedAmount, currencyType)}</output>
+          <output>{formatReceivedCurrency(receivedAmount, currencyType, goldSaleType)}</output>
           {!isValidAmount ? <small className="error">Số tiền chưa đạt mức tối thiểu của server.</small> : null}
         </label>
       </div>
@@ -156,11 +158,11 @@ export function CurrencyTopupForm({
         <div className="currency-topup-message success" role="status">
           <strong>Tạo đơn thành công</strong>
           <span>Mã đơn: {createdOrder.requestId}</span>
-          <span>Thực nhận: {formatReceivedCurrency(createdOrder.receivedAmount, currencyType)}</span>
+          <span>Thực nhận: {formatReceivedCurrency(createdOrder.receivedAmount, currencyType, createdOrder.goldSaleType)}</span>
         </div>
       ) : null}
       <button className="currency-topup-submit" disabled={isSubmitting || !isValidAmount} type="submit">
-        {isSubmitting ? "Đang tạo đơn..." : session ? `Nạp ${isGold ? "thỏi vàng" : "Ngọc"}` : "Đăng nhập để tiếp tục"}
+        {isSubmitting ? "Đang tạo đơn..." : session ? `Nạp ${currencyLabel.toLowerCase()}` : "Đăng nhập để tiếp tục"}
       </button>
     </form>
   );

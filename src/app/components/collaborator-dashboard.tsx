@@ -191,10 +191,12 @@ export function CollaboratorDashboard() {
               <tbody>
                 {activeOrders.map((order, index) => (
                   <OrderRow
+                    busy={busyOrderId === order.id}
                     index={index}
                     key={order.id}
                     mode={activeTab}
                     onDetail={() => setDetailOrder(order)}
+                    onReceive={() => void mutateOrder(order.id, "receive")}
                     order={order}
                   />
                 ))}
@@ -224,10 +226,12 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
   return <article><span>{icon}</span><div><p>{label}</p><strong>{value}</strong></div></article>;
 }
 
-function OrderRow({ index, mode, onDetail, order }: {
+function OrderRow({ busy, index, mode, onDetail, onReceive, order }: {
+  busy: boolean;
   index: number;
   mode: Tab;
   onDetail: () => void;
+  onReceive: () => void;
   order: ServiceOrder;
 }) {
   const earning = collaboratorEarning(order);
@@ -242,9 +246,15 @@ function OrderRow({ index, mode, onDetail, order }: {
       <td>{mode === "received" ? (earning == null ? "—" : formatVnd(earning)) : formatDate(order.createdAt)}</td>
       <td><span className={`collaborator-status is-${order.status}`}>{statusLabels[order.status]}</span></td>
       <td>
-        <button className="ghost-button collaborator-detail-button" onClick={onDetail} type="button">
-          <Eye aria-hidden="true" size={15} /> Chi tiết
-        </button>
+        {mode === "available" ? (
+          <button className="primary-button collaborator-detail-button" disabled={busy} onClick={onReceive} type="button">
+            <UserCheck aria-hidden="true" size={15} /> {busy ? "Đang nhận..." : "Nhận đơn"}
+          </button>
+        ) : (
+          <button className="ghost-button collaborator-detail-button" onClick={onDetail} type="button">
+            <Eye aria-hidden="true" size={15} /> Chi tiết
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -279,16 +289,29 @@ function OrderDetailModal({ busy, mode, onAction, onClose, order }: {
             <strong>{formatVnd(order.amount)}</strong>
           </div>
           <dl className="collaborator-order-detail-grid">
-            <Detail label="Khách hàng" value={order.customerUsername ?? "—"} />
             <Detail label="Ngày tạo" value={formatDate(order.createdAt)} />
-            <Detail label="Tài khoản game" value={order.username ?? "—"} />
-            <Detail label="Mật khẩu" value={order.password ?? "—"} />
-            <Detail label="SĐT / Facebook" value={order.contactInfo ?? "—"} />
             <Detail label="Máy chủ" value={order.server ?? "—"} />
-            {mode === "received" ? <Detail label="Hoa hồng dự kiến" value={earning == null ? "—" : formatVnd(earning)} /> : null}
+            {mode === "received" ? (
+              <>
+                <Detail label="Khách hàng" value={order.customerUsername ?? "—"} />
+                <Detail label="Tài khoản game" value={order.username ?? "—"} />
+                <Detail label="Mật khẩu" value={order.password ?? "—"} />
+                <Detail label="SĐT / Facebook" value={order.contactInfo ?? "—"} />
+                <Detail label="Hoa hồng dự kiến" value={earning == null ? "—" : formatVnd(earning)} />
+              </>
+            ) : null}
           </dl>
-          {order.note ? <div className="collaborator-order-note"><b>Ghi chú khách hàng</b><p>{order.note}</p></div> : null}
-          {order.adminNote ? <div className="collaborator-order-note"><b>Ghi chú xử lý</b><p>{order.adminNote}</p></div> : null}
+          {mode === "available" ? (
+            <div className="collaborator-order-note">
+              <b>Thông tin tài khoản được bảo vệ</b>
+              <p>Tài khoản, mật khẩu và thông tin liên hệ sẽ hiển thị sau khi bạn nhận đơn.</p>
+            </div>
+          ) : (
+            <>
+              {order.note ? <div className="collaborator-order-note"><b>Ghi chú khách hàng</b><p>{order.note}</p></div> : null}
+              {order.adminNote ? <div className="collaborator-order-note"><b>Ghi chú xử lý</b><p>{order.adminNote}</p></div> : null}
+            </>
+          )}
         </div>
 
         <div className="admin-user-modal-actions collaborator-order-modal-actions">

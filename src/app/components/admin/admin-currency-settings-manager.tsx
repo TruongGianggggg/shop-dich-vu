@@ -33,6 +33,7 @@ type ServerForm = {
   goldEnabled: boolean;
   goldAmount: string;
   goldPrice: string;
+  goldSaleType: "BAR" | "FRESH";
   gemEnabled: boolean;
   gemAmount: string;
   gemPrice: string;
@@ -44,8 +45,9 @@ type ServerForm = {
 const emptyForm: ServerForm = {
   name: "",
   goldEnabled: true,
-  goldAmount: "1000000",
+  goldAmount: "37000000",
   goldPrice: "10000",
+  goldSaleType: "BAR",
   gemEnabled: false,
   gemAmount: "0",
   gemPrice: "0",
@@ -141,6 +143,7 @@ export function AdminCurrencySettingsManager() {
       goldEnabled: config.goldEnabled,
       goldAmount: String(config.goldAmount),
       goldPrice: String(config.goldPrice),
+      goldSaleType: config.goldSaleType ?? "BAR",
       gemEnabled: config.gemEnabled,
       gemAmount: String(config.gemAmount),
       gemPrice: String(config.gemPrice),
@@ -184,6 +187,7 @@ export function AdminCurrencySettingsManager() {
       goldEnabled: form.goldEnabled,
       goldAmount: form.goldEnabled ? Number(form.goldAmount) : 0,
       goldPrice: form.goldEnabled ? Number(form.goldPrice) : 0,
+      goldSaleType: form.goldSaleType,
       gemEnabled: form.gemEnabled,
       gemAmount: form.gemEnabled ? Number(form.gemAmount) : 0,
       gemPrice: form.gemEnabled ? Number(form.gemPrice) : 0,
@@ -442,7 +446,7 @@ function CurrencyPanel({
                 <span><Server size={17} /></span>
                 <div>
                   <strong>{config.name}</strong>
-                  <small>{config.active ? "Đang hoạt động" : "Đang tắt"} · Tool #{config.toolServerIndex}</small>
+                  <small>{config.active ? "Đang hoạt động" : "Đang tắt"} · Tool #{config.toolServerIndex}{isGold ? ` · ${config.goldSaleType === "FRESH" ? "Vàng tươi" : "Thỏi vàng"}` : ""}</small>
                 </div>
               </div>
               <div className="currency-rate">
@@ -488,6 +492,15 @@ function CurrencyFormBlock({
         <span>{isGold ? <Coins size={18} /> : <Gem size={18} />} Bật {isGold ? "Vàng" : "Ngọc"}</span>
       </label>
       <div>
+        {isGold ? (
+          <label className="field-label">
+            Kiểu bán
+            <select className="text-field" disabled={!enabled} onChange={(event) => onChange({ ...form, goldSaleType: event.target.value as ServerForm["goldSaleType"] })} value={form.goldSaleType}>
+              <option value="BAR">Thỏi vàng</option>
+              <option value="FRESH">Vàng tươi</option>
+            </select>
+          </label>
+        ) : null}
         <label className="field-label">
           Số lượng quy đổi
           <input className="text-field" disabled={!enabled} inputMode="numeric" onChange={(event) => onChange({ ...form, [amountKey]: normalizeIntegerInput(event.target.value) })} required={enabled} type="text" value={formatIntegerInput(form[amountKey])} />

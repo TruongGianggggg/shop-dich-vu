@@ -20,8 +20,8 @@ export async function CurrencyTopupPage({ currencyType }: { currencyType: GameCu
   const isGold = currencyType === "GOLD";
   const legacyDescription = isGold ? currencySettings.goldDescription : currencySettings.gemDescription;
   const description = serviceMetadata?.description || legacyDescription;
-  const currencyName = isGold ? "Thỏi vàng" : "Ngọc";
-  const currencyNameUpper = isGold ? "THỎI VÀNG" : "NGỌC";
+  const currencyName = isGold ? "Vàng" : "Ngọc";
+  const currencyNameUpper = currencyName.toUpperCase();
   const Icon = isGold ? Coins : Gem;
 
   return (

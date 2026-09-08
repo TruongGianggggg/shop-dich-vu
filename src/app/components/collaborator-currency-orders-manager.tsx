@@ -4,6 +4,7 @@ import { Coins, Eye, Gem, RefreshCw, Search, ShieldCheck, X } from "lucide-react
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CollaboratorSidebar } from "@/app/components/collaborator-sidebar";
 import { formatVnd, GameCurrencyOrder, getApiErrorMessage, PageResponse, ServiceOrderStatus } from "@/lib/shop-api";
+import { goldSaleTypeLabel } from "@/lib/game-currency";
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
   pending: "Chờ xử lý",
@@ -85,7 +86,7 @@ export function CollaboratorCurrencyOrdersManager() {
             <td><strong>{order.requestId}</strong><small>{order.username || "—"}</small></td>
             <td><strong>{order.characterName}</strong></td>
             <td><strong>{order.serverName}</strong><small>Tool #{order.toolServerIndex}</small></td>
-            <td><span className={`currency-type-pill ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? <><Coins size={14} /> Vàng</> : <><Gem size={14} /> Ngọc</>}</span></td>
+            <td><span className={`currency-type-pill ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? <><Coins size={14} /> {goldSaleTypeLabel(order.goldSaleType)}</> : <><Gem size={14} /> Ngọc</>}</span></td>
             <td><strong>{formatVnd(order.paymentAmount)}</strong></td>
             <td><strong>{order.collaboratorDiscountPercent ?? 0}%</strong></td>
             <td><strong className="ctv-currency-earning">{formatVnd(order.collaboratorEarningAmount ?? order.paymentAmount)}</strong><small>{order.collaboratorPaid ? "Đã cộng ví CTV" : "Chờ hoàn thành"}</small></td>

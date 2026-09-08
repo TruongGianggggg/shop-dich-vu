@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
 import { useAuthSession } from "@/app/components/use-auth-session";
 import { formatVnd, GameCurrencyOrder, getApiErrorMessage, PageResponse, ServiceOrderStatus } from "@/lib/shop-api";
+import { formatReceivedCurrency, goldSaleTypeLabel } from "@/lib/game-currency";
 
 const labels: Record<ServiceOrderStatus, string> = { error: "Lỗi", refund_error: "Lỗi hoàn tiền", pending: "Chờ xử lý", processing: "Đang xử lý", done: "Hoàn thành" };
 const terminalStatuses: ServiceOrderStatus[] = ["error", "refund_error", "done"];
@@ -105,9 +106,9 @@ export function AdminCurrencyOrdersManager() {
             <td className="currency-user-cell"><strong>{order.username || "—"}</strong></td>
             <td><strong>{order.characterName}</strong></td>
             <td><strong>{order.serverName}</strong>{order.collaboratorOrder ? <small className="currency-order-provider">CTV: {order.collaboratorUsername}</small> : <small className="currency-order-provider">Admin</small>}</td>
-            <td><span className={`currency-type-pill ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? "Vàng" : "Ngọc"}</span></td>
+            <td><span className={`currency-type-pill ${order.currencyType.toLowerCase()}`}>{order.currencyType === "GOLD" ? goldSaleTypeLabel(order.goldSaleType) : "Ngọc"}</span></td>
             <td className="currency-money-cell"><strong>{formatVnd(order.paymentAmount)}</strong>{order.collaboratorOrder ? <small className="currency-order-provider">CK {order.collaboratorDiscountPercent ?? 0}% · CTV nhận {formatVnd(order.collaboratorEarningAmount ?? order.paymentAmount)}</small> : null}</td>
-            <td className="currency-amount-cell"><strong>{order.receivedAmount.toLocaleString("vi-VN")}</strong></td>
+            <td className="currency-amount-cell"><strong>{formatReceivedCurrency(order.receivedAmount, order.currencyType, order.goldSaleType)}</strong></td>
             <td><span className={`admin-order-status-pill ${order.status.toLowerCase()}`}>{labels[order.status]}</span></td>
             <td className="currency-note-cell"><span title={order.adminNote ?? ""}>{order.adminNote || "—"}</span></td>
             <td>{terminalStatuses.includes(order.status) ? <span className="currency-ended-label">Đã kết thúc</span> : <select className="role-select" disabled={updatingId === order.id} defaultValue="" onChange={(event) => event.target.value && updateStatus(order, event.target.value as ServiceOrderStatus)}><option value="">Cập nhật</option>{order.status === "pending" ? <option value="processing">Đang xử lý</option> : null}<option value="done">Hoàn thành</option><option value="error">Lỗi</option><option value="refund_error">Lỗi hoàn tiền</option></select>}</td>
