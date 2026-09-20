@@ -22,8 +22,12 @@ type CarotBatchOrderResponse = {
 function parseCarotUsernames(value: string) {
   return value
     .split(/\r?\n/)
-    .map((username) => username.trim())
+    .map(firstWhitespaceSeparatedToken)
     .filter(Boolean);
+}
+
+function firstWhitespaceSeparatedToken(value: string) {
+  return value.trim().split(/\s+/, 1)[0] ?? "";
 }
 
 const NGOC_RONG_SERVERS = [
@@ -103,13 +107,6 @@ export function ServiceOrderForm({
     if (isCarotTopup) {
       if (!carotUsernames.length || !server) {
         setMessage("Vui lòng nhập tài khoản và chọn server dùng chung.");
-        return;
-      }
-      const uniqueUsernames = new Set(
-        carotUsernames.map((username) => username.toLowerCase()),
-      );
-      if (uniqueUsernames.size !== carotUsernames.length) {
-        setMessage("Danh sách có username bị trùng. Vui lòng kiểm tra lại.");
         return;
       }
     }

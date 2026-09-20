@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   AuthResponse,
@@ -51,6 +52,14 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(nextToast);
     toastTimer.current = setTimeout(() => setToast(null), 3500);
+  }
+
+  function dismissToast() {
+    if (toastTimer.current) {
+      clearTimeout(toastTimer.current);
+      toastTimer.current = null;
+    }
+    setToast(null);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -169,8 +178,15 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
   return (
     <>
       {toast ? (
-        <div className={`login-slide-toast is-${toast.type}`} role="status">
-          {toast.message}
+        <div
+          aria-live="polite"
+          className={`login-slide-toast is-${toast.type}`}
+          role="status"
+        >
+          <span>{toast.message}</span>
+          <button aria-label="Đóng thông báo" onClick={dismissToast} type="button">
+            <X aria-hidden="true" size={16} />
+          </button>
         </div>
       ) : null}
       <form className="login-popup" onSubmit={submit}>

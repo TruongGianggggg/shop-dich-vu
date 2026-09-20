@@ -2,6 +2,7 @@
 
 import { Bell, X } from "lucide-react";
 import DOMPurify from "dompurify";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "storefront-announcement-dismissed";
@@ -38,6 +39,7 @@ export function StorefrontAnnouncement({
   enabled: boolean;
   title: string;
 }) {
+  const pathname = usePathname();
   const normalizedTitle = title?.trim() || "Thông báo mới";
   const normalizedContent = content?.trim() || "";
   const getSanitizedContent = useCallback(
@@ -61,7 +63,13 @@ export function StorefrontAnnouncement({
     getDismissedVersion,
     () => null,
   );
-  const isOpen = enabled && Boolean(sanitizedContent) && dismissedVersion !== version;
+  const isAuthPage = pathname === "/login"
+    || pathname === "/register"
+    || pathname === "/quen-mat-khau";
+  const isOpen = !isAuthPage
+    && enabled
+    && Boolean(sanitizedContent)
+    && dismissedVersion !== version;
 
   useEffect(() => {
     if (!isOpen) return;
