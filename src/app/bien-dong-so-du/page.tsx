@@ -1,5 +1,6 @@
 import { BalanceChanges } from "@/app/components/balance-changes";
+import { UserAccountShell } from "@/app/components/user-account-shell";
 
 export default function BalanceChangesPage() {
-  return <div className="balance-changes-page"><BalanceChanges /></div>;
+  return <UserAccountShell><BalanceChanges /></UserAccountShell>;
 }

@@ -9,6 +9,7 @@ import {
   PageResponse,
   WalletTransactionType,
 } from "@/lib/shop-api";
+import styles from "./admin-wallet-changes-panel.module.css";
 
 const typeOptions: WalletTransactionType[] = [
   "TOPUP_CARD", "TOPUP_BANK", "ADMIN_ADJUSTMENT", "SERVICE_ORDER_PAYMENT", "SERVICE_ORDER_REFUND",
@@ -58,23 +59,27 @@ export function AdminWalletChangesPanel() {
   }
 
   return (
-    <section className="role-panel admin-wallet-changes-panel">
-      <div className="role-panel-head">
-        <div><p className="section-kicker">Tự động xóa sau 7 ngày</p><h2>Biến động số dư</h2></div>
-        <span><WalletCards size={17} />{(result?.totalElements ?? 0).toLocaleString("vi-VN")} giao dịch</span>
+    <section className={`role-panel ${styles.panel}`}>
+      <div className={`role-panel-head ${styles.header}`}>
+        <div>
+          <p className="section-kicker">Theo dõi tài chính</p>
+          <h2>Biến động số dư</h2>
+          <small>Dữ liệu được lưu trong 7 ngày và tự động xóa khi hết hạn.</small>
+        </div>
+        <span className={styles.count}><WalletCards size={17} />{(result?.totalElements ?? 0).toLocaleString("vi-VN")} giao dịch</span>
       </div>
-      <form className="admin-wallet-filter" onSubmit={submit}>
-        <label><span>Tìm tài khoản / giao dịch</span><input className="text-field" onChange={(event) => setKeyword(event.target.value)} placeholder="Username, mã hoặc nội dung..." value={keyword} /></label>
-        <label><span>Loại biến động</span><select className="role-select wide" onChange={(event) => setType(event.target.value)} value={type}><option value="">Tất cả</option>{typeOptions.map((value) => <option key={value} value={value}>{transactionLabel(value)}</option>)}</select></label>
-        <div><button className="primary-button" disabled={loading} type="submit"><Search size={16} />Lọc</button><button className="ghost-button" disabled={loading} onClick={clear} type="button"><X size={16} />Xóa lọc</button></div>
+      <form className={styles.filter} onSubmit={submit}>
+        <label><span>Tìm tài khoản hoặc giao dịch</span><input className="text-field" onChange={(event) => setKeyword(event.target.value)} placeholder="Username, mã hoặc nội dung..." value={keyword} /></label>
+        <label><span>Loại biến động</span><select className="role-select wide" onChange={(event) => setType(event.target.value)} value={type}><option value="">Tất cả loại biến động</option>{typeOptions.map((value) => <option key={value} value={value}>{transactionLabel(value)}</option>)}</select></label>
+        <div className={styles.filterActions}><button className="primary-button" disabled={loading} type="submit"><Search size={16} />Lọc</button><button className="ghost-button" disabled={loading} onClick={clear} type="button"><X size={16} />Xóa lọc</button></div>
       </form>
       {error ? <p className="form-error">{error}</p> : null}
-      <div className="role-table-wrap">
-        <table className="role-table admin-wallet-table">
+      <div className={`role-table-wrap ${styles.tableWrap}`}>
+        <table className={`role-table ${styles.table}`}>
           <thead><tr><th>Thời gian</th><th>Người dùng</th><th>Nội dung</th><th>Trước → Sau</th><th>Biến động</th></tr></thead>
           <tbody>
             {!loading && !result?.content.length ? <tr><td colSpan={5}>Chưa có biến động số dư phù hợp.</td></tr> : null}
-            {result?.content.map((item) => <tr key={item.id}><td>{formatDateTime(item.createdAt)}</td><td><strong>{item.username}</strong><small>{item.userId}</small></td><td><strong>{transactionLabel(item.type)}</strong><small>{item.content} · {item.code}</small></td><td>{formatVnd(item.balanceBefore)} → {formatVnd(item.balanceAfter)}</td><td><strong className={item.amount > 0 ? "wallet-amount-credit" : "wallet-amount-debit"}>{item.amount > 0 ? "+" : "-"}{formatVnd(Math.abs(item.amount))}</strong></td></tr>)}
+            {result?.content.map((item) => <tr key={item.id}><td className={styles.timeCell}>{formatDateTime(item.createdAt)}</td><td className={styles.userCell}><strong>{item.username}</strong><small>{item.userId}</small></td><td className={styles.contentCell}><strong>{transactionLabel(item.type)}</strong><small>{item.content}</small><code>{item.code}</code></td><td className={styles.balanceCell}>{formatVnd(item.balanceBefore)} <span>→</span> {formatVnd(item.balanceAfter)}</td><td><strong className={item.amount > 0 ? styles.credit : styles.debit}>{item.amount > 0 ? "+" : "-"}{formatVnd(Math.abs(item.amount))}</strong></td></tr>)}
           </tbody>
         </table>
       </div>

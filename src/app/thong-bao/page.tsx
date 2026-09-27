@@ -3,6 +3,7 @@ import {
   EMPTY_PAGE,
   NotificationsBoard,
 } from "@/app/components/notifications-board";
+import { UserAccountShell } from "@/app/components/user-account-shell";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   GameNotification,
@@ -25,21 +26,23 @@ export default async function NotificationsPage() {
   const notificationData = await getNotificationData();
 
   return (
-    <div className="notifications-page">
-      <main className="notifications-main">
-        <div className="notifications-hero">
-          <div className="notifications-hero-icon"><BellRing size={27} /></div>
-          <div>
-            <p>TRỰC TIẾP TỪ CÁC VŨ TRỤ NRO</p>
-            <h1>Thông báo sự kiện</h1>
-            <span>Theo dõi boss, vật phẩm hiếm và hoạt động nổi bật trong game.</span>
+    <UserAccountShell>
+      <div className="notifications-page">
+        <main className="notifications-main">
+          <div className="notifications-hero">
+            <div className="notifications-hero-icon"><BellRing size={27} /></div>
+            <div>
+              <p>TRỰC TIẾP TỪ CÁC VŨ TRỤ NRO</p>
+              <h1>Thông báo sự kiện</h1>
+              <span>Theo dõi boss, vật phẩm hiếm và hoạt động nổi bật trong game.</span>
+            </div>
           </div>
-        </div>
-        <NotificationsBoard
-          initialFilters={notificationData.filters}
-          initialPage={notificationData.page}
-        />
-      </main>
-    </div>
+          <NotificationsBoard
+            initialFilters={notificationData.filters}
+            initialPage={notificationData.page}
+          />
+        </main>
+      </div>
+    </UserAccountShell>
   );
 }

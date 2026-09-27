@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { formatVnd, getApiErrorMessage, WalletTransaction } from "@/lib/shop-api";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import styles from "./balance-changes.module.css";
 
 export function BalanceChanges() {
   const session = useAuthSession();
@@ -51,65 +52,73 @@ export function BalanceChanges() {
 
   if (!session) {
     return (
-      <main className="balance-changes-main balance-changes-guest">
-        <WalletCards size={38} />
-        <h1>Đăng nhập để xem biến động số dư</h1>
-        <p>Lịch sử cộng, trừ và hoàn tiền của tài khoản sẽ hiển thị tại đây.</p>
-        <Link className="primary-button" href="/login?returnUrl=%2Fbien-dong-so-du">Đăng nhập</Link>
-      </main>
+      <div className={styles.page}>
+        <main className={`${styles.main} ${styles.guest}`}>
+          <section className={styles.guestCard}>
+            <span className={styles.guestIcon}><WalletCards size={34} /></span>
+            <p className={styles.eyebrow}>TÀI KHOẢN CỦA TÔI</p>
+            <h1>Đăng nhập để xem biến động số dư</h1>
+            <span className={styles.guestCopy}>Lịch sử cộng, trừ và hoàn tiền của tài khoản sẽ hiển thị tại đây.</span>
+            <Link className={styles.guestButton} href="/login?returnUrl=%2Fbien-dong-so-du">Đăng nhập</Link>
+          </section>
+        </main>
+      </div>
     );
   }
 
   return (
-    <main className="balance-changes-main">
-      <header className="balance-changes-hero">
-        <span><History size={27} /></span>
-        <div>
-          <p>TÀI KHOẢN CỦA TÔI</p>
-          <h1>Biến động số dư</h1>
-          <small>Lịch sử trong 7 ngày gần nhất và tự động được xóa khi hết hạn.</small>
-        </div>
-        <button disabled={loading} onClick={() => void load()} type="button">
-          <RefreshCw className={loading ? "is-spinning" : ""} size={16} /> Làm mới
-        </button>
-      </header>
-
-      {error ? <p className="balance-changes-error"><CircleAlert size={17} />{error}</p> : null}
-
-      <section className="balance-changes-panel" aria-busy={loading}>
-        <div className="balance-changes-head">
-          <div><strong>Lịch sử giao dịch</strong><span>{transactions.length.toLocaleString("vi-VN")} biến động</span></div>
-        </div>
-        {transactions.length ? (
-          <div className="balance-changes-list">
-            {transactions.map((transaction) => {
-              const incoming = transaction.amount > 0;
-              const Icon = incoming ? ArrowDownLeft : ArrowUpRight;
-              return (
-                <article className={incoming ? "is-credit" : "is-debit"} key={transaction.id}>
-                  <span className="balance-change-icon"><Icon size={20} /></span>
-                  <div className="balance-change-copy">
-                    <strong>{transactionLabel(transaction.type)}</strong>
-                    <p>{transaction.content}</p>
-                    <small><Clock3 size={13} />{formatDateTime(transaction.createdAt)} · {transaction.code}</small>
-                  </div>
-                  <div className="balance-change-amount">
-                    <strong>{incoming ? "+" : "-"}{formatVnd(Math.abs(transaction.amount))}</strong>
-                    <span>{formatVnd(transaction.balanceBefore)} → {formatVnd(transaction.balanceAfter)}</span>
-                  </div>
-                </article>
-              );
-            })}
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <header className={styles.hero}>
+          <span className={styles.heroIcon}><History size={27} /></span>
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>TÀI KHOẢN CỦA TÔI</p>
+            <h1>Biến động số dư</h1>
+            <small>Lịch sử trong 7 ngày gần nhất và tự động được xóa khi hết hạn.</small>
           </div>
-        ) : (
-          <div className="balance-changes-empty">
-            <WalletCards size={34} />
-            <strong>{loading ? "Đang tải dữ liệu..." : "Chưa có biến động số dư"}</strong>
-            <p>Các giao dịch cộng, trừ hoặc hoàn tiền sẽ xuất hiện tại đây.</p>
+          <button className={styles.refreshButton} disabled={loading} onClick={() => void load()} type="button">
+            <RefreshCw className={loading ? styles.spinning : ""} size={16} /> Làm mới
+          </button>
+        </header>
+
+        {error ? <p className={styles.error}><CircleAlert size={17} />{error}</p> : null}
+
+        <section className={styles.panel} aria-busy={loading}>
+          <div className={styles.panelHead}>
+            <div><strong>Lịch sử giao dịch</strong><span>{transactions.length.toLocaleString("vi-VN")} biến động</span></div>
+            <span className={styles.retentionBadge}><Clock3 size={14} /> Lưu trong 7 ngày</span>
           </div>
-        )}
-      </section>
-    </main>
+          {transactions.length ? (
+            <div className={styles.list}>
+              {transactions.map((transaction) => {
+                const incoming = transaction.amount > 0;
+                const Icon = incoming ? ArrowDownLeft : ArrowUpRight;
+                return (
+                  <article className={incoming ? styles.credit : styles.debit} key={transaction.id}>
+                    <span className={styles.changeIcon}><Icon size={20} /></span>
+                    <div className={styles.changeCopy}>
+                      <strong>{transactionLabel(transaction.type)}</strong>
+                      <p>{transaction.content}</p>
+                      <small><Clock3 size={13} />{formatDateTime(transaction.createdAt)} · {transaction.code}</small>
+                    </div>
+                    <div className={styles.changeAmount}>
+                      <strong>{incoming ? "+" : "-"}{formatVnd(Math.abs(transaction.amount))}</strong>
+                      <span>{formatVnd(transaction.balanceBefore)} → {formatVnd(transaction.balanceAfter)}</span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className={styles.empty}>
+              <span><WalletCards size={30} /></span>
+              <strong>{loading ? "Đang tải dữ liệu..." : "Chưa có biến động số dư"}</strong>
+              <p>Các giao dịch cộng, trừ hoặc hoàn tiền sẽ xuất hiện tại đây.</p>
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
   );
 }
 

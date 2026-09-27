@@ -74,7 +74,7 @@ export function TelegramLinkCard() {
   }
 
   async function unlink() {
-    if (!window.confirm("Bạn chắc chắn muốn hủy liên kết Telegram?")) return;
+    if (!window.confirm("Hủy liên kết Telegram khỏi tài khoản NapGem này? Các tài khoản NapGem khác dùng chung Telegram vẫn được giữ nguyên.")) return;
     setIsBusy(true);
     setError(null);
     try {
@@ -131,8 +131,8 @@ export function TelegramLinkCard() {
 
       <p className="telegram-card-copy">
         {status?.linked
-          ? `${linkedName} chỉ nhận thông báo thuộc tài khoản NapGem này.`
-          : "Liên kết bot để nhận riêng trạng thái đơn hàng, nạp tiền và hoàn tiền của bạn."}
+          ? `${linkedName} đang nhận thông báo của tài khoản NapGem này. Một Telegram có thể liên kết thêm nhiều tài khoản NapGem khác.`
+          : "Liên kết bot để nhận thông báo của tài khoản này. Bạn có thể dùng cùng một Telegram cho nhiều tài khoản NapGem."}
       </p>
 
       {error ? <p className="telegram-card-error">{error}</p> : null}
