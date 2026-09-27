@@ -1,7 +1,8 @@
 "use client";
 
-import { ExternalLink, Link2Off, MessageCircle, RefreshCw } from "lucide-react";
+import { BellRing, ExternalLink, Link2Off, MessageCircle, RefreshCw, Save } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { TelegramNotificationType } from "@/lib/shop-api";
 
 type TelegramStatus = {
   configured: boolean;
@@ -11,18 +12,33 @@ type TelegramStatus = {
   linkedAt: string | null;
   linkUrl: string | null;
   expiresAt: string | null;
+  notificationTypes: TelegramNotificationType[];
 };
+
+const notificationOptions: { value: TelegramNotificationType; label: string; description: string }[] = [
+  { value: "ORDER_CREATED", label: "Tạo đơn hàng", description: "Xác nhận khi bạn đặt dịch vụ thành công." },
+  { value: "ORDER_STATUS", label: "Trạng thái đơn", description: "Đang xử lý, hoàn thành, lỗi và hoàn tiền." },
+  { value: "COLLABORATOR_ORDER", label: "Đơn dành cho CTV", description: "Đơn dịch vụ, Vàng hoặc Ngọc được giao cho bạn." },
+  { value: "VPS_ORDER", label: "Đơn VPS", description: "Thông báo đơn VPS mới dành cho quản trị viên." },
+  { value: "DEPOSIT", label: "Nạp tiền", description: "Kết quả nạp thẻ và cập nhật giao dịch." },
+  { value: "LOGIN", label: "Đăng nhập", description: "Cảnh báo mỗi lần tài khoản đăng nhập thành công." },
+  { value: "SECURITY_ALERT", label: "Cảnh báo bảo mật", description: "Sai mật khẩu nhiều lần hoặc tài khoản bị khóa." },
+];
 
 export function TelegramLinkCard() {
   const [status, setStatus] = useState<TelegramStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState<TelegramNotificationType[]>([]);
+  const [savedMessage, setSavedMessage] = useState("");
 
   const loadStatus = useCallback(async () => {
     try {
       const response = await fetch("/api/telegram", { cache: "no-store" });
       if (!response.ok) throw new Error("Không tải được trạng thái Telegram.");
-      setStatus((await response.json()) as TelegramStatus);
+      const nextStatus = (await response.json()) as TelegramStatus;
+      setStatus(nextStatus);
+      setSelectedTypes(nextStatus.notificationTypes ?? notificationOptions.map((option) => option.value));
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Không tải được trạng thái Telegram.");
@@ -72,6 +88,35 @@ export function TelegramLinkCard() {
     }
   }
 
+  async function saveFilters() {
+    setIsBusy(true);
+    setError(null);
+    setSavedMessage("");
+    try {
+      const response = await fetch("/api/telegram/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationTypes: selectedTypes }),
+      });
+      const data = (await response.json()) as TelegramStatus & { message?: string };
+      if (!response.ok) throw new Error(data.message ?? "Không lưu được bộ lọc.");
+      setStatus(data);
+      setSelectedTypes(data.notificationTypes);
+      setSavedMessage("Đã lưu bộ lọc thông báo Telegram.");
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Không lưu được bộ lọc.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  function toggleType(type: TelegramNotificationType) {
+    setSavedMessage("");
+    setSelectedTypes((current) => current.includes(type)
+      ? current.filter((value) => value !== type)
+      : [...current, type]);
+  }
+
   const linkedName = status?.telegramUsername ? `@${status.telegramUsername}` : "Tài khoản Telegram của bạn";
 
   return (
@@ -91,6 +136,27 @@ export function TelegramLinkCard() {
       </p>
 
       {error ? <p className="telegram-card-error">{error}</p> : null}
+
+      {status?.linked ? (
+        <div className="telegram-filter-section">
+          <div className="telegram-filter-heading">
+            <span><BellRing size={17} /></span>
+            <div><strong>Thông báo muốn nhận</strong><small>Chỉ những nhóm được chọn mới gửi tới bot.</small></div>
+          </div>
+          <div className="telegram-filter-grid">
+            {notificationOptions.map((option) => (
+              <label key={option.value}>
+                <input checked={selectedTypes.includes(option.value)} onChange={() => toggleType(option.value)} type="checkbox" />
+                <span><strong>{option.label}</strong><small>{option.description}</small></span>
+              </label>
+            ))}
+          </div>
+          <div className="telegram-filter-footer">
+            <button disabled={isBusy} onClick={() => void saveFilters()} type="button"><Save size={16} />{isBusy ? "Đang lưu..." : "Lưu bộ lọc"}</button>
+            {savedMessage ? <span>{savedMessage}</span> : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="telegram-card-actions">
         {status?.linked ? (

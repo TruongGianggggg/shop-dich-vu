@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { AdminSidebar } from "@/app/components/admin/admin-sidebar";
+import { AdminWalletChangesPanel } from "@/app/components/admin/admin-wallet-changes-panel";
 import { getApiErrorMessage, PageResponse } from "@/lib/shop-api";
 
 type ActivityLog = {
@@ -155,6 +156,8 @@ export function AdminActivityLogsManager() {
             <span>Ghi nhận từ backend; mật khẩu, token và dữ liệu bí mật không được lưu.</span>
           </div>
         </section>
+
+        <AdminWalletChangesPanel />
 
         <section className="role-panel currency-order-filter-panel activity-log-filter-panel">
           <div className="currency-order-filter-head">

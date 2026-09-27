@@ -190,6 +190,38 @@ export type UserBalance = {
   collaboratorTotalEarned: number;
 };
 
+export type WalletTransactionType =
+  | "TOPUP_CARD"
+  | "TOPUP_BANK"
+  | "ADMIN_ADJUSTMENT"
+  | "SERVICE_ORDER_PAYMENT"
+  | "SERVICE_ORDER_REFUND";
+
+export type WalletTransaction = {
+  id: string;
+  userId: string;
+  code: string;
+  type: WalletTransactionType;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  content: string;
+  createdAt: string;
+};
+
+export type AdminWalletTransaction = WalletTransaction & {
+  username: string;
+};
+
+export type TelegramNotificationType =
+  | "ORDER_CREATED"
+  | "ORDER_STATUS"
+  | "COLLABORATOR_ORDER"
+  | "VPS_ORDER"
+  | "DEPOSIT"
+  | "LOGIN"
+  | "SECURITY_ALERT";
+
 export type BankAccount = {
   id: string;
   shortName: string;

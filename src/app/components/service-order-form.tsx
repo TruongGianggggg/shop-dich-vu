@@ -15,9 +15,13 @@ import { useAuthSession } from "./use-auth-session";
 type CarotBatchOrderResponse = {
   batchId: string;
   accountCount: number;
+  quantity: number;
+  orderCount: number;
   totalAmount: number;
   orders: ServiceOrder[];
 };
+
+type CarotOrderMode = "accounts" | "quantity";
 
 function parseCarotUsernames(value: string) {
   return value
@@ -68,6 +72,8 @@ export function ServiceOrderForm({
   const [createdCarotBatch, setCreatedCarotBatch] =
     useState<CarotBatchOrderResponse | null>(null);
   const [carotUsernameInput, setCarotUsernameInput] = useState("");
+  const [carotQuantity, setCarotQuantity] = useState(1);
+  const [carotOrderMode, setCarotOrderMode] = useState<CarotOrderMode>("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedPackage = useMemo(
     () => packages.find((item) => item.id === selectedPackageId) ?? null,
@@ -79,6 +85,7 @@ export function ServiceOrderForm({
     () => parseCarotUsernames(carotUsernameInput),
     [carotUsernameInput],
   );
+  const effectiveCarotQuantity = carotOrderMode === "quantity" ? carotQuantity : 1;
   const usesNgocRongServers =
     isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
@@ -116,6 +123,7 @@ export function ServiceOrderForm({
           subCategoryId: service.id,
           packageId: selectedPackage.id,
           usernames: carotUsernames,
+          quantity: effectiveCarotQuantity,
           server,
           note,
         }
@@ -166,6 +174,7 @@ export function ServiceOrderForm({
       if (isCarotTopup) {
         setCreatedCarotBatch(data as CarotBatchOrderResponse);
         setCarotUsernameInput("");
+        setCarotQuantity(1);
       } else {
         setCreatedOrder(data as ServiceOrder);
       }
@@ -230,22 +239,82 @@ export function ServiceOrderForm({
         </div>
         <div className="detail-panel-body detail-account-grid">
           {isCarotTopup ? (
-            <label className="detail-field detail-field-wide">
-              <span>Danh sách tài khoản đăng nhập</span>
-              <textarea
-                autoComplete="off"
-                className="detail-carot-accounts-textarea"
-                name="account"
-                onChange={(event) => setCarotUsernameInput(event.target.value)}
-                placeholder={"Nhập tài khoản đăng nhập\nMỗi tài khoản một dòng"}
-                required
-                rows={8}
-                value={carotUsernameInput}
-              />
-              <small className="detail-field-helper">
-                Mỗi tài khoản một dòng — đã nhập {carotUsernames.length} tài khoản.
-              </small>
-            </label>
+            <>
+              <div className="detail-carot-mode detail-field-wide">
+                <span>Chọn cách nạp Carot</span>
+                <div role="tablist" aria-label="Cách nạp Carot">
+                  <button
+                    aria-selected={carotOrderMode === "accounts"}
+                    className={carotOrderMode === "accounts" ? "is-active" : ""}
+                    onClick={() => changeCarotMode("accounts")}
+                    role="tab"
+                    type="button"
+                  >
+                    <strong>Nhiều tài khoản</strong>
+                    <small>Mỗi tài khoản nạp 1 lần</small>
+                  </button>
+                  <button
+                    aria-selected={carotOrderMode === "quantity"}
+                    className={carotOrderMode === "quantity" ? "is-active" : ""}
+                    onClick={() => changeCarotMode("quantity")}
+                    role="tab"
+                    type="button"
+                  >
+                    <strong>Một tài khoản + số lượng</strong>
+                    <small>Nạp nhiều lần cho cùng tài khoản</small>
+                  </button>
+                </div>
+              </div>
+              {carotOrderMode === "accounts" ? (
+                <label className="detail-field detail-field-wide">
+                  <span>Danh sách tài khoản đăng nhập</span>
+                  <textarea
+                    autoComplete="off"
+                    className="detail-carot-accounts-textarea"
+                    name="account"
+                    onChange={(event) => setCarotUsernameInput(event.target.value)}
+                    placeholder={"Nhập tài khoản đăng nhập\nMỗi tài khoản một dòng"}
+                    required
+                    rows={8}
+                    value={carotUsernameInput}
+                  />
+                  <small className="detail-field-helper">
+                    Mỗi tài khoản một dòng — đã nhập {carotUsernames.length} tài khoản.
+                  </small>
+                </label>
+              ) : (
+                <>
+                  <label className="detail-field">
+                    <span>Tài khoản đăng nhập</span>
+                    <input
+                      autoComplete="off"
+                      maxLength={120}
+                      name="account"
+                      onChange={(event) => setCarotUsernameInput(event.target.value)}
+                      placeholder="Nhập một tài khoản"
+                      required
+                      value={carotUsernameInput}
+                    />
+                  </label>
+                  <label className="detail-field">
+                    <span>Số lần nạp</span>
+                    <input
+                      inputMode="numeric"
+                      max={100}
+                      min={1}
+                      name="quantity"
+                      onChange={(event) => setCarotQuantity(Math.max(1, Math.min(100, Number(event.target.value) || 1)))}
+                      required
+                      type="number"
+                      value={carotQuantity}
+                    />
+                    <small className="detail-field-helper">
+                      Tài khoản này sẽ được tạo {carotQuantity} đơn nạp.
+                    </small>
+                  </label>
+                </>
+              )}
+            </>
           ) : (
             <label className="detail-field">
               <span>Tài Khoản</span>
@@ -272,12 +341,12 @@ export function ServiceOrderForm({
                 />
               </label>
               <label className="detail-field detail-field-wide">
-                <span>SĐT hoặc link Facebook</span>
+                <span>Zalo hoặc link Facebook</span>
                 <input
                   autoComplete="tel"
                   maxLength={500}
                   name="contactInfo"
-                  placeholder="Nhập số điện thoại hoặc link Facebook để được hỗ trợ"
+                  placeholder="Nhập Zalo hoặc link Facebook để được hỗ trợ"
                   required
                   type="text"
                 />
@@ -330,7 +399,7 @@ export function ServiceOrderForm({
                 {selectedPackage
                   ? formatVnd(
                         selectedPackage.price *
-                        (isCarotTopup ? carotUsernames.length : 1),
+                        (isCarotTopup ? carotUsernames.length * effectiveCarotQuantity : 1),
                     )
                   : "—"}
               </strong>
@@ -346,8 +415,11 @@ export function ServiceOrderForm({
             {createdCarotBatch ? (
               <div className="detail-order-success" role="status">
                 <strong>
-                  Đã tạo thành công {createdCarotBatch.accountCount} đơn nạp Carot
+                  {createdCarotBatch.quantity > 1
+                    ? `Đã tạo ${createdCarotBatch.orderCount} đơn cho ${createdCarotBatch.accountCount} tài khoản`
+                    : `Đã tạo ${createdCarotBatch.orderCount} đơn nạp Carot`}
                 </strong>
+                {createdCarotBatch.quantity > 1 ? <span>Tài khoản nạp {createdCarotBatch.quantity} lần</span> : null}
                 <span>Mã lô: {createdCarotBatch.batchId}</span>
                 <Link href="/lich-su-mua">Xem lịch sử mua →</Link>
               </div>
@@ -357,8 +429,8 @@ export function ServiceOrderForm({
               {isSubmitting
                 ? "Đang tạo đơn..."
                 : session
-                  ? isCarotTopup && carotUsernames.length > 1
-                    ? `Tạo ${carotUsernames.length} Đơn Hàng`
+                  ? isCarotTopup && carotUsernames.length * effectiveCarotQuantity > 1
+                    ? `Tạo ${carotUsernames.length * effectiveCarotQuantity} Đơn Hàng`
                     : "Tạo Đơn Hàng"
                   : "Đăng nhập để đặt dịch vụ"}
             </button>
@@ -367,4 +439,12 @@ export function ServiceOrderForm({
       </section>
     </form>
   );
+
+  function changeCarotMode(mode: CarotOrderMode) {
+    setCarotOrderMode(mode);
+    setCarotUsernameInput("");
+    setCarotQuantity(1);
+    setMessage("");
+    setCreatedCarotBatch(null);
+  }
 }

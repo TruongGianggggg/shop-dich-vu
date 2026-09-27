@@ -296,7 +296,6 @@ function OrderDetailModal({ busy, mode, onAction, onClose, order }: {
                 <Detail label="Khách hàng" value={order.customerUsername ?? "—"} />
                 <Detail label="Tài khoản game" value={order.username ?? "—"} />
                 <Detail label="Mật khẩu" value={order.password ?? "—"} />
-                <Detail label="SĐT / Facebook" value={order.contactInfo ?? "—"} />
                 <Detail label="Hoa hồng dự kiến" value={earning == null ? "—" : formatVnd(earning)} />
               </>
             ) : null}
@@ -304,7 +303,7 @@ function OrderDetailModal({ busy, mode, onAction, onClose, order }: {
           {mode === "available" ? (
             <div className="collaborator-order-note">
               <b>Thông tin tài khoản được bảo vệ</b>
-              <p>Tài khoản, mật khẩu và thông tin liên hệ sẽ hiển thị sau khi bạn nhận đơn.</p>
+              <p>Tài khoản và mật khẩu sẽ hiển thị sau khi bạn nhận đơn.</p>
             </div>
           ) : (
             <>

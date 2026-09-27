@@ -118,6 +118,7 @@ export function ProfileOverview() {
           </div>
           <div className="profile-quick-actions">
             <DepositQrButton />
+            <Link href="/bien-dong-so-du"><WalletCards size={18} />Biến động số dư</Link>
             <Link href="/lich-su-mua"><History size={18} />Lịch sử mua</Link>
             {session.role === "COLLABORATOR" ? (
               <Link href="/ctv"><BriefcaseBusiness size={18} />Quản lý công việc</Link>

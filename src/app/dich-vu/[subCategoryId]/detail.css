@@ -277,6 +277,14 @@
 .detail-field-wide { grid-column: 1 / -1; }
 .detail-field-helper { color: #778195; font-size: 12px; font-weight: 600; line-height: 1.45; }
 .detail-field .detail-carot-accounts-textarea { min-height: 190px; line-height: 1.65; white-space: pre-wrap; }
+.detail-carot-mode { display: grid; gap: 9px; }
+.detail-carot-mode > span { color: #303641; font-size: 13px; font-weight: 750; }
+.detail-carot-mode > div { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.detail-carot-mode button { align-items: flex-start; background: #f8fafc; border: 1px solid #dfe5ed; border-radius: 9px; color: #475467; cursor: pointer; display: flex; flex-direction: column; font: inherit; gap: 4px; min-height: 68px; padding: 12px 14px; text-align: left; }
+.detail-carot-mode button:hover { border-color: #a9c2f6; }
+.detail-carot-mode button.is-active { background: #eef4ff; border-color: #6e99ef; box-shadow: 0 0 0 2px rgba(68, 124, 244, .08); color: #245dcc; }
+.detail-carot-mode button strong { font-size: 13px; }
+.detail-carot-mode button small { color: #778195; font-size: 11px; line-height: 1.4; }
 .detail-confirm-box {
   margin-top: 14px;
   padding: 14px;
@@ -321,6 +329,7 @@
   .service-detail-main { width: min(100% - 24px, 1180px); padding-top: 26px; }
   .detail-account-grid { grid-template-columns: 1fr; }
   .detail-field-wide { grid-column: auto; }
+  .detail-carot-mode > div { grid-template-columns: 1fr; }
   .detail-panel-body { padding: 16px; }
   .detail-panel-heading { padding: 10px 16px; }
   .detail-selected-package { align-items: flex-start; }
