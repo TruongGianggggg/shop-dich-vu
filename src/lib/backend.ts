@@ -85,7 +85,13 @@ export async function proxyBackendResponse(
     responseHeaders.set("Content-Type", responseContentType);
   }
 
-  return new Response(responseBody, {
+  const responseHasNoBody =
+    method === "HEAD" ||
+    response.status === 204 ||
+    response.status === 205 ||
+    response.status === 304;
+
+  return new Response(responseHasNoBody ? null : responseBody, {
     status: response.status,
     statusText: response.statusText,
     headers: responseHeaders,

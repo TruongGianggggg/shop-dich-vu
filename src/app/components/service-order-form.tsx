@@ -20,6 +20,8 @@ type CarotBatchOrderResponse = {
   batchId: string;
   accountCount: number;
   orderCount: number;
+  quantityPerAccount: number;
+  totalQuantity: number;
   totalAmount: number;
   orders: ServiceOrder[];
 };
@@ -83,6 +85,7 @@ export function ServiceOrderForm({
   const [createdCarotBatch, setCreatedCarotBatch] =
     useState<CarotBatchOrderResponse | null>(null);
   const [carotUsernameInput, setCarotUsernameInput] = useState("");
+  const [carotQuantity, setCarotQuantity] = useState(1);
   const [selectedServer, setSelectedServer] = useState("");
   const [pendingOrder, setPendingOrder] = useState<PendingServiceOrder | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
@@ -101,7 +104,7 @@ export function ServiceOrderForm({
     isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
   const orderValue = selectedPackage
-    ? selectedPackage.price * (isCarotTopup ? carotUsernames.length : 1)
+    ? selectedPackage.price * (isCarotTopup ? carotUsernames.length * carotQuantity : 1)
     : 0;
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -137,6 +140,7 @@ export function ServiceOrderForm({
           subCategoryId: service.id,
           packageId: selectedPackage.id,
           usernames: carotUsernames,
+          quantity: carotQuantity,
           server,
           note,
         }
@@ -170,6 +174,8 @@ export function ServiceOrderForm({
         ? [
             { label: "Gói nạp", value: selectedPackage.name },
             { label: "Số tài khoản", value: `${carotUsernames.length} tài khoản` },
+            { label: "Số lượng mỗi tài khoản", value: `${carotQuantity} lần` },
+            { label: "Tổng lượt nạp", value: `${carotUsernames.length * carotQuantity} lượt` },
             { label: "Server", value: server },
           ]
         : [
@@ -290,7 +296,23 @@ export function ServiceOrderForm({
                   value={carotUsernameInput}
                 />
                 <small className="detail-field-helper">
-                  Mỗi tài khoản được nạp 1 lần — đã nhập {carotUsernames.length} tài khoản.
+                  Mỗi tài khoản được nạp {carotQuantity} lần — đã nhập {carotUsernames.length} tài khoản,
+                  tổng cộng {carotUsernames.length * carotQuantity} lượt nạp.
+                </small>
+              </label>
+              <label className="detail-field">
+                <span>Số lượng</span>
+                <select
+                  name="quantity"
+                  onChange={(event) => setCarotQuantity(Number(event.target.value))}
+                  value={carotQuantity}
+                >
+                  {Array.from({ length: 10 }, (_, index) => index + 1).map((quantity) => (
+                    <option key={quantity} value={quantity}>{quantity}</option>
+                  ))}
+                </select>
+                <small className="detail-field-helper">
+                  Số lần nạp cho mỗi tài khoản (từ 1 đến 10).
                 </small>
               </label>
             </>
@@ -398,7 +420,7 @@ export function ServiceOrderForm({
             {createdCarotBatch ? (
               <div className="detail-order-success" role="status">
                 <strong>
-                  {`Đã tạo ${createdCarotBatch.orderCount} đơn nạp Carot`}
+                  {`Đã tạo ${createdCarotBatch.orderCount} đơn, tổng ${createdCarotBatch.totalQuantity} lượt nạp Carot`}
                 </strong>
                 <span>Mã lô: {createdCarotBatch.batchId}</span>
                 <Link href="/lich-su-mua">Xem lịch sử mua →</Link>
