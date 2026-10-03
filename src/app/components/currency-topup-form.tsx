@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Coins, Gem, Server } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { OrderConfirmationDialog } from "@/app/components/order-confirmation-dialog";
+import { RecentCurrencyOrderHistory } from "@/app/components/recent-order-history";
+import { useUserBalance } from "@/app/components/use-user-balance";
 import { formatReceivedCurrency, goldSaleTypeLabel } from "@/lib/game-currency";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
@@ -24,12 +27,16 @@ export function CurrencyTopupForm({
 }) {
   const router = useRouter();
   const session = useAuthSession();
+  const { error: balanceError, isLoading: isBalanceLoading, refresh: refreshBalance, wallet } = useUserBalance();
   const [selectedConfigId, setSelectedConfigId] = useState(configs[0]?.id ?? "");
+  const [characterName, setCharacterName] = useState("");
   const [paymentAmount, setPaymentAmount] = useState(
     String(currencyPrice(configs[0], currencyType)),
   );
   const [message, setMessage] = useState("");
   const [createdOrder, setCreatedOrder] = useState<GameCurrencyOrder | null>(null);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedConfig = useMemo(
     () => configs.find((item) => item.id === selectedConfigId) ?? null,
@@ -47,7 +54,7 @@ export function CurrencyTopupForm({
   const currencyLabel = isGold ? goldSaleTypeLabel(goldSaleType) : "Ngọc";
   const returnUrl = isGold ? "/nap-vang" : "/nap-ngoc";
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     setCreatedOrder(null);
@@ -61,7 +68,16 @@ export function CurrencyTopupForm({
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
+    if (!characterName.trim()) {
+      setMessage("Vui lòng nhập tên nhân vật.");
+      return;
+    }
+    setConfirmationOpen(true);
+    refreshBalance();
+  }
+
+  async function confirmOrder() {
+    if (!selectedConfig || isSubmitting) return;
     setIsSubmitting(true);
     try {
       const response = await fetch(selectedConfig.source === "COLLABORATOR" ? "/api/collaborator-currency-orders" : "/api/currency-orders", {
@@ -72,7 +88,7 @@ export function CurrencyTopupForm({
         body: JSON.stringify({
           currencyType,
           serverConfigId: selectedConfig.id,
-          characterName: String(formData.get("characterName") ?? "").trim(),
+          characterName: characterName.trim(),
           paymentAmount: numericPayment,
         }),
       });
@@ -82,7 +98,11 @@ export function CurrencyTopupForm({
         throw new Error(getApiErrorMessage(data, "Không tạo được đơn nạp."));
       }
       setCreatedOrder(data as GameCurrencyOrder);
+      setConfirmationOpen(false);
+      setHistoryRefreshKey((current) => current + 1);
+      refreshBalance();
     } catch (exception) {
+      setConfirmationOpen(false);
       setMessage(
         exception instanceof Error ? exception.message : "Không tạo được đơn nạp.",
       );
@@ -104,6 +124,7 @@ export function CurrencyTopupForm({
 
   const Icon = isGold ? Coins : Gem;
   return (
+    <>
     <form className="currency-topup-form" onSubmit={submit}>
       <div className={`currency-topup-heading ${isGold ? "gold" : "gem"}`}>
         <span><Icon size={25} /></span>
@@ -116,7 +137,14 @@ export function CurrencyTopupForm({
       <div className="currency-topup-fields">
         <label>
           <span>Tên nhân vật</span>
-          <input maxLength={120} name="characterName" placeholder="Nhập chính xác tên nhân vật" required />
+          <input
+            maxLength={120}
+            name="characterName"
+            onChange={(event) => setCharacterName(event.target.value)}
+            placeholder="Nhập chính xác tên nhân vật"
+            required
+            value={characterName}
+          />
         </label>
         <label>
           <span>Server</span>
@@ -165,6 +193,23 @@ export function CurrencyTopupForm({
         {isSubmitting ? "Đang tạo đơn..." : session ? `Nạp ${currencyLabel.toLowerCase()}` : "Đăng nhập để tiếp tục"}
       </button>
     </form>
+    <RecentCurrencyOrderHistory currencyType={currencyType} refreshKey={historyRefreshKey} />
+    <OrderConfirmationDialog
+      balance={isBalanceLoading ? null : wallet?.balance ?? null}
+      balanceError={balanceError}
+      details={[
+        { label: "Nhân vật", value: characterName.trim() || "—" },
+        { label: "Server", value: selectedConfig?.name ?? "—" },
+        { label: "Thực nhận", value: formatReceivedCurrency(receivedAmount, currencyType, goldSaleType) },
+      ]}
+      isOpen={confirmationOpen}
+      isSubmitting={isSubmitting}
+      onCancel={() => setConfirmationOpen(false)}
+      onConfirm={confirmOrder}
+      orderValue={numericPayment}
+      title={`Xác nhận nạp ${currencyLabel}`}
+    />
+    </>
   );
 }
 

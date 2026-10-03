@@ -12,6 +12,7 @@ export function useUserBalance() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = useCallback(() => {
+    setIsLoading(true);
     setRefreshKey((current) => current + 1);
   }, []);
 

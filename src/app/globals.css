@@ -7629,6 +7629,102 @@ input {
 .currency-topup-submit { background: #2563eb; border: 0; border-radius: 9px; color: #fff; cursor: pointer; font-size: 13px; font-weight: 850; margin: 18px 22px 22px; min-height: 46px; width: calc(100% - 44px); }
 .currency-topup-submit:disabled { cursor: not-allowed; opacity: .55; }
 
+/* Order confirmation and recent history shared by Carot, Gold and Gem. */
+.order-confirmation-backdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, .58);
+  backdrop-filter: blur(5px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 18px;
+  position: fixed;
+  z-index: 12000;
+}
+.order-confirmation-dialog {
+  background: #fff;
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 18px;
+  box-shadow: 0 28px 80px rgba(15, 31, 58, .3);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 0 22px 22px;
+  width: min(560px, 100%);
+}
+.order-confirmation-head { align-items: center; border-bottom: 1px solid #edf1f6; display: flex; gap: 12px; margin: 0 -22px; padding: 20px 22px; }
+.order-confirmation-head > span { align-items: center; background: #eaf2ff; border-radius: 11px; color: #2563eb; display: inline-flex; flex: 0 0 42px; height: 42px; justify-content: center; }
+.order-confirmation-head > div { display: grid; gap: 3px; min-width: 0; }
+.order-confirmation-head small { color: #7b8798; font-size: 9px; font-weight: 900; letter-spacing: .11em; }
+.order-confirmation-head h2 { color: #172033; font-size: 18px; line-height: 1.3; margin: 0; }
+.order-confirmation-close { align-items: center; background: #f7f9fc; border: 1px solid #e4e9f0; border-radius: 9px; color: #667085; cursor: pointer; display: inline-flex; height: 36px; justify-content: center; margin-left: auto; width: 36px; }
+.order-confirmation-details { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 18px 0 14px; }
+.order-confirmation-details > div { background: #f8fafc; border: 1px solid #e8edf4; border-radius: 10px; display: grid; gap: 5px; min-width: 0; padding: 11px 12px; }
+.order-confirmation-details span,
+.order-confirmation-wallet small { color: #7b8798; font-size: 10px; font-weight: 800; }
+.order-confirmation-details strong { color: #344054; font-size: 12px; overflow-wrap: anywhere; }
+.order-confirmation-wallet { align-items: center; background: linear-gradient(135deg, #172f62, #2563c9); border-radius: 13px; color: #fff; display: grid; gap: 12px; grid-template-columns: 42px repeat(3, 1fr); padding: 15px; }
+.order-confirmation-wallet-icon { align-items: center; background: rgba(255,255,255,.13); border-radius: 10px; display: inline-flex; height: 40px; justify-content: center; width: 40px; }
+.order-confirmation-wallet > div { display: grid; gap: 4px; }
+.order-confirmation-wallet small { color: #cbdcff; }
+.order-confirmation-wallet strong { font-size: 13px; white-space: nowrap; }
+.order-confirmation-wallet .is-order-value { color: #ffe0aa; }
+.order-confirmation-wallet .is-insufficient { color: #ffb4b4; }
+.order-confirmation-warning { align-items: center; background: #fff4e5; border: 1px solid #fed7aa; border-radius: 9px; color: #a45108; display: flex; font-size: 12px; gap: 7px; margin: 12px 0 0; padding: 10px 11px; }
+.order-confirmation-note { color: #7b8798; font-size: 11px; line-height: 1.55; margin: 14px 0; text-align: center; }
+.order-confirmation-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.order-confirmation-actions button { border: 0; border-radius: 10px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 850; min-height: 44px; padding: 0 18px; }
+.order-confirmation-actions button:first-child { background: #f2f4f7; color: #475467; }
+.order-confirmation-actions button:last-child { background: linear-gradient(135deg, #168eff, #526ff0); box-shadow: 0 7px 16px rgba(37,99,235,.22); color: #fff; min-width: 175px; }
+.order-confirmation-actions button:disabled,
+.order-confirmation-close:disabled { cursor: not-allowed; opacity: .55; }
+
+.embedded-order-history { background: #fff; border: 1px solid #e4eaf2; border-radius: 16px; box-shadow: 0 10px 28px rgba(15,23,42,.055); margin-top: 2px; overflow: hidden; }
+.detail-order-form + .embedded-order-history { margin-top: 18px; }
+.embedded-order-history-head { align-items: center; border-bottom: 1px solid #edf1f6; display: flex; justify-content: space-between; padding: 17px 20px; }
+.embedded-order-history-head > div { align-items: center; display: flex; gap: 11px; }
+.embedded-order-history-head > div > span { align-items: center; background: #eaf2ff; border-radius: 10px; color: #2563eb; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+.embedded-order-history-head > div > div { display: grid; gap: 2px; }
+.embedded-order-history-head small { color: #98a2b3; font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.embedded-order-history-head h2 { color: #172033; font-size: 15px; margin: 0; }
+.embedded-order-history-head > a { color: #2563eb; font-size: 11px; font-weight: 850; text-decoration: none; }
+.embedded-history-list { display: grid; }
+.embedded-history-row { align-items: center; border-bottom: 1px solid #edf1f6; display: grid; gap: 12px; grid-template-columns: 1.1fr 1.15fr .8fr .9fr 1fr auto; min-width: 0; padding: 13px 20px; }
+.embedded-history-row:last-child { border-bottom: 0; }
+.embedded-history-row > div,
+.embedded-history-identity > span { display: grid; gap: 4px; min-width: 0; }
+.embedded-history-row small { color: #98a2b3; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.embedded-history-row strong { color: #344054; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.embedded-history-row > span[class^="status-"] { border-radius: 999px; font-size: 9px; font-weight: 900; padding: 6px 8px; text-align: center; white-space: nowrap; }
+.embedded-history-row > p { color: #7b8798; font-size: 10px; grid-column: 1 / -1; margin: -5px 0 0; }
+.embedded-history-identity { align-items: center; display: flex !important; gap: 8px !important; }
+.embedded-history-identity > svg { color: #7c3aed; flex: 0 0 auto; }
+.embedded-history-state { align-items: center; color: #7b8798; display: flex; font-size: 12px; gap: 8px; justify-content: center; min-height: 100px; padding: 20px; text-align: center; }
+.embedded-history-state strong { color: #344054; }
+.embedded-history-state a { background: #2563eb; border-radius: 8px; color: #fff; font-weight: 800; padding: 9px 13px; text-decoration: none; }
+.embedded-history-state.is-error { color: #b42318; }
+.embedded-history-state .is-spinning { animation: embedded-history-spin .8s linear infinite; }
+@keyframes embedded-history-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 700px) {
+  .order-confirmation-details { grid-template-columns: 1fr; }
+  .order-confirmation-wallet { grid-template-columns: 38px 1fr 1fr; }
+  .order-confirmation-wallet > div:last-child { grid-column: 2 / -1; }
+  .embedded-history-row { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 13px 14px; }
+  .embedded-history-row > span[class^="status-"] { justify-self: start; }
+}
+@media (max-width: 480px) {
+  .order-confirmation-backdrop { padding: 10px; }
+  .order-confirmation-dialog { border-radius: 15px; padding: 0 15px 16px; }
+  .order-confirmation-head { margin: 0 -15px; padding: 16px 15px; }
+  .order-confirmation-wallet { grid-template-columns: 36px 1fr; }
+  .order-confirmation-wallet > div:last-child { grid-column: auto; }
+  .order-confirmation-actions { display: grid; grid-template-columns: 1fr; }
+  .order-confirmation-actions button:last-child { grid-row: 1; min-width: 0; }
+  .embedded-order-history-head { align-items: flex-start; gap: 10px; padding: 14px; }
+  .embedded-order-history-head h2 { font-size: 13px; }
+  .embedded-history-row { grid-template-columns: 1fr; }
+}
+
 .currency-shop-empty { align-items: center; color: #98a2b3; display: flex; flex-direction: column; gap: 9px; grid-column: 1 / -1; justify-content: center; min-height: 310px; padding: 30px; text-align: center; }
 .currency-shop-empty strong { color: #344054; }
 .currency-shop-empty p { font-size: 13px; margin: 0; }
