@@ -14,6 +14,9 @@ import {
 } from "@/lib/shop-api";
 import { useAuthSession } from "./use-auth-session";
 
+const HISTORY_PAGE_SIZE = "10";
+const RECENT_ORDER_LIMIT = 5;
+
 const statusLabels = {
   error: "Lỗi",
   refund_error: "Đã hoàn tiền",
@@ -42,11 +45,11 @@ export function RecentServiceOrderHistory({
       setLoading(true);
       setError("");
       try {
-        const params = new URLSearchParams({ page: "0", size: "5", subCategoryId });
+        const params = new URLSearchParams({ page: "0", size: HISTORY_PAGE_SIZE, subCategoryId });
         const response = await fetch(`/api/service-orders/history?${params}`, { cache: "no-store" });
         const data = (await response.json()) as PageResponse<ServiceOrder> | unknown;
         if (!response.ok) throw new Error(getApiErrorMessage(data, "Không tải được lịch sử Carot."));
-        if (!ignore) setOrders((data as PageResponse<ServiceOrder>).content);
+        if (!ignore) setOrders((data as PageResponse<ServiceOrder>).content.slice(0, RECENT_ORDER_LIMIT));
       } catch (reason) {
         if (!ignore) setError(reason instanceof Error ? reason.message : "Không tải được lịch sử Carot.");
       } finally {
@@ -102,11 +105,11 @@ export function RecentCurrencyOrderHistory({
       setLoading(true);
       setError("");
       try {
-        const params = new URLSearchParams({ page: "0", size: "5", currencyType });
+        const params = new URLSearchParams({ page: "0", size: HISTORY_PAGE_SIZE, currencyType });
         const response = await fetch(`/api/currency-orders/history?${params}`, { cache: "no-store" });
         const data = (await response.json()) as PageResponse<GameCurrencyOrder> | unknown;
         if (!response.ok) throw new Error(getApiErrorMessage(data, `Không tải được lịch sử ${label}.`));
-        if (!ignore) setOrders((data as PageResponse<GameCurrencyOrder>).content);
+        if (!ignore) setOrders((data as PageResponse<GameCurrencyOrder>).content.slice(0, RECENT_ORDER_LIMIT));
       } catch (reason) {
         if (!ignore) setError(reason instanceof Error ? reason.message : `Không tải được lịch sử ${label}.`);
       } finally {
