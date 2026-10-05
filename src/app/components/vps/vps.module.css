@@ -32,6 +32,7 @@
 .purchaseTotal { border-left: 1px solid #dbe3ef; padding-left: 15px; }
 .purchaseTotal > span { color: #64748b; display: block; font-size: 11px; }
 .purchaseTotal > strong { color: #0f172a; display: block; font-size: 18px; margin: 2px 0 8px; }
+.purchaseTotal > small { color: #078452; display: block; font-size: 10px; font-weight: 800; line-height: 1.4; margin: -3px 0 8px; }
 .purchaseTotal button { align-items: center; background: #2563eb; border-radius: 9px; color: white; display: flex; font-weight: 800; gap: 7px; height: 41px; justify-content: center; width: 100%; }
 .purchaseTotal button:disabled, .secondaryButton:disabled, .orderCard footer button:disabled { opacity: .55; }
 .orderGrid { display: grid; gap: 15px; grid-template-columns: repeat(2, minmax(0, 1fr)); }

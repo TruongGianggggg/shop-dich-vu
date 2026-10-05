@@ -7,6 +7,8 @@ import {
   ServiceOrder,
   ServicePackage,
   ServiceSubCategory,
+  agencyRate,
+  estimateAgencyCommission,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
@@ -15,6 +17,7 @@ import { OrderConfirmationDialog } from "./order-confirmation-dialog";
 import { RecentServiceOrderHistory } from "./recent-order-history";
 import { useAuthSession } from "./use-auth-session";
 import { useUserBalance } from "./use-user-balance";
+import { useAgencySummary } from "./use-agency-summary";
 
 type CarotBatchOrderResponse = {
   batchId: string;
@@ -75,6 +78,7 @@ export function ServiceOrderForm({
 }) {
   const router = useRouter();
   const session = useAuthSession();
+  const agency = useAgencySummary();
   const { error: balanceError, isLoading: isBalanceLoading, refresh: refreshBalance, wallet } = useUserBalance();
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedPackageId, setSelectedPackageId] = useState(
@@ -106,6 +110,9 @@ export function ServiceOrderForm({
   const orderValue = selectedPackage
     ? selectedPackage.price * (isCarotTopup ? carotUsernames.length * carotQuantity : 1)
     : 0;
+  const agencyCategory = isCarotTopup ? "CAROT" : "SERVICE";
+  const commissionRate = agencyRate(agency.summary, agencyCategory);
+  const estimatedCommission = estimateAgencyCommission(agency.summary, agencyCategory, orderValue);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -177,11 +184,17 @@ export function ServiceOrderForm({
             { label: "Số lượng mỗi tài khoản", value: `${carotQuantity} lần` },
             { label: "Tổng lượt nạp", value: `${carotUsernames.length * carotQuantity} lượt` },
             { label: "Server", value: server },
+            ...(commissionRate > 0
+              ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
+              : []),
           ]
         : [
             { label: "Dịch vụ", value: selectedPackage.name },
             { label: "Tài khoản", value: account },
             { label: "Server", value: server },
+            ...(commissionRate > 0
+              ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
+              : []),
           ],
     });
     refreshBalance();
@@ -409,6 +422,12 @@ export function ServiceOrderForm({
                   : "—"}
               </strong>
             </div>
+            {commissionRate > 0 ? (
+              <p className="detail-commission-preview">
+                Hoa hồng cấp {agency.summary?.level}: <strong>+{formatVnd(estimatedCommission)}</strong>
+                <span> Cộng vào ví khi đơn hoàn thành.</span>
+              </p>
+            ) : null}
             {message ? <p className="detail-form-error">{message}</p> : null}
             {createdOrder ? (
               <div className="detail-order-success" role="status">

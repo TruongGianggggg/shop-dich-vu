@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthSession } from "@/app/components/use-auth-session";
+import { useAgencySummary } from "@/app/components/use-agency-summary";
 import {
   formatVnd,
   getApiErrorMessage,
@@ -24,6 +25,8 @@ import {
   VpsOrder,
   VpsOrderStatus,
   VpsPlan,
+  agencyRate,
+  estimateAgencyCommission,
 } from "@/lib/shop-api";
 import styles from "./vps.module.css";
 
@@ -48,6 +51,7 @@ export function UserVpsManager({
   serviceName = "VPS của tôi",
 }: UserVpsManagerProps = {}) {
   const session = useAuthSession();
+  const agency = useAgencySummary();
   const [plans, setPlans] = useState<VpsPlan[]>([]);
   const [orders, setOrders] = useState<VpsOrder[]>([]);
   const [options, setOptions] = useState<VpsOptions>({ operatingSystems: [], billingCycles: [] });
@@ -114,6 +118,8 @@ export function UserVpsManager({
       + addonRam * selectedPlan.addonRamPrice
       + (addonDisk / 10) * selectedPlan.addonDiskPricePer10Gb;
   }, [addonCpu, addonDisk, addonRam, selectedPlan]);
+  const commissionRate = agencyRate(agency.summary, "VPS");
+  const estimatedCommission = estimateAgencyCommission(agency.summary, "VPS", total);
 
   async function purchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,7 +128,10 @@ export function UserVpsManager({
       setError("Vui lòng chọn hệ điều hành hợp lệ.");
       return;
     }
-    if (!window.confirm(`Xác nhận mua ${selectedPlan.name} với giá ${formatVnd(total)}?`)) return;
+    const commissionText = commissionRate > 0
+      ? `\nHoa hồng dự kiến khi hoàn thành: +${formatVnd(estimatedCommission)} (${commissionRate / 100}%).`
+      : "";
+    if (!window.confirm(`Xác nhận mua ${selectedPlan.name} với giá ${formatVnd(total)}?${commissionText}`)) return;
     setSubmitting(true);
     setError("");
     setNotice("");
@@ -270,6 +279,7 @@ export function UserVpsManager({
             </> : <div className={styles.manualPurchaseNotice}><Server size={20} /><div><strong>Admin sẽ bàn giao cấu hình</strong><span>Sau khi thanh toán, đơn chuyển sang chờ xử lý. IP, cổng và tài khoản đăng nhập sẽ xuất hiện trong lịch sử VPS khi admin hoàn tất.</span></div></div>}
             <div className={styles.purchaseTotal}>
               <span>Tổng thanh toán</span><strong>{formatVnd(total)}</strong>
+              {commissionRate > 0 ? <small>Hoa hồng: +{formatVnd(estimatedCommission)} khi hoàn thành</small> : null}
               <button disabled={submitting} type="submit">
                 {submitting ? <LoaderCircle className={styles.spin} size={17} /> : <ShoppingCart size={17} />}
                 {submitting ? "Đang tạo VPS" : "Mua VPS"}

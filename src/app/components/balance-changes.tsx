@@ -129,6 +129,8 @@ function transactionLabel(type: WalletTransaction["type"]) {
     ADMIN_ADJUSTMENT: "Quản trị viên điều chỉnh",
     SERVICE_ORDER_PAYMENT: "Thanh toán đơn hàng",
     SERVICE_ORDER_REFUND: "Hoàn tiền đơn hàng",
+    AGENCY_COMMISSION: "Hoa hồng đại lý",
+    AGENCY_COMMISSION_REVERSAL: "Thu hồi hoa hồng đại lý",
   } as const)[type] ?? type;
 }
 

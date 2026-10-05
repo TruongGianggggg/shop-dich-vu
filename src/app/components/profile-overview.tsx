@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import {
   BadgeDollarSign,
   BriefcaseBusiness,
+  Crown,
+  Gift,
   History,
   Mail,
   RefreshCw,
@@ -14,6 +16,7 @@ import {
 } from "lucide-react";
 import { DepositQrButton } from "@/app/components/deposit-qr-button";
 import { useUserBalance } from "@/app/components/use-user-balance";
+import { useAgencySummary } from "@/app/components/use-agency-summary";
 import { TelegramLinkCard } from "@/app/components/telegram-link-card";
 import { formatVnd } from "@/lib/shop-api";
 
@@ -25,6 +28,7 @@ const roleLabels = {
 
 export function ProfileOverview() {
   const { error, isLoading, refresh, session, wallet } = useUserBalance();
+  const agency = useAgencySummary();
 
   if (!session) {
     return (
@@ -59,7 +63,7 @@ export function ProfileOverview() {
         <button
           className="profile-refresh-button"
           disabled={isLoading}
-          onClick={refresh}
+          onClick={() => { refresh(); agency.refresh(); }}
           type="button"
         >
           <RefreshCw className={isLoading ? "is-spinning" : ""} size={17} />
@@ -81,6 +85,16 @@ export function ProfileOverview() {
           label="Tổng tiền đã nạp"
           value={formatVnd(wallet?.totalDeposited ?? 0)}
         />
+        <BalanceCard
+          icon={<Crown size={25} />}
+          label="Cấp đại lý"
+          value={`Cấp ${agency.summary?.level ?? 0}`}
+        />
+        <BalanceCard
+          icon={<Gift size={25} />}
+          label="Hoa hồng đại lý"
+          value={formatVnd(agency.summary?.totalCommissionEarned ?? 0)}
+        />
         {session.role === "COLLABORATOR" || session.role === "ADMIN" ? (
           <>
             <BalanceCard
@@ -95,6 +109,52 @@ export function ProfileOverview() {
             />
           </>
         ) : null}
+      </section>
+
+      {agency.error ? <p className="profile-error">{agency.error}</p> : null}
+
+      <section className="profile-detail-grid">
+        <article className="profile-info-card">
+          <div className="profile-card-heading">
+            <span><Crown size={21} /></span>
+            <div><p>Chương trình đại lý</p><h2>Đại lý cấp {agency.summary?.level ?? 0}</h2></div>
+          </div>
+          <dl>
+            <div>
+              <dt>Thời hạn cấp</dt>
+              <dd>{formatAgencyDate(agency.summary?.expiresAt)}</dd>
+            </div>
+            <div>
+              <dt>Tiến độ lên cấp</dt>
+              <dd>{agency.summary?.nextLevel
+                ? `Cần nạp thêm ${formatVnd(agency.summary.amountToNextLevel)} để lên cấp ${agency.summary.nextLevel}`
+                : "Đã đạt cấp cao nhất"}</dd>
+            </div>
+            <div>
+              <dt>Gia hạn cấp hiện tại</dt>
+              <dd>{agency.summary?.renewalThreshold
+                ? `Cần thêm ${formatVnd(agency.summary.amountToRenew)}`
+                : "Áp dụng sau khi đạt cấp 1"}</dd>
+            </div>
+            <div>
+              <dt>Tỷ lệ hiện tại</dt>
+              <dd>{formatAgencyRates(agency.summary?.rates ?? [])}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article className="profile-info-card profile-actions-card">
+          <div className="profile-card-heading">
+            <span><Gift size={21} /></span>
+            <div><p>Quy định đại lý</p><h2>Ghi nhận hoa hồng</h2></div>
+          </div>
+          <div className="profile-agency-rules">
+            <p>Mỗi đơn chỉ áp dụng một mức chiết khấu theo cấp tại thời điểm tạo đơn, không cộng dồn.</p>
+            <p>Hoa hồng chỉ cộng vào ví khi đơn hoàn thành thành công.</p>
+            <p>Đơn hủy, thất bại hoặc hoàn tiền không được hưởng hoa hồng.</p>
+            <Link href="/lich-su-hoa-hong">Xem lịch sử hoa hồng →</Link>
+          </div>
+        </article>
       </section>
 
       <section className="profile-detail-grid">
@@ -120,6 +180,7 @@ export function ProfileOverview() {
             <DepositQrButton />
             <Link href="/bien-dong-so-du"><WalletCards size={18} />Biến động số dư</Link>
             <Link href="/lich-su-mua"><History size={18} />Lịch sử mua</Link>
+            <Link href="/lich-su-hoa-hong"><Gift size={18} />Lịch sử hoa hồng</Link>
             {session.role === "COLLABORATOR" ? (
               <Link href="/ctv"><BriefcaseBusiness size={18} />Quản lý công việc</Link>
             ) : null}
@@ -135,6 +196,22 @@ export function ProfileOverview() {
       </section>
     </main>
   );
+}
+
+function formatAgencyDate(value: string | null | undefined) {
+  if (!value) return "Chưa có thời hạn";
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date(value));
+}
+
+function formatAgencyRates(rates: { category: string; rateBasisPoints: number }[]) {
+  const active = rates.filter((item) => item.rateBasisPoints > 0);
+  if (!active.length) return "Chưa có chiết khấu";
+  const labels: Record<string, string> = { CAROT: "Carot", CURRENCY: "Vàng/Ngọc", SERVICE: "Dịch vụ", VPS: "VPS" };
+  return active.map((item) => `${labels[item.category] ?? item.category} ${item.rateBasisPoints / 100}%`).join(" · ");
 }
 
 function BalanceCard({

@@ -8069,6 +8069,12 @@ input {
 .profile-quick-actions > a:hover,
 .profile-quick-actions .deposit-nav-button:hover { background: #edf4ff; border-color: #cfe0ff; color: #2465dd; }
 .profile-quick-actions .deposit-nav-button::before { content: none; }
+.profile-agency-rules { display: grid; gap: 10px; }
+.profile-agency-rules p { background: #f7f9fc; border: 1px solid #e5ebf3; border-radius: 10px; color: #58667a; font-size: 12px; line-height: 1.55; margin: 0; padding: 11px 13px; }
+.profile-agency-rules a { color: #2563eb; font-size: 13px; font-weight: 850; margin-top: 4px; text-decoration: none; }
+.detail-commission-preview { background: #eafaf2; border: 1px solid #c9eedb; border-radius: 10px; color: #267257; font-size: 12px; line-height: 1.45; margin: 10px 0 0; padding: 10px 12px; }
+.detail-commission-preview strong { color: #078452; }
+.detail-commission-preview span { color: #6f7c76; }
 
 .profile-telegram-section { margin-top: 18px; }
 .telegram-link-card .profile-card-heading { margin-bottom: 14px; }

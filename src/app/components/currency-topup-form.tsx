@@ -8,12 +8,15 @@ import { useAuthSession } from "@/app/components/use-auth-session";
 import { OrderConfirmationDialog } from "@/app/components/order-confirmation-dialog";
 import { RecentCurrencyOrderHistory } from "@/app/components/recent-order-history";
 import { useUserBalance } from "@/app/components/use-user-balance";
+import { useAgencySummary } from "@/app/components/use-agency-summary";
 import { formatReceivedCurrency, goldSaleTypeLabel } from "@/lib/game-currency";
 import { formatIntegerInput, normalizeIntegerInput } from "@/lib/integer-input";
 import {
   GameCurrencyOrder,
   GameCurrencyType,
   CurrencyServerCatalogItem,
+  agencyRate,
+  estimateAgencyCommission,
   formatVnd,
   getApiErrorMessage,
 } from "@/lib/shop-api";
@@ -27,6 +30,7 @@ export function CurrencyTopupForm({
 }) {
   const router = useRouter();
   const session = useAuthSession();
+  const agency = useAgencySummary();
   const { error: balanceError, isLoading: isBalanceLoading, refresh: refreshBalance, wallet } = useUserBalance();
   const [selectedConfigId, setSelectedConfigId] = useState(configs[0]?.id ?? "");
   const [characterName, setCharacterName] = useState("");
@@ -53,6 +57,8 @@ export function CurrencyTopupForm({
   const goldSaleType = selectedConfig?.goldSaleType ?? "BAR";
   const currencyLabel = isGold ? goldSaleTypeLabel(goldSaleType) : "Ngọc";
   const returnUrl = isGold ? "/nap-vang" : "/nap-ngoc";
+  const commissionRate = agencyRate(agency.summary, "CURRENCY");
+  const estimatedCommission = estimateAgencyCommission(agency.summary, "CURRENCY", numericPayment);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -180,6 +186,7 @@ export function CurrencyTopupForm({
       <div className="currency-topup-summary">
         <div><span>Thanh toán từ ví</span><strong>{formatVnd(numericPayment)}</strong></div>
         <div><span>Server nhận</span><strong>{selectedConfig?.name}</strong></div>
+        {commissionRate > 0 ? <div><span>Hoa hồng khi hoàn thành</span><strong>+{formatVnd(estimatedCommission)} ({commissionRate / 100}%)</strong></div> : null}
       </div>
       {message ? <p className="currency-topup-message error">{message}</p> : null}
       {createdOrder ? (
@@ -201,6 +208,9 @@ export function CurrencyTopupForm({
         { label: "Nhân vật", value: characterName.trim() || "—" },
         { label: "Server", value: selectedConfig?.name ?? "—" },
         { label: "Thực nhận", value: formatReceivedCurrency(receivedAmount, currencyType, goldSaleType) },
+        ...(commissionRate > 0
+          ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
+          : []),
       ]}
       isOpen={confirmationOpen}
       isSubmitting={isSubmitting}

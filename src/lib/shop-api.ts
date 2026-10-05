@@ -195,7 +195,61 @@ export type WalletTransactionType =
   | "TOPUP_BANK"
   | "ADMIN_ADJUSTMENT"
   | "SERVICE_ORDER_PAYMENT"
-  | "SERVICE_ORDER_REFUND";
+  | "SERVICE_ORDER_REFUND"
+  | "AGENCY_COMMISSION"
+  | "AGENCY_COMMISSION_REVERSAL";
+
+export type AgencyOrderCategory = "CAROT" | "CURRENCY" | "SERVICE" | "VPS";
+
+export type AgencyCommissionStatus = "PENDING" | "PAID" | "CANCELLED" | "REVERSED";
+
+export type AgencyRate = {
+  category: AgencyOrderCategory;
+  rateBasisPoints: number;
+};
+
+export type AgencySummary = {
+  level: number;
+  tierStartedAt: string | null;
+  expiresAt: string | null;
+  promotionProgress: number;
+  nextLevel: number | null;
+  nextLevelThreshold: number;
+  amountToNextLevel: number;
+  renewalProgress: number;
+  renewalThreshold: number;
+  amountToRenew: number;
+  totalCommissionEarned: number;
+  rates: AgencyRate[];
+};
+
+export type AgencyCommission = {
+  id: string;
+  category: AgencyOrderCategory;
+  sourceOrderId: string;
+  requestId: string;
+  description: string;
+  orderAmount: number;
+  agencyLevel: number;
+  rateBasisPoints: number;
+  commissionAmount: number;
+  status: AgencyCommissionStatus;
+  cancellationReason: string | null;
+  createdAt: string;
+  settledAt: string | null;
+};
+
+export function agencyRate(summary: AgencySummary | null, category: AgencyOrderCategory) {
+  return summary?.rates.find((item) => item.category === category)?.rateBasisPoints ?? 0;
+}
+
+export function estimateAgencyCommission(
+  summary: AgencySummary | null,
+  category: AgencyOrderCategory,
+  orderAmount: number,
+) {
+  return Math.floor((orderAmount * agencyRate(summary, category)) / 10_000);
+}
 
 export type WalletTransaction = {
   id: string;

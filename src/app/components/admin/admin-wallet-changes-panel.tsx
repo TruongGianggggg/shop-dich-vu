@@ -13,6 +13,7 @@ import styles from "./admin-wallet-changes-panel.module.css";
 
 const typeOptions: WalletTransactionType[] = [
   "TOPUP_CARD", "TOPUP_BANK", "ADMIN_ADJUSTMENT", "SERVICE_ORDER_PAYMENT", "SERVICE_ORDER_REFUND",
+  "AGENCY_COMMISSION", "AGENCY_COMMISSION_REVERSAL",
 ];
 
 export function AdminWalletChangesPanel() {
@@ -89,7 +90,7 @@ export function AdminWalletChangesPanel() {
 }
 
 function transactionLabel(type: string) {
-  return ({ TOPUP_CARD: "Nạp thẻ", TOPUP_BANK: "Nạp ngân hàng", ADMIN_ADJUSTMENT: "Admin điều chỉnh", SERVICE_ORDER_PAYMENT: "Thanh toán đơn", SERVICE_ORDER_REFUND: "Hoàn tiền" } as Record<string, string>)[type] ?? type;
+  return ({ TOPUP_CARD: "Nạp thẻ", TOPUP_BANK: "Nạp ngân hàng", ADMIN_ADJUSTMENT: "Admin điều chỉnh", SERVICE_ORDER_PAYMENT: "Thanh toán đơn", SERVICE_ORDER_REFUND: "Hoàn tiền", AGENCY_COMMISSION: "Hoa hồng đại lý", AGENCY_COMMISSION_REVERSAL: "Thu hồi hoa hồng" } as Record<string, string>)[type] ?? type;
 }
 
 function formatDateTime(value: string) {
