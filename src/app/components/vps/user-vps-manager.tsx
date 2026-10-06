@@ -120,6 +120,7 @@ export function UserVpsManager({
   }, [addonCpu, addonDisk, addonRam, selectedPlan]);
   const commissionRate = agencyRate(agency.summary, "VPS");
   const estimatedCommission = estimateAgencyCommission(agency.summary, "VPS", total);
+  const agencyLevel = agency.summary?.level ?? 0;
 
   async function purchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -128,9 +129,7 @@ export function UserVpsManager({
       setError("Vui lòng chọn hệ điều hành hợp lệ.");
       return;
     }
-    const commissionText = commissionRate > 0
-      ? `\nHoa hồng dự kiến khi hoàn thành: +${formatVnd(estimatedCommission)} (${commissionRate / 100}%).`
-      : "";
+    const commissionText = `\nHoa hồng dự kiến khi hoàn thành: +${formatVnd(estimatedCommission)} · Cấp ${agencyLevel} (${commissionRate / 100}%).`;
     if (!window.confirm(`Xác nhận mua ${selectedPlan.name} với giá ${formatVnd(total)}?${commissionText}`)) return;
     setSubmitting(true);
     setError("");
@@ -279,7 +278,7 @@ export function UserVpsManager({
             </> : <div className={styles.manualPurchaseNotice}><Server size={20} /><div><strong>Admin sẽ bàn giao cấu hình</strong><span>Sau khi thanh toán, đơn chuyển sang chờ xử lý. IP, cổng và tài khoản đăng nhập sẽ xuất hiện trong lịch sử VPS khi admin hoàn tất.</span></div></div>}
             <div className={styles.purchaseTotal}>
               <span>Tổng thanh toán</span><strong>{formatVnd(total)}</strong>
-              {commissionRate > 0 ? <small>Hoa hồng: +{formatVnd(estimatedCommission)} khi hoàn thành</small> : null}
+              <small>Hoa hồng cấp {agencyLevel} ({commissionRate / 100}%): +{formatVnd(estimatedCommission)} khi hoàn thành</small>
               <button disabled={submitting} type="submit">
                 {submitting ? <LoaderCircle className={styles.spin} size={17} /> : <ShoppingCart size={17} />}
                 {submitting ? "Đang tạo VPS" : "Mua VPS"}

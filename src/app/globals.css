@@ -2455,23 +2455,31 @@ input {
 .admin-users-table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 1180px;
+  min-width: 1612px;
   table-layout: fixed;
 }
 
-.admin-users-col-index { width: 4%; }
-.admin-users-col-username { width: 8%; }
-.admin-users-col-deposit-code { width: 12%; }
-.admin-users-col-email { width: 14%; }
-.admin-users-col-role { width: 10%; }
-.admin-users-col-agency { width: 11%; }
-.admin-users-col-balance { width: 9%; }
-.admin-users-col-collaborator { width: 6%; }
-.admin-users-col-created { width: 14%; }
-.admin-users-col-actions { width: 11%; }
+.admin-users-col-index { width: 62px; }
+.admin-users-col-username { width: 150px; }
+.admin-users-col-deposit-code { width: 150px; }
+.admin-users-col-email { width: 250px; }
+.admin-users-col-role { width: 160px; }
+.admin-users-col-agency { width: 190px; }
+.admin-users-col-balance { width: 135px; }
+.admin-users-col-collaborator { width: 135px; }
+.admin-users-col-created { width: 160px; }
+.admin-users-col-actions { width: 220px; }
 
-.agency-level-select { min-width: 118px; }
-.admin-user-agency-spend { color: #667085; display: block; font-size: 10px; margin-top: 5px; white-space: nowrap; }
+.admin-users-table .agency-level-select { min-width: 0; width: 100%; }
+.admin-user-agency-spend {
+  color: #667085;
+  display: block !important;
+  font-size: 10px !important;
+  margin-top: 6px;
+  max-width: none !important;
+  overflow-wrap: normal !important;
+  white-space: nowrap;
+}
 
 .backoffice-users-main .backoffice-table-card {
   border: 1px solid #e3eaf4;
@@ -2647,12 +2655,12 @@ input {
   overflow-wrap: anywhere;
 }
 
-.admin-users-table td:nth-child(7) > span,
-.admin-users-table td:nth-child(7) > small {
+.admin-users-table td:nth-child(8) > span,
+.admin-users-table td:nth-child(8) > small {
   line-height: 1.35;
 }
 
-.admin-users-table td:nth-child(7) > span {
+.admin-users-table td:nth-child(8) > span {
   display: block;
   margin-bottom: 3px;
 }

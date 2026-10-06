@@ -880,7 +880,7 @@ export function AdminUsersManager() {
                         <option value="1">Cấp 1</option>
                         <option value="2">Cấp 2</option>
                       </select>
-                      <small className="admin-user-agency-spend">30 ngày: {formatVnd(user.agencyRollingSpend)}</small>
+                      <small className="admin-user-agency-spend">Đã tiêu 30 ngày: {formatVnd(user.agencyRollingSpend)}</small>
                     </td>
                     <td><strong className="admin-user-balance">{formatVnd(user.balance)}</strong></td>
                     <td>

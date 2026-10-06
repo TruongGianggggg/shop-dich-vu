@@ -113,6 +113,7 @@ export function ServiceOrderForm({
   const agencyCategory = isCarotTopup ? "CAROT" : "SERVICE";
   const commissionRate = agencyRate(agency.summary, agencyCategory);
   const estimatedCommission = estimateAgencyCommission(agency.summary, agencyCategory, orderValue);
+  const agencyLevel = agency.summary?.level ?? 0;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -184,17 +185,13 @@ export function ServiceOrderForm({
             { label: "Số lượng mỗi tài khoản", value: `${carotQuantity} lần` },
             { label: "Tổng lượt nạp", value: `${carotUsernames.length * carotQuantity} lượt` },
             { label: "Server", value: server },
-            ...(commissionRate > 0
-              ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
-              : []),
+            { label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} · Cấp ${agencyLevel} (${commissionRate / 100}%)` },
           ]
         : [
             { label: "Dịch vụ", value: selectedPackage.name },
             { label: "Tài khoản", value: account },
             { label: "Server", value: server },
-            ...(commissionRate > 0
-              ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
-              : []),
+            { label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} · Cấp ${agencyLevel} (${commissionRate / 100}%)` },
           ],
     });
     refreshBalance();
@@ -422,12 +419,10 @@ export function ServiceOrderForm({
                   : "—"}
               </strong>
             </div>
-            {commissionRate > 0 ? (
-              <p className="detail-commission-preview">
-                Hoa hồng cấp {agency.summary?.level}: <strong>+{formatVnd(estimatedCommission)}</strong>
-                <span> Cộng vào ví khi đơn hoàn thành.</span>
-              </p>
-            ) : null}
+            <p className="detail-commission-preview">
+              Hoa hồng cấp {agencyLevel} ({commissionRate / 100}%): <strong>+{formatVnd(estimatedCommission)}</strong>
+              <span> Cộng vào ví khi đơn hoàn thành.</span>
+            </p>
             {message ? <p className="detail-form-error">{message}</p> : null}
             {createdOrder ? (
               <div className="detail-order-success" role="status">

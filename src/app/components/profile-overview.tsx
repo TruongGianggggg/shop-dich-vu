@@ -210,10 +210,9 @@ function formatAgencyWindow(start: string | null | undefined, end: string | null
 }
 
 function formatAgencyRates(rates: { category: string; rateBasisPoints: number }[]) {
-  const active = rates.filter((item) => item.rateBasisPoints > 0);
-  if (!active.length) return "Chưa có chiết khấu";
+  if (!rates.length) return "Đang cập nhật";
   const labels: Record<string, string> = { CAROT: "Carot", CURRENCY: "Vàng/Ngọc", SERVICE: "Dịch vụ", VPS: "VPS" };
-  return active.map((item) => `${labels[item.category] ?? item.category} ${item.rateBasisPoints / 100}%`).join(" · ");
+  return rates.map((item) => `${labels[item.category] ?? item.category} ${item.rateBasisPoints / 100}%`).join(" · ");
 }
 
 function BalanceCard({
