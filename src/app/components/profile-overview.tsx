@@ -121,20 +121,18 @@ export function ProfileOverview() {
           </div>
           <dl>
             <div>
-              <dt>Thời hạn cấp</dt>
-              <dd>{formatAgencyDate(agency.summary?.expiresAt)}</dd>
+              <dt>Doanh số đã tiêu trong 30 ngày gần nhất</dt>
+              <dd>{formatVnd(agency.summary?.rollingSpend ?? 0)}</dd>
             </div>
             <div>
               <dt>Tiến độ lên cấp</dt>
               <dd>{agency.summary?.nextLevel
-                ? `Cần nạp thêm ${formatVnd(agency.summary.amountToNextLevel)} để lên cấp ${agency.summary.nextLevel}`
+                ? `Cần tiêu thêm ${formatVnd(agency.summary.amountToNextLevel)} để lên cấp ${agency.summary.nextLevel}`
                 : "Đã đạt cấp cao nhất"}</dd>
             </div>
             <div>
-              <dt>Gia hạn cấp hiện tại</dt>
-              <dd>{agency.summary?.renewalThreshold
-                ? `Cần thêm ${formatVnd(agency.summary.amountToRenew)}`
-                : "Áp dụng sau khi đạt cấp 1"}</dd>
+              <dt>Cửa sổ đang tính</dt>
+              <dd>{formatAgencyWindow(agency.summary?.windowStartedAt, agency.summary?.checkedAt)}</dd>
             </div>
             <div>
               <dt>Tỷ lệ hiện tại</dt>
@@ -149,6 +147,7 @@ export function ProfileOverview() {
             <div><p>Quy định đại lý</p><h2>Ghi nhận hoa hồng</h2></div>
           </div>
           <div className="profile-agency-rules">
+            <p>Cấp đại lý được tính theo tổng đơn hoàn thành đã tiêu trong 30 ngày gần nhất tại lúc kiểm tra, không theo tháng cố định.</p>
             <p>Mỗi đơn chỉ áp dụng một mức chiết khấu theo cấp tại thời điểm tạo đơn, không cộng dồn.</p>
             <p>Hoa hồng chỉ cộng vào ví khi đơn hoàn thành thành công.</p>
             <p>Đơn hủy, thất bại hoặc hoàn tiền không được hưởng hoa hồng.</p>
@@ -198,13 +197,14 @@ export function ProfileOverview() {
   );
 }
 
-function formatAgencyDate(value: string | null | undefined) {
-  if (!value) return "Chưa có thời hạn";
-  return new Intl.DateTimeFormat("vi-VN", {
+function formatAgencyWindow(start: string | null | undefined, end: string | null | undefined) {
+  if (!start || !end) return "Đang cập nhật";
+  const formatter = new Intl.DateTimeFormat("vi-VN", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Ho_Chi_Minh",
-  }).format(new Date(value));
+  });
+  return `${formatter.format(new Date(start))} – ${formatter.format(new Date(end))}`;
 }
 
 function formatAgencyRates(rates: { category: string; rateBasisPoints: number }[]) {

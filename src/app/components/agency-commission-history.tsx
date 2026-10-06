@@ -50,7 +50,7 @@ export function AgencyCommissionHistory() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <div><p>TÀI KHOẢN CỦA TÔI</p><h1>Lịch sử hoa hồng</h1><span>Hoa hồng được giữ theo cấp tại lúc tạo đơn và chỉ cộng khi đơn hoàn thành.</span></div>
+        <div><p>TÀI KHOẢN CỦA TÔI</p><h1>Lịch sử hoa hồng</h1><span>Cấp được tính theo tiền đã tiêu trong 30 ngày gần nhất; hoa hồng giữ theo cấp tại lúc tạo đơn.</span></div>
         <div className={styles.tier}><Gift size={23} /><span>Đại lý cấp {agency.summary?.level ?? 0}</span><strong>{formatVnd(agency.summary?.totalCommissionEarned ?? 0)}</strong><small>Tổng hoa hồng đã nhận</small></div>
       </header>
 

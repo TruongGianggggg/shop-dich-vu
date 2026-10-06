@@ -210,15 +210,12 @@ export type AgencyRate = {
 
 export type AgencySummary = {
   level: number;
-  tierStartedAt: string | null;
-  expiresAt: string | null;
-  promotionProgress: number;
+  windowStartedAt: string;
+  checkedAt: string;
+  rollingSpend: number;
   nextLevel: number | null;
   nextLevelThreshold: number;
   amountToNextLevel: number;
-  renewalProgress: number;
-  renewalThreshold: number;
-  amountToRenew: number;
   totalCommissionEarned: number;
   rates: AgencyRate[];
 };
