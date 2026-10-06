@@ -401,6 +401,46 @@ export function AdminUsersManager() {
     }
   }
 
+  async function updateAgencyLevel(user: AdminUser, value: string) {
+    if (!session) return;
+    const manualLevel = value === "AUTO" ? null : Number(value);
+    setUpdatingUserId(user.id);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/agency-level`, {
+        method: "PUT",
+        headers: {
+          ...authHeaders(session),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ level: manualLevel }),
+      });
+      const data = (await readResponseJson(response)) as {
+        level?: number;
+        manualLevel?: number | null;
+        rollingSpend?: number;
+      } | null;
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Không cập nhật được cấp đại lý."));
+      }
+      setUsers((current) => current.map((item) => item.id === user.id ? {
+        ...item,
+        agencyLevel: data?.level ?? item.agencyLevel,
+        agencyManualLevel: data?.manualLevel ?? null,
+        agencyRollingSpend: data?.rollingSpend ?? item.agencyRollingSpend,
+      } : item));
+      setMessage(manualLevel === null
+        ? `Đã trả cấp đại lý của ${user.username} về tự động.`
+        : `Đã đặt ${user.username} thành đại lý cấp ${manualLevel}.`);
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Không cập nhật được cấp đại lý.");
+    } finally {
+      setUpdatingUserId("");
+    }
+  }
+
   async function deleteUser(user: AdminUser) {
     if (!session) {
       return;
@@ -766,6 +806,7 @@ export function AdminUsersManager() {
                 <col className="admin-users-col-deposit-code" />
                 <col className="admin-users-col-email" />
                 <col className="admin-users-col-role" />
+                <col className="admin-users-col-agency" />
                 <col className="admin-users-col-balance" />
                 <col className="admin-users-col-collaborator" />
                 <col className="admin-users-col-created" />
@@ -778,6 +819,7 @@ export function AdminUsersManager() {
                   <th>Mã nạp</th>
                   <SortableUserHeader field="email" label="Email" onSort={changeSort} sort={sort} />
                   <SortableUserHeader field="role" label="Phân quyền" onSort={changeSort} sort={sort} />
+                  <th>Cấp đại lý</th>
                   <SortableUserHeader field="balance" label="Số dư" onSort={changeSort} sort={sort} />
                   <SortableUserHeader field="collaboratorBalance" label="CTV" onSort={changeSort} sort={sort} />
                   <SortableUserHeader field="createdAt" label="Ngày tạo" onSort={changeSort} sort={sort} />
@@ -824,6 +866,21 @@ export function AdminUsersManager() {
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td>
+                      <select
+                        aria-label={`Cấp đại lý của ${user.username}`}
+                        className="role-select agency-level-select"
+                        disabled={updatingUserId === user.id}
+                        onChange={(event) => void updateAgencyLevel(user, event.target.value)}
+                        value={user.agencyManualLevel === null ? "AUTO" : String(user.agencyManualLevel)}
+                      >
+                        <option value="AUTO">Tự động · Cấp {user.agencyLevel}</option>
+                        <option value="0">Cấp 0</option>
+                        <option value="1">Cấp 1</option>
+                        <option value="2">Cấp 2</option>
+                      </select>
+                      <small className="admin-user-agency-spend">30 ngày: {formatVnd(user.agencyRollingSpend)}</small>
                     </td>
                     <td><strong className="admin-user-balance">{formatVnd(user.balance)}</strong></td>
                     <td>
@@ -879,7 +936,7 @@ export function AdminUsersManager() {
                 ))}
                 {!isLoading && users.length === 0 ? (
                   <tr>
-                    <td colSpan={9}>Không có người dùng phù hợp.</td>
+                    <td colSpan={10}>Không có người dùng phù hợp.</td>
                   </tr>
                 ) : null}
               </tbody>

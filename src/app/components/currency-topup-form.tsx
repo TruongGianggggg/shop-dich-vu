@@ -59,6 +59,8 @@ export function CurrencyTopupForm({
   const returnUrl = isGold ? "/nap-vang" : "/nap-ngoc";
   const commissionRate = agencyRate(agency.summary, "CURRENCY");
   const estimatedCommission = estimateAgencyCommission(agency.summary, "CURRENCY", numericPayment);
+  const estimatedNetCost = Math.max(0, numericPayment - estimatedCommission);
+  const agencyLevel = agency.summary?.level ?? 0;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -186,7 +188,11 @@ export function CurrencyTopupForm({
       <div className="currency-topup-summary">
         <div><span>Thanh toán từ ví</span><strong>{formatVnd(numericPayment)}</strong></div>
         <div><span>Server nhận</span><strong>{selectedConfig?.name}</strong></div>
-        {commissionRate > 0 ? <div><span>Hoa hồng khi hoàn thành</span><strong>+{formatVnd(estimatedCommission)} ({commissionRate / 100}%)</strong></div> : null}
+        <div className="currency-agency-refund">
+          <span>Hoàn hoa hồng dự kiến</span>
+          <strong>+{formatVnd(estimatedCommission)}</strong>
+          <small>Đại lý cấp {agencyLevel} · {commissionRate / 100}% · chi phí sau hoàn {formatVnd(estimatedNetCost)}</small>
+        </div>
       </div>
       {message ? <p className="currency-topup-message error">{message}</p> : null}
       {createdOrder ? (
@@ -208,9 +214,7 @@ export function CurrencyTopupForm({
         { label: "Nhân vật", value: characterName.trim() || "—" },
         { label: "Server", value: selectedConfig?.name ?? "—" },
         { label: "Thực nhận", value: formatReceivedCurrency(receivedAmount, currencyType, goldSaleType) },
-        ...(commissionRate > 0
-          ? [{ label: "Hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} (${commissionRate / 100}%)` }]
-          : []),
+        { label: "Hoàn hoa hồng dự kiến", value: `+${formatVnd(estimatedCommission)} · Cấp ${agencyLevel} (${commissionRate / 100}%) · sau hoàn ${formatVnd(estimatedNetCost)}` },
       ]}
       isOpen={confirmationOpen}
       isSubmitting={isSubmitting}

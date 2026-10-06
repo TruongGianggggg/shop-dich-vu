@@ -210,6 +210,7 @@ export type AgencyRate = {
 
 export type AgencySummary = {
   level: number;
+  manualLevel: number | null;
   windowStartedAt: string;
   checkedAt: string;
   rollingSpend: number;
@@ -365,6 +366,9 @@ export type AdminUser = {
   totalDeposited: number;
   collaboratorBalance: number;
   collaboratorTotalEarned: number;
+  agencyLevel: number;
+  agencyManualLevel: number | null;
+  agencyRollingSpend: number;
   failedLoginAttempts: number;
   loginLockedUntil: string | null;
   loginPermanentlyLocked: boolean;

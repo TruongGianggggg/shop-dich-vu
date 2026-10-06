@@ -88,7 +88,7 @@ export function ProfileOverview() {
         <BalanceCard
           icon={<Crown size={25} />}
           label="Cấp đại lý"
-          value={`Cấp ${agency.summary?.level ?? 0}`}
+          value={`Cấp ${agency.summary?.level ?? 0}${agency.summary?.manualLevel !== null && agency.summary?.manualLevel !== undefined ? " · Admin đặt" : ""}`}
         />
         <BalanceCard
           icon={<Gift size={25} />}
@@ -126,7 +126,9 @@ export function ProfileOverview() {
             </div>
             <div>
               <dt>Tiến độ lên cấp</dt>
-              <dd>{agency.summary?.nextLevel
+              <dd>{agency.summary?.manualLevel !== null && agency.summary?.manualLevel !== undefined
+                ? `Admin đang cố định ở cấp ${agency.summary.manualLevel}`
+                : agency.summary?.nextLevel
                 ? `Cần tiêu thêm ${formatVnd(agency.summary.amountToNextLevel)} để lên cấp ${agency.summary.nextLevel}`
                 : "Đã đạt cấp cao nhất"}</dd>
             </div>

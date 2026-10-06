@@ -2460,14 +2460,18 @@ input {
 }
 
 .admin-users-col-index { width: 4%; }
-.admin-users-col-username { width: 9%; }
-.admin-users-col-deposit-code { width: 14%; }
-.admin-users-col-email { width: 16%; }
-.admin-users-col-role { width: 12%; }
-.admin-users-col-balance { width: 11%; }
+.admin-users-col-username { width: 8%; }
+.admin-users-col-deposit-code { width: 12%; }
+.admin-users-col-email { width: 14%; }
+.admin-users-col-role { width: 10%; }
+.admin-users-col-agency { width: 11%; }
+.admin-users-col-balance { width: 9%; }
 .admin-users-col-collaborator { width: 6%; }
 .admin-users-col-created { width: 14%; }
-.admin-users-col-actions { width: 14%; }
+.admin-users-col-actions { width: 11%; }
+
+.agency-level-select { min-width: 118px; }
+.admin-user-agency-spend { color: #667085; display: block; font-size: 10px; margin-top: 5px; white-space: nowrap; }
 
 .backoffice-users-main .backoffice-table-card {
   border: 1px solid #e3eaf4;
@@ -7623,6 +7627,9 @@ input {
 .currency-topup-summary div { display: grid; gap: 4px; }
 .currency-topup-summary span { color: #667085; font-size: 11px; }
 .currency-topup-summary strong { color: #111827; font-size: 14px; }
+.currency-topup-summary .currency-agency-refund { background: #ecfdf3; border: 1px solid #abefc6; border-radius: 10px; margin: -7px; padding: 7px; }
+.currency-topup-summary .currency-agency-refund strong { color: #067647; }
+.currency-topup-summary .currency-agency-refund small { color: #047857; font-size: 10px; line-height: 1.45; }
 .currency-topup-message { display: grid; font-size: 12px; gap: 4px; margin: 16px 22px 0; padding: 11px 13px; }
 .currency-topup-message.error { background: #fef2f2; color: #b42318; }
 .currency-topup-message.success { background: #ecfdf3; color: #067647; }
