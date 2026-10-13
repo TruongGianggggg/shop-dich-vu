@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { formatVnd } from "@/lib/shop-api";
 import { DepositQrButton } from "./deposit-qr-button";
+import { useReferralBalance } from "./use-referral-balance";
 import { useUserBalance } from "./use-user-balance";
 import styles from "./user-account-shell.module.css";
 
@@ -40,6 +41,10 @@ const roleLabels = {
 export function UserAccountShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { isLoading, session, wallet } = useUserBalance();
+  const isReferralPage = pathname === "/gioi-thieu";
+  const referralBalance = useReferralBalance(isReferralPage);
+  const displayedBalance = isReferralPage ? referralBalance.balance : wallet?.balance;
+  const isDisplayedBalanceLoading = isReferralPage ? referralBalance.isLoading : isLoading;
 
   return (
     <div className={styles.page}>
@@ -56,7 +61,7 @@ export function UserAccountShell({ children }: { children: ReactNode }) {
 
           <div className={styles.balanceCard}>
             <span><WalletCards size={19} /></span>
-            <div><small>Số dư hiện tại</small><strong>{session ? (isLoading && !wallet ? "Đang tải..." : formatVnd(wallet?.balance ?? 0)) : "—"}</strong></div>
+            <div><small>{isReferralPage ? "Số dư hoa hồng" : "Số dư hiện tại"}</small><strong>{session ? (isDisplayedBalanceLoading && displayedBalance == null ? "Đang tải..." : formatVnd(displayedBalance ?? 0)) : "—"}</strong></div>
           </div>
 
           <nav className={styles.navigation} aria-label="Quản lý tài khoản">

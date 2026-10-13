@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { formatVnd } from "@/lib/shop-api";
 import { DepositQrButton } from "./deposit-qr-button";
 import { clearAuthSession, useAuthSession } from "./use-auth-session";
+import { useReferralBalance } from "./use-referral-balance";
 import { useUserBalance } from "./use-user-balance";
 
 export function AccountActions() {
+  const pathname = usePathname();
   const session = useAuthSession();
   const { isLoading: isLoadingBalance, wallet } = useUserBalance();
+  const isReferralPage = pathname === "/gioi-thieu";
+  const referralBalance = useReferralBalance(isReferralPage);
+  const displayedBalance = isReferralPage ? referralBalance.balance : wallet?.balance;
+  const isDisplayedBalanceLoading = isReferralPage ? referralBalance.isLoading : isLoadingBalance;
   const [isOpen, setIsOpen] = useState(false);
 
   async function logout() {
@@ -42,7 +49,7 @@ export function AccountActions() {
         <span className="account-trigger-copy">
           <span className="account-trigger-name-row">
             <strong>{session.username}</strong>
-            <b>{isLoadingBalance && !wallet ? "..." : formatVnd(wallet?.balance ?? 0)}</b>
+            <b>{isDisplayedBalanceLoading && displayedBalance == null ? "..." : formatVnd(displayedBalance ?? 0)}</b>
           </span>
         </span>
         <span className="account-caret">›</span>
