@@ -24,7 +24,7 @@ import {
 } from "@/lib/shop-api";
 
 type Tab = "available" | "received";
-type UpdateStatus = Extract<ServiceOrderStatus, "processing" | "done" | "error">;
+type UpdateStatus = Extract<ServiceOrderStatus, "done" | "error">;
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
   pending: "Chờ xử lý",
@@ -114,12 +114,10 @@ export function CollaboratorDashboard() {
       }
       setMessage(
         isReceive
-          ? "Đã nhận đơn. Bạn có thể bắt đầu xử lý ngay."
+          ? "Đã nhận đơn và tự động chuyển sang trạng thái đang làm."
           : action === "done"
             ? "Đã hoàn thành đơn và ghi nhận hoa hồng."
-            : action === "error"
-              ? "Đã hủy đơn và gửi yêu cầu hoàn tiền cho khách."
-              : "Đã chuyển đơn sang trạng thái đang làm.",
+            : "Đã hủy đơn và gửi yêu cầu hoàn tiền cho khách.",
       );
       await loadOrders(false);
       refreshWallet();
@@ -319,7 +317,6 @@ function OrderDetailModal({ busy, mode, onAction, onClose, order }: {
             <button className="primary-button h-11 px-5" disabled={busy} onClick={() => onAction("receive")} type="button">{busy ? "Đang nhận..." : "Nhận đơn"}</button>
           ) : canUpdate ? (
             <>
-              {order.status === "pending" ? <button className="ghost-button h-11 px-5" disabled={busy} onClick={() => onAction("processing")} type="button">Bắt đầu làm</button> : null}
               <button className="primary-button h-11 px-5" disabled={busy} onClick={() => onAction("done")} type="button">Hoàn thành</button>
               <button className="danger-button h-11 px-5" disabled={busy} onClick={() => onAction("error")} type="button">Hủy đơn</button>
             </>
