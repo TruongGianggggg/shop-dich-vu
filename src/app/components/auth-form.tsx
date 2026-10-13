@@ -92,13 +92,13 @@ export function AuthForm({ closeHref = "/", mode, referralCode, returnUrl }: Aut
         ? {
             login: String(formData.get("login") ?? ""),
             password: String(formData.get("password") ?? ""),
-            referralCode: String(formData.get("referralCode") ?? "").trim() || null,
             turnstileToken,
           }
         : {
             username: String(formData.get("username") ?? ""),
             email: String(formData.get("email") ?? ""),
             password: String(formData.get("password") ?? ""),
+            referralCode: String(formData.get("referralCode") ?? "").trim() || null,
             turnstileToken,
           };
 
