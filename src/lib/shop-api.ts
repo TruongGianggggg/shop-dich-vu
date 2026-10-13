@@ -197,7 +197,58 @@ export type WalletTransactionType =
   | "SERVICE_ORDER_PAYMENT"
   | "SERVICE_ORDER_REFUND"
   | "AGENCY_COMMISSION"
-  | "AGENCY_COMMISSION_REVERSAL";
+  | "AGENCY_COMMISSION_REVERSAL"
+  | "REFERRAL_SIGNUP_BONUS";
+
+export type ReferralSummary = {
+  referralCode: string | null;
+  balance: number;
+  pendingCommission: number;
+  totalCommission: number;
+  referredUsers: number;
+};
+
+export type ReferralCommission = {
+  id: string;
+  referredUsername: string;
+  category: AgencyOrderCategory;
+  requestId: string;
+  description: string;
+  orderAmount: number;
+  rateBasisPoints: number;
+  commissionAmount: number;
+  status: AgencyCommissionStatus;
+  createdAt: string;
+  settledAt: string | null;
+};
+
+export type ReferralWithdrawal = {
+  id: string;
+  code: string;
+  userId: string;
+  username: string;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  amount: number;
+  status: CollaboratorWithdrawalStatus;
+  adminNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CommissionLeaderboard = {
+  referrals: { username: string; amount: number }[];
+  agencies: { username: string; amount: number }[];
+};
+
+export type PublicTransaction = {
+  id: string;
+  username: string;
+  description: string;
+  amount: number;
+  completedAt: string;
+};
 
 export type AgencyOrderCategory = "CAROT" | "CURRENCY" | "SERVICE" | "VPS";
 

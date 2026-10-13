@@ -25,6 +25,7 @@ const navigation = [
   { href: "/lich-su-mua", label: "Lịch sử mua dịch vụ", icon: ReceiptText },
   { href: "/lich-su-vang-ngoc", label: "Lịch sử Vàng & Ngọc", icon: Coins },
   { href: "/lich-su-hoa-hong", label: "Lịch sử hoa hồng", icon: Gift },
+  { href: "/gioi-thieu", label: "Giới thiệu người dùng", icon: Gift },
   { href: "/vps-cua-toi", label: "VPS của tôi", icon: Server },
   { href: "/thong-bao", label: "Thông báo", icon: BellRing },
   { href: "/doi-mat-khau", label: "Đổi mật khẩu", icon: KeyRound },

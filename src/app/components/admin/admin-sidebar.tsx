@@ -13,6 +13,7 @@ import {
   Users,
   Gem,
   HandCoins,
+  Gift,
   ServerCog,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ type AdminSection =
   | "vps"
   | "deposits"
   | "collaborator-withdrawals"
+  | "referrals"
   | "banks"
   | "activity-logs"
   | "settings";
@@ -105,6 +107,12 @@ const navItems = [
     icon: HandCoins,
     label: "Rút tiền CTV",
     section: "collaborator-withdrawals",
+  },
+  {
+    href: "/admin/referrals",
+    icon: Gift,
+    label: "Hoa hồng giới thiệu",
+    section: "referrals",
   },
   {
     href: "/admin/banks",

@@ -5,7 +5,7 @@ import "../login/login-modal.css";
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ returnUrl?: string | string[] }>;
+  searchParams: Promise<{ returnUrl?: string | string[]; ref?: string | string[] }>;
 }) {
   const query = await searchParams;
   const requestedReturnUrl = Array.isArray(query.returnUrl)
@@ -16,6 +16,7 @@ export default async function RegisterPage({
     !requestedReturnUrl.startsWith("//")
       ? requestedReturnUrl
       : undefined;
+  const referralCode = Array.isArray(query.ref) ? query.ref[0] : query.ref;
 
   return (
     <div className="login-modal-page">
@@ -27,6 +28,7 @@ export default async function RegisterPage({
         <AuthForm
           closeHref={returnUrl ?? "/"}
           mode="register"
+          referralCode={referralCode}
           returnUrl={returnUrl}
         />
       </main>

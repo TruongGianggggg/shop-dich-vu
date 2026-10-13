@@ -82,6 +82,11 @@ export function AccountActions() {
             label="Lịch sử Vàng & Ngọc"
             onClick={() => setIsOpen(false)}
           />
+          <AccountMenuLink
+            href="/gioi-thieu"
+            label="Giới thiệu người dùng"
+            onClick={() => setIsOpen(false)}
+          />
           <div className="account-section account-mobile-actions">
             <p>Tiện ích</p>
             <DepositQrButton

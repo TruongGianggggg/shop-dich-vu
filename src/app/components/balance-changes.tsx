@@ -131,6 +131,7 @@ function transactionLabel(type: WalletTransaction["type"]) {
     SERVICE_ORDER_REFUND: "Hoàn tiền đơn hàng",
     AGENCY_COMMISSION: "Hoa hồng đại lý",
     AGENCY_COMMISSION_REVERSAL: "Thu hồi hoa hồng đại lý",
+    REFERRAL_SIGNUP_BONUS: "Thưởng đăng ký bằng mã giới thiệu",
   } as const)[type] ?? type;
 }
 

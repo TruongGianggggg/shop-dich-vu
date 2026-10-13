@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Coins, Gem, History, RefreshCw } from "lucide-react";
+import { Coins, Gem, History, RefreshCw, Repeat2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatReceivedCurrency, goldSaleTypeLabel } from "@/lib/game-currency";
 import {
@@ -28,14 +28,18 @@ const statusLabels = {
 export function RecentServiceOrderHistory({
   refreshKey,
   subCategoryId,
+  onBuyAgain,
 }: {
   refreshKey: number;
   subCategoryId: string;
+  onBuyAgain?: (order: ServiceOrder) => void;
 }) {
   const session = useAuthSession();
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [refreshingId, setRefreshingId] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!session) return;
@@ -59,7 +63,18 @@ export function RecentServiceOrderHistory({
 
     void load();
     return () => { ignore = true; };
-  }, [refreshKey, session, subCategoryId]);
+  }, [refreshKey, reloadKey, session, subCategoryId]);
+
+  async function refreshOrder(order: ServiceOrder) {
+    setRefreshingId(order.id); setError("");
+    try {
+      const response = await fetch(`/api/service-orders/${encodeURIComponent(order.id)}/refresh`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không làm mới được trạng thái đơn."));
+      setOrders((current) => current.map((item) => item.id === order.id ? data as ServiceOrder : item));
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không làm mới được trạng thái đơn."); }
+    finally { setRefreshingId(""); setReloadKey((value) => value + 1); }
+  }
 
   return (
     <RecentHistoryShell
@@ -78,6 +93,10 @@ export function RecentServiceOrderHistory({
           <div><small>Thanh toán</small><strong>{formatVnd(order.amount)}</strong></div>
           <div><small>Thời gian</small><strong>{formatDate(order.createdAt)}</strong></div>
           <span className={`status-${order.status}`}>{statusLabels[order.status]}</span>
+          <div className="embedded-history-actions">
+            <button onClick={() => onBuyAgain?.(order)} title="Điền dữ liệu đơn cũ" type="button"><Repeat2 size={15} /> Mua lại</button>
+            {(order.status === "pending" || order.status === "processing") ? <button disabled={refreshingId === order.id} onClick={() => void refreshOrder(order)} title="Tải lại trạng thái, giữ nguyên dữ liệu" type="button"><RefreshCw className={refreshingId === order.id ? "is-spinning" : ""} size={14} /> Trạng thái</button> : null}
+          </div>
         </article>
       ))}
     </RecentHistoryShell>

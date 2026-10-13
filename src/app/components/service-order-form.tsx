@@ -69,6 +69,20 @@ const NGOC_RONG_SERVERS = [
   "15 Sao",
 ] as const;
 
+const BANGIFTCODE_SERVERS: Record<string, { value: string; label: string }[]> = {
+  avatar: [{ value: "dieuky", label: "Diệu Kỳ" }, { value: "thantien", label: "Thần Tiên" }],
+  av3: [{ value: "1", label: "Avatar 3" }],
+  am: [{ value: "1", label: "Avatar Musik" }],
+  avl: [{ value: "1", label: "Avatar Land" }],
+  ht: [{ value: "1", label: "Going Merry" }, { value: "2", label: "Thousand Sunny" }, { value: "3", label: "Redforce" }, { value: "4", label: "Oro Jackson" }],
+  nj: ["Boken", "Shuriken", "Tensen", "Kunnai", "Katana", "Tone", "Sanzu", "Sensha", "Daisho", "Tekkan", "Bisento"].map((label, index) => ({ value: ["1", "2", "2", "5", "6", "7", "8", "10", "11", "12", "15"][index], label })),
+  nr: NGOC_RONG_SERVERS.map((label, index) => ({ value: ["1", "2", "3", "6", "7", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"][index], label })),
+  hs: ["Chiến Thần", "Rồng Lửa", "Phượng Hoàng", "Nhân Mã", "Global", "Kỳ Lân", "Thiên Hà", "Bạch Hổ"].map((label, index) => ({ value: ["1", "2", "7", "8", "3", "12", "13", "14"][index], label })),
+  ngulong: [{ value: "1", label: "Kim Long" }, { value: "2", label: "Hỏa Long" }],
+  kpah: ["Tiên La", "Tràng An", "Hoàng Vương", "Mỹ Sơn", "Kinh Môn", "Hoa Lư", "Thanh Long", "Cổ Loa", "Văn Xuân"].map((label, index) => ({ value: ["2", "2", "3", "3", "5", "7", "8", "9", "10"][index], label })),
+  army2: [{ value: "0", label: "Trái Đất" }, { value: "1", label: "Sao Hỏa" }],
+};
+
 export function ServiceOrderForm({
   service,
   packages,
@@ -106,6 +120,8 @@ export function ServiceOrderForm({
   );
   const usesNgocRongServers =
     isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
+  const providerGameCode = service.the9pServiceCode?.trim().toLowerCase() ?? "";
+  const providerServers = !isCarotTopup ? BANGIFTCODE_SERVERS[providerGameCode] : undefined;
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
   const orderValue = selectedPackage
     ? selectedPackage.price * (isCarotTopup ? carotUsernames.length * carotQuantity : 1)
@@ -114,6 +130,16 @@ export function ServiceOrderForm({
   const commissionRate = agencyRate(agency.summary, agencyCategory);
   const estimatedCommission = estimateAgencyCommission(agency.summary, agencyCategory, orderValue);
   const agencyLevel = agency.summary?.level ?? 0;
+
+  function buyAgain(order: ServiceOrder) {
+    const orderPackage = packages.find((item) => item.id === order.packageId);
+    if (orderPackage) setSelectedPackageId(orderPackage.id);
+    setCarotUsernameInput(order.username ?? "");
+    setSelectedServer(order.server ?? "");
+    setCarotQuantity(orderPackage?.price ? Math.min(10, Math.max(1, Math.round(order.amount / orderPackage.price))) : 1);
+    setMessage("Đã điền dữ liệu từ đơn cũ. Vui lòng kiểm tra trước khi đặt lại.");
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -165,7 +191,12 @@ export function ServiceOrderForm({
       : {
           subCategoryId: service.id,
           packageId: selectedPackage.id,
-          accountInfo: { account, server },
+          accountInfo: {
+            username: account,
+            server,
+            ...(providerGameCode === "ht" ? { type: String(formData.get("type") ?? "1") } : {}),
+            ...(providerGameCode === "hs" ? { charname: String(formData.get("charname") ?? "").trim() } : {}),
+          },
           note,
         };
 
@@ -367,9 +398,26 @@ export function ServiceOrderForm({
               </label>
             </>
           ) : null}
+          {!isCarotTopup && providerGameCode === "hs" ? (
+            <label className="detail-field">
+              <span>Tên Nhân Vật</span>
+              <input maxLength={120} name="charname" placeholder="Nhập tên nhân vật" required />
+            </label>
+          ) : null}
+          {!isCarotTopup && providerGameCode === "ht" ? (
+            <label className="detail-field">
+              <span>Nạp</span>
+              <select name="type" defaultValue="1"><option value="1">Vào nhân vật</option><option value="2">Vào Băng Hải Tặc</option></select>
+            </label>
+          ) : null}
           <label className="detail-field detail-field-wide">
             <span>Server</span>
-            {usesNgocRongServers ? (
+            {providerServers?.length ? (
+              <select name="server" onChange={(event) => setSelectedServer(event.target.value)} required value={selectedServer}>
+                <option disabled value="">Chọn máy chủ</option>
+                {providerServers.map((server, index) => <option key={`${server.value}-${index}`} value={server.value}>{server.label}</option>)}
+              </select>
+            ) : usesNgocRongServers ? (
               <select
                 name="server"
                 onChange={(event) => setSelectedServer(event.target.value)}
@@ -456,6 +504,7 @@ export function ServiceOrderForm({
     </form>
     {isCarotTopup ? (
       <RecentServiceOrderHistory
+        onBuyAgain={buyAgain}
         refreshKey={historyRefreshKey}
         subCategoryId={service.id}
       />

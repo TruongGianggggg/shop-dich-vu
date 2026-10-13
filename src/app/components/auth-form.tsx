@@ -24,6 +24,7 @@ type AuthMode = "login" | "register";
 type AuthFormProps = {
   closeHref?: string;
   mode: AuthMode;
+  referralCode?: string;
   returnUrl?: string;
 };
 
@@ -32,7 +33,7 @@ type ToastState = {
   type: "success" | "error";
 };
 
-export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
+export function AuthForm({ closeHref = "/", mode, referralCode, returnUrl }: AuthFormProps) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -91,6 +92,7 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
         ? {
             login: String(formData.get("login") ?? ""),
             password: String(formData.get("password") ?? ""),
+            referralCode: String(formData.get("referralCode") ?? "").trim() || null,
             turnstileToken,
           }
         : {
@@ -235,6 +237,17 @@ export function AuthForm({ closeHref = "/", mode, returnUrl }: AuthFormProps) {
                   required
                   type="email"
                 />
+              </label>
+              <label>
+                <span>Mã giới thiệu</span>
+                <input
+                  defaultValue={referralCode}
+                  maxLength={32}
+                  name="referralCode"
+                  placeholder="Nhập mã giới thiệu nếu có"
+                  readOnly={Boolean(referralCode)}
+                />
+                <small className="login-referral-help">*Nhập mã giới thiệu nhận ngay 5.000đ</small>
               </label>
           </>
         )}

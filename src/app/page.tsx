@@ -6,12 +6,15 @@ import { SafeRichText } from "@/app/components/safe-rich-text";
 import { ShopBrand } from "@/app/components/shop-brand";
 import { StorefrontBannerCarousel } from "@/app/components/storefront-banner-carousel";
 import { StorefrontAnnouncement } from "@/app/components/storefront-announcement";
+import { StorefrontCommunityPanels } from "@/app/components/storefront-community-panels";
 import { fetchBackendJson } from "@/lib/backend";
 import {
   GameCurrencyDisplaySettings,
   MonthlyDepositLeaderboard,
   ServiceCategory,
   SiteSettings,
+  CommissionLeaderboard,
+  PublicTransaction,
 } from "@/lib/shop-api";
 import { getPublicSiteSettings } from "@/lib/site-settings";
 import { richTextToPlainText } from "@/lib/rich-text";
@@ -67,18 +70,30 @@ async function getCurrencyDisplaySettings() {
   }
 }
 
+async function getCommunityData() {
+  try {
+    const [leaderboard, transactions] = await Promise.all([
+      fetchBackendJson<CommissionLeaderboard>("/api/referrals/leaderboard?limit=5"),
+      fetchBackendJson<PublicTransaction[]>("/api/storefront/recent-transactions"),
+    ]);
+    return { leaderboard, transactions };
+  } catch { return { leaderboard: null, transactions: [] }; }
+}
+
 export default async function Home() {
   const [
     { categories, hasApiError },
     siteSettings,
     leaderboard,
     currencyDisplaySettings,
+    community,
   ] =
     await Promise.all([
       getCategories(),
       getPublicSiteSettings(),
       getMonthlyLeaderboard(),
       getCurrencyDisplaySettings(),
+      getCommunityData(),
     ]);
   const storefrontCategories = applyCurrencyDisplaySettings(
     categories,
@@ -148,6 +163,7 @@ export default async function Home() {
             </section>
           ))
         )}
+        <StorefrontCommunityPanels leaderboard={community.leaderboard} transactions={community.transactions} />
       </main>
 
       <footer className="reference-footer">

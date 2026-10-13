@@ -17,6 +17,8 @@ export function AdminCollaboratorCurrencySettingsManager() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!session) return;
@@ -50,6 +52,18 @@ export function AdminCollaboratorCurrencySettingsManager() {
   function search(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setApplied({ ...filters }); }
   function clear() { setFilters(emptyFilters); setApplied(emptyFilters); }
 
+  async function toggleActive(config: CollaboratorCurrencyServer) {
+    setUpdatingId(config.id); setError(""); setMessage("");
+    try {
+      const response = await fetch(`/api/admin/collaborator-currency-servers/${encodeURIComponent(config.id)}/active`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ active: !config.active }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không cập nhật được trạng thái."));
+      setConfigs((current) => current.map((item) => item.id === config.id ? data as CollaboratorCurrencyServer : item));
+      setMessage(`Đã ${config.active ? "tắt" : "bật"} ${config.name} của ${config.collaboratorUsername}.`);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không cập nhật được trạng thái."); }
+    finally { setUpdatingId(""); }
+  }
+
   return <main className="role-dashboard">
     <AdminSidebar active="collaborator-currency-settings" />
     <section className="role-main backoffice-users-main ctv-config-admin-main">
@@ -75,7 +89,7 @@ export function AdminCollaboratorCurrencySettingsManager() {
         </form>
       </section>
 
-      {error ? <p className="admin-users-message error">{error}</p> : null}
+      {message ? <p className="admin-users-message success">{message}</p> : null}{error ? <p className="admin-users-message error">{error}</p> : null}
       <section className="role-panel role-table-panel backoffice-table-card">
         <div className="role-panel-head"><div><p className="section-kicker">Danh sách</p><h2>Cấu hình của cộng tác viên</h2></div><strong>{visibleConfigs.length.toLocaleString("vi-VN")} cấu hình</strong></div>
         <div className="role-table-wrap"><table className="role-table ctv-config-admin-table"><thead><tr><th>CTV</th><th>Server</th><th>Index tool</th><th>Vàng</th><th>Giá Vàng</th><th>Ngọc</th><th>Giá Ngọc</th><th>Trạng thái</th></tr></thead><tbody>
@@ -87,7 +101,7 @@ export function AdminCollaboratorCurrencySettingsManager() {
             <td>{config.goldEnabled ? <strong>{formatVnd(config.goldPrice)}</strong> : "—"}</td>
             <td>{config.gemEnabled ? <strong>{config.gemAmount.toLocaleString("vi-VN")}</strong> : <span className="ctv-config-off">Không bán</span>}</td>
             <td>{config.gemEnabled ? <strong>{formatVnd(config.gemPrice)}</strong> : "—"}</td>
-            <td><span className={config.active ? "ctv-config-status active" : "ctv-config-status"}>{config.active ? "Đang bật" : "Đang tắt"}</span></td>
+            <td><button className={config.active ? "ctv-config-status active is-toggle" : "ctv-config-status is-toggle"} disabled={updatingId === config.id} onClick={() => void toggleActive(config)} type="button">{updatingId === config.id ? "Đang lưu..." : config.active ? "Đang bật" : "Đang tắt"}</button></td>
           </tr>)}
         </tbody></table></div>
         {!loading && !visibleConfigs.length ? <p className="admin-users-message">Chưa có cấu hình phù hợp.</p> : null}
