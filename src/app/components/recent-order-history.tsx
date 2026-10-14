@@ -38,7 +38,7 @@ export function RecentServiceOrderHistory({
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [refreshingId, setRefreshingId] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -65,15 +65,22 @@ export function RecentServiceOrderHistory({
     return () => { ignore = true; };
   }, [refreshKey, reloadKey, session, subCategoryId]);
 
-  async function refreshOrder(order: ServiceOrder) {
-    setRefreshingId(order.id); setError("");
+  async function refreshOrders() {
+    setRefreshing(true);
+    setError("");
     try {
-      const response = await fetch(`/api/service-orders/${encodeURIComponent(order.id)}/refresh`, { method: "POST" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(getApiErrorMessage(data, "Không làm mới được trạng thái đơn."));
-      setOrders((current) => current.map((item) => item.id === order.id ? data as ServiceOrder : item));
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không làm mới được trạng thái đơn."); }
-    finally { setRefreshingId(""); setReloadKey((value) => value + 1); }
+      const activeOrders = orders.filter((order) => order.status === "pending" || order.status === "processing");
+      await Promise.all(activeOrders.map(async (order) => {
+        const response = await fetch(`/api/service-orders/${encodeURIComponent(order.id)}/refresh`, { method: "POST" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(getApiErrorMessage(data, "Không làm mới được trạng thái đơn."));
+      }));
+      setReloadKey((value) => value + 1);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Không làm mới được trạng thái đơn.");
+    } finally {
+      setRefreshing(false);
+    }
   }
 
   return (
@@ -82,6 +89,8 @@ export function RecentServiceOrderHistory({
       error={error}
       fullHistoryHref="/lich-su-mua"
       loading={loading}
+      onRefresh={() => void refreshOrders()}
+      refreshing={refreshing}
       sessionAvailable={Boolean(session)}
       title="Lịch sử nạp Carot gần đây"
     >
@@ -95,7 +104,6 @@ export function RecentServiceOrderHistory({
           <span className={`status-${order.status}`}>{statusLabels[order.status]}</span>
           <div className="embedded-history-actions">
             <button onClick={() => onBuyAgain?.(order)} title="Điền dữ liệu đơn cũ" type="button"><Repeat2 size={15} /> Mua lại</button>
-            {(order.status === "pending" || order.status === "processing") ? <button disabled={refreshingId === order.id} onClick={() => void refreshOrder(order)} title="Tải lại trạng thái, giữ nguyên dữ liệu" type="button"><RefreshCw className={refreshingId === order.id ? "is-spinning" : ""} size={14} /> Trạng thái</button> : null}
           </div>
         </article>
       ))}
@@ -173,6 +181,8 @@ function RecentHistoryShell({
   error,
   fullHistoryHref,
   loading,
+  onRefresh,
+  refreshing = false,
   sessionAvailable,
   title,
 }: {
@@ -181,6 +191,8 @@ function RecentHistoryShell({
   error: string;
   fullHistoryHref: string;
   loading: boolean;
+  onRefresh?: () => void;
+  refreshing?: boolean;
   sessionAvailable: boolean;
   title: string;
 }) {
@@ -190,7 +202,10 @@ function RecentHistoryShell({
     <section className="embedded-order-history">
       <div className="embedded-order-history-head">
         <div><span><History aria-hidden="true" size={19} /></span><div><small>ĐƠN HÀNG CỦA TÔI</small><h2>{title}</h2></div></div>
-        {sessionAvailable ? <Link href={fullHistoryHref}>Xem tất cả →</Link> : null}
+        {sessionAvailable ? <div className="embedded-order-history-links">
+          {onRefresh ? <button disabled={loading || refreshing} onClick={onRefresh} title="Cập nhật trạng thái các đơn đang xử lý" type="button"><RefreshCw className={refreshing ? "is-spinning" : ""} size={14} /> {refreshing ? "Đang cập nhật" : "Trạng thái"}</button> : null}
+          <Link href={fullHistoryHref}>Xem tất cả →</Link>
+        </div> : null}
       </div>
       {!sessionAvailable ? <div className="embedded-history-state"><strong>Đăng nhập để xem lịch sử</strong><Link href="/login">Đăng nhập</Link></div> : null}
       {sessionAvailable && loading ? <div className="embedded-history-state"><RefreshCw className="is-spinning" size={18} /><span>Đang tải lịch sử...</span></div> : null}

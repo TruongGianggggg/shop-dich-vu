@@ -2,12 +2,13 @@ import { Gift, History, Medal } from "lucide-react";
 import { CommissionLeaderboard, PublicTransaction, formatVnd } from "@/lib/shop-api";
 
 export function StorefrontCommunityPanels({ leaderboard, transactions }: { leaderboard: CommissionLeaderboard | null; transactions: PublicTransaction[] }) {
+  const recentTransactions = transactions.slice(0, 5);
   return <section className="storefront-community" aria-label="Hoạt động và bảng xếp hạng">
     <Panel icon={<History size={19} />} title="Lịch sử giao dịch">
-      {transactions.length ? transactions.map((item) => <article className="community-transaction" key={item.id}><div><strong>{item.username}</strong><span>{item.description}</span></div><b>{formatVnd(item.amount)}</b><time>{formatTime(item.completedAt)}</time></article>) : <p className="community-empty">Chưa có giao dịch hoàn thành.</p>}
+      {recentTransactions.length ? recentTransactions.map((item) => <article className="community-transaction" key={item.id}><div><strong>{item.username}</strong><span>{item.description}</span></div><b>{formatVnd(item.amount)}</b><time>{formatTime(item.completedAt)}</time></article>) : <p className="community-empty">Chưa có giao dịch hoàn thành.</p>}
     </Panel>
-    <Ranking title="Top hoa hồng Referral" icon={<Gift size={19} />} entries={leaderboard?.referrals ?? []} />
-    <Ranking title="Top hoa hồng Đại lý" icon={<Medal size={19} />} entries={leaderboard?.agencies ?? []} />
+    <Ranking title="Top hoa hồng Referral" icon={<Gift size={19} />} entries={(leaderboard?.referrals ?? []).slice(0, 5)} />
+    <Ranking title="Top hoa hồng Đại lý" icon={<Medal size={19} />} entries={(leaderboard?.agencies ?? []).slice(0, 5)} />
   </section>;
 }
 

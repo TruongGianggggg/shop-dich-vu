@@ -425,7 +425,7 @@ export function AdminVpsManager() {
             <footer className={styles.actionFooter}>
               {selectedOrder.status === "ACTIVE" ? <>
                 <button disabled={busy} onClick={() => void revealCredentials(selectedOrder)} type="button"><Eye size={15} /> Xem đăng nhập</button>
-                {selectedOrder.provisioningType === "AGENCY" ? <><button disabled={busy} onClick={() => void runAction(selectedOrder, "on", "Bật")} type="button"><CirclePower size={15} /> Bật</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "restart", "Khởi động lại")} type="button"><RotateCw size={15} /> Khởi động lại</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "off", "Tắt")} type="button"><CirclePower size={15} /> Tắt</button><button className={styles.dangerButton} disabled={busy} onClick={() => void runAction(selectedOrder, "cancel", "Hủy")} type="button">Hủy VPS</button></> : null}
+                {selectedOrder.provisioningType === "AGENCY" ? <><button disabled={busy} onClick={() => void runAction(selectedOrder, "on", "Bật")} type="button"><CirclePower size={15} /> Bật</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "restart", "Khởi động lại")} type="button"><RotateCw size={15} /> Khởi động lại</button><button disabled={busy} onClick={() => void runAction(selectedOrder, "off", "Tắt")} type="button"><CirclePower size={15} /> Tắt</button></> : null}
               </> : <span>Không có thao tác trực tiếp cho trạng thái này.</span>}
             </footer>
           </section>
