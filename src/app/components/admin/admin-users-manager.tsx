@@ -879,6 +879,7 @@ export function AdminUsersManager() {
                         <option value="0">Cấp 0</option>
                         <option value="1">Cấp 1</option>
                         <option value="2">Cấp 2</option>
+                        <option value="3">Cấp 3 · Carot 0,35%</option>
                       </select>
                       <small className="admin-user-agency-spend">Đã tiêu 30 ngày: {formatVnd(user.agencyRollingSpend)}</small>
                     </td>
