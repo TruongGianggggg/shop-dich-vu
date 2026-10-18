@@ -914,7 +914,6 @@ export function AdminServicesManager({
       }
 
       setMessage(successMessage);
-      closeModal();
 
       if (refreshPackagesOnly) {
         setPackages(
@@ -925,7 +924,11 @@ export function AdminServicesManager({
         const packageSubCategoryId = (payload as ServicePackagePayload).subCategoryId;
         selectedSubCategoryIdRef.current = packageSubCategoryId;
         setSelectedSubCategoryId(packageSubCategoryId);
+        // Keep the package form open and populated so admins can add a series
+        // of packages without re-entering the shared service information.
+        setEditingId("");
       } else {
+        closeModal();
         setRefreshKey((current) => current + 1);
       }
     } catch (exception) {

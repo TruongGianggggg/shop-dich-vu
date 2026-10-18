@@ -4173,6 +4173,35 @@ input {
 .admin-package-modal-panel {
   max-width: 860px;
   width: min(100%, 860px);
+  display: flex;
+  flex-direction: column;
+  max-height: min(92vh, 980px);
+}
+
+.admin-package-modal-panel .admin-user-modal-header {
+  flex: 0 0 auto;
+}
+
+.admin-package-modal-panel .admin-package-form {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-package-modal-panel .admin-user-form-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.admin-package-modal-panel .admin-user-modal-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  flex: 0 0 auto;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 14px;
 }
 
 .admin-package-form .admin-user-form-content {
