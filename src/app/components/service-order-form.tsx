@@ -176,6 +176,9 @@ export function ServiceOrderForm({
           usernames: carotUsernames,
           quantity: carotQuantity,
           server,
+          ...(providerGameCode === "hs"
+            ? { charname: String(formData.get("charname") ?? "").trim() }
+            : {}),
           note,
         }
       : isManualService
@@ -398,7 +401,7 @@ export function ServiceOrderForm({
               </label>
             </>
           ) : null}
-          {!isCarotTopup && providerGameCode === "hs" ? (
+          {providerGameCode === "hs" ? (
             <label className="detail-field">
               <span>Tên Nhân Vật</span>
               <input maxLength={120} name="charname" placeholder="Nhập tên nhân vật" required />
