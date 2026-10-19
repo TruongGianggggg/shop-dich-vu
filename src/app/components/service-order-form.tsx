@@ -82,6 +82,10 @@ const BANGIFTCODE_SERVERS: Record<string, { value: string; label: string }[]> = 
   kpah: ["Tiên La", "Tràng An", "Hoàng Vương", "Mỹ Sơn", "Kinh Môn", "Hoa Lư", "Thanh Long", "Cổ Loa", "Văn Xuân"].map((label, index) => ({ value: ["2", "2", "3", "3", "5", "7", "8", "9", "10"][index], label })),
   army2: [{ value: "0", label: "Trái Đất" }, { value: "1", label: "Sao Hỏa" }],
 };
+const BANGIFTCODE_GAME_CODES = new Set([
+  "avatar", "av3", "am", "avl", "ah", "ht", "nj", "nr", "hs", "stpt",
+  "ngulong", "kpah", "kpah3d", "army2", "army3", "ab", "ongame",
+]);
 
 export function ServiceOrderForm({
   service,
@@ -531,18 +535,24 @@ export function ServiceOrderForm({
 
 function resolveBangiftcodeGameCode(name: string, configuredCode: string | null) {
   const code = configuredCode?.trim().toLowerCase();
-  if (code && BANGIFTCODE_SERVERS[code]) return code;
+  if (code && BANGIFTCODE_GAME_CODES.has(code)) return code;
   const value = name.trim().toLowerCase();
+  if (value.includes("avatar bum")) return "ab";
   if (value.includes("avatar musik")) return "am";
   if (value.includes("avatar land")) return "avl";
   if (value.includes("avatar 3")) return "av3";
   if (value.includes("avatar")) return "avatar";
+  if (value.includes("anh hùng") || value.includes("anh hung")) return "ah";
   if (value.includes("hải tặc") || value.includes("hai tac")) return "ht";
   if (value.includes("ninja")) return "nj";
   if (value.includes("ngọc rồng") || value.includes("ngoc rong")) return "nr";
   if (value.includes("hiệp sĩ") || value.includes("hiep si")) return "hs";
   if (value.includes("ngũ long") || value.includes("ngu long")) return "ngulong";
+  if (value.includes("sơn thủy") || value.includes("son thuy")) return "stpt";
+  if (value.includes("kpah 3d") || value.includes("kpah3d")) return "kpah3d";
   if (value.includes("kpah")) return "kpah";
   if (value.includes("army 2") || value.includes("army2")) return "army2";
+  if (value.includes("army 3") || value.includes("army3")) return "army3";
+  if (value.includes("ongame")) return "ongame";
   return code ?? "";
 }
