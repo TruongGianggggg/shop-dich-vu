@@ -176,6 +176,7 @@ export function ServiceOrderForm({
           usernames: carotUsernames,
           quantity: carotQuantity,
           server,
+          game: providerGameCode,
           ...(providerGameCode === "hs"
             ? { charname: String(formData.get("charname") ?? "").trim() }
             : {}),
