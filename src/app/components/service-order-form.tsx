@@ -118,10 +118,10 @@ export function ServiceOrderForm({
     () => parseCarotUsernames(carotUsernameInput),
     [carotUsernameInput],
   );
-  const usesNgocRongServers =
-    isCarotTopup || service.the9pServiceCode?.trim().toLowerCase() === "nr";
-  const providerGameCode = service.the9pServiceCode?.trim().toLowerCase() ?? "";
+  const providerGameCode = resolveBangiftcodeGameCode(service.name, service.the9pServiceCode);
+  const usesNgocRongServers = providerGameCode === "nr";
   const providerServers = !isCarotTopup ? BANGIFTCODE_SERVERS[providerGameCode] : undefined;
+  const carotServers = isCarotTopup ? BANGIFTCODE_SERVERS[providerGameCode] : undefined;
   const returnUrl = `/dich-vu/${encodeURIComponent(service.id)}`;
   const orderValue = selectedPackage
     ? selectedPackage.price * (isCarotTopup ? carotUsernames.length * carotQuantity : 1)
@@ -412,10 +412,10 @@ export function ServiceOrderForm({
           ) : null}
           <label className="detail-field detail-field-wide">
             <span>Server</span>
-            {providerServers?.length ? (
+            {(providerServers ?? carotServers)?.length ? (
               <select name="server" onChange={(event) => setSelectedServer(event.target.value)} required value={selectedServer}>
                 <option disabled value="">Chọn máy chủ</option>
-                {providerServers.map((server, index) => <option key={`${server.value}-${index}`} value={server.value}>{server.label}</option>)}
+                {(providerServers ?? carotServers)?.map((server, index) => <option key={`${server.value}-${index}`} value={server.value}>{server.label}</option>)}
               </select>
             ) : usesNgocRongServers ? (
               <select
@@ -523,4 +523,22 @@ export function ServiceOrderForm({
     </>
   );
 
+}
+
+function resolveBangiftcodeGameCode(name: string, configuredCode: string | null) {
+  const code = configuredCode?.trim().toLowerCase();
+  if (code && BANGIFTCODE_SERVERS[code]) return code;
+  const value = name.trim().toLowerCase();
+  if (value.includes("avatar musik")) return "am";
+  if (value.includes("avatar land")) return "avl";
+  if (value.includes("avatar 3")) return "av3";
+  if (value.includes("avatar")) return "avatar";
+  if (value.includes("hải tặc") || value.includes("hai tac")) return "ht";
+  if (value.includes("ninja")) return "nj";
+  if (value.includes("ngọc rồng") || value.includes("ngoc rong")) return "nr";
+  if (value.includes("hiệp sĩ") || value.includes("hiep si")) return "hs";
+  if (value.includes("ngũ long") || value.includes("ngu long")) return "ngulong";
+  if (value.includes("kpah")) return "kpah";
+  if (value.includes("army 2") || value.includes("army2")) return "army2";
+  return code ?? "";
 }
